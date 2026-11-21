@@ -1,0 +1,14 @@
+{
+  "format": "docproc-ocr/1",
+  "engine": "ATH-MaaS/OvisOCR3 (fixture)",
+  "versions": {
+    "v2-scan": {
+      "pages": {
+        "2": {
+          "status": "failed",
+          "error": "CUDA out of memory"
+        }
+      }
+    }
+  }
+}

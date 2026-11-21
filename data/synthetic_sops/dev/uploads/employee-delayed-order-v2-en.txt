@@ -1,0 +1,36 @@
+Delayed order support triage
+Synthetic training data
+SidrDesk Operations | Sidr Square branch | Version 2
+To: Company employee
+
+Support desk memo. Apply the relevant procedure to late deliveries in the Sidr Square queue, such as SD-286.
+
+1. Open the delay case
+When the displayed delivery estimate is at least 12 minutes past, open a Delay case and record the order ID and last status timestamp.
+
+2. Escalate a stalled status
+If tracking has not refreshed for 8 minutes after the case opens, the support agent must route the case to the duty lead. The duty lead pages the dispatch desk.
+
+3. Message the customer
+Send the customer a status update from the case. Do not promise a new delivery time until Dispatch confirms it.
+
+4. Reuse an open case
+If the same order already has an open Delay case, add the customer's latest message there and keep its original opening time.
+
+5. Handle a missing estimate
+If the order timeline shows no delivery estimate, request the last confirmed status from Dispatch and record that the estimate is unavailable.
+
+6. Transfer a misrouted case
+If the order belongs to another branch queue, transfer the existing case to that queue with the status history attached.
+
+7. Route a cancellation request
+If the customer asks to cancel a late order, link a Cancellation Request and route it to the cancellations desk.
+
+8. Track related delays
+If several late orders share one dispatch incident, keep a case for each order and add the shared incident ID to each case.
+
+9. Handle restored tracking
+If tracking resumes during an open Delay case, record the fresh status and notify the case owner that the stalled-tracking alert can be cleared.
+
+10. Close a recovered delivery
+When the timeline confirms delivery, send the customer a closure message and record the confirmation time before closing the case.

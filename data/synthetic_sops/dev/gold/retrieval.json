@@ -1,0 +1,752 @@
+[
+  {
+    "query_id": "dev-courier-01",
+    "query_language": "en",
+    "query": "Under the current pickup procedure, how long after my branch check-in do I alert Dispatch if the bag is still being prepared?",
+    "scope": {
+      "role": "courier",
+      "organization": "MadarFig Dispatch",
+      "document_family": "courier-pickup-wait",
+      "version": 2
+    },
+    "expected": [
+      {
+        "document_id": "courier-pickup-wait-v2",
+        "clause_id": "CW-02"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "courier-pickup-wait-v1",
+        "clause_id": "CW-02",
+        "reason": "obsolete 15-minute threshold"
+      }
+    ],
+    "cross_language": true
+  },
+  {
+    "query_id": "dev-courier-02",
+    "query_language": "ar",
+    "query": "حسب الإصدار الأول، متى أرفع بلاغ تأخر الاستلام إذا لم يجهز الطلب؟",
+    "scope": {
+      "role": "courier",
+      "organization": "MadarFig Dispatch",
+      "document_family": "courier-pickup-wait",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "courier-pickup-wait-v1",
+        "clause_id": "CW-02"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "courier-pickup-wait-v2",
+        "clause_id": "CW-02",
+        "reason": "newer threshold is outside requested version"
+      }
+    ],
+    "cross_language": false
+  },
+  {
+    "query_id": "dev-courier-03",
+    "query_language": "en",
+    "query": "The pickup counter is locked. Do I wait for the pickup timer before calling Dispatch?",
+    "scope": {
+      "role": "courier",
+      "organization": "MadarFig Dispatch",
+      "document_family": "courier-pickup-wait",
+      "version": 2
+    },
+    "expected": [
+      {
+        "document_id": "courier-pickup-wait-v2",
+        "clause_id": "CW-03"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "courier-pickup-wait-v2",
+        "clause_id": "CW-02",
+        "reason": "normal waiting rule does not cover a closed counter"
+      }
+    ],
+    "cross_language": true
+  },
+  {
+    "query_id": "dev-courier-04",
+    "query_language": "ar",
+    "query": "متى يبدأ احتساب الانتظار في الفرع وما البيانات التي أسجلها؟",
+    "scope": {
+      "role": "courier",
+      "organization": "MadarFig Dispatch",
+      "document_family": "courier-pickup-wait",
+      "version": 2
+    },
+    "expected": [
+      {
+        "document_id": "courier-pickup-wait-v2",
+        "clause_id": "CW-01"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "courier-failed-handoff-v1",
+        "clause_id": "CH-01",
+        "reason": "timer for customer handoff starts at a different event"
+      }
+    ],
+    "cross_language": false
+  },
+  {
+    "query_id": "dev-courier-05",
+    "query_language": "ar",
+    "query": "اتصلت بالعميل وأرسلت له رسالة ولم يرد. متى أفتح تذكرة تعذر التسليم؟",
+    "scope": {
+      "role": "courier",
+      "organization": "MadarFig Dispatch",
+      "document_family": "courier-failed-handoff",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "courier-failed-handoff-v1",
+        "clause_id": "CH-02"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "courier-pickup-wait-v2",
+        "clause_id": "CW-02",
+        "reason": "pickup escalation uses a different timer"
+      }
+    ],
+    "cross_language": true
+  },
+  {
+    "query_id": "dev-courier-06",
+    "query_language": "ar",
+    "query": "متى يُسمح لي بترك الطلب عند باب العميل؟",
+    "scope": {
+      "role": "courier",
+      "organization": "MadarFig Dispatch",
+      "document_family": "courier-failed-handoff",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "courier-failed-handoff-v1",
+        "clause_id": "CH-03"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "courier-failed-handoff-v1",
+        "clause_id": "CH-02",
+        "reason": "unreachable customer does not authorize a doorstep drop"
+      }
+    ],
+    "cross_language": true
+  },
+  {
+    "query_id": "dev-courier-07",
+    "query_language": "en",
+    "query": "What do I do first if the customer does not answer at the delivery address, and when does that timer begin?",
+    "scope": {
+      "role": "courier",
+      "organization": "MadarFig Dispatch",
+      "document_family": "courier-failed-handoff",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "courier-failed-handoff-v1",
+        "clause_id": "CH-01"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "courier-pickup-wait-v2",
+        "clause_id": "CW-01",
+        "reason": "branch arrival starts a different timer"
+      }
+    ],
+    "cross_language": false
+  },
+  {
+    "query_id": "dev-courier-08",
+    "query_language": "ar",
+    "query": "هل أغادر الفرع من تلقاء نفسي بعد رفع بلاغ تأخر الاستلام؟",
+    "scope": {
+      "role": "courier",
+      "organization": "MadarFig Dispatch",
+      "document_family": "courier-pickup-wait",
+      "version": 2
+    },
+    "expected": [
+      {
+        "document_id": "courier-pickup-wait-v2",
+        "clause_id": "CW-04"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "employee-delayed-order-v2",
+        "clause_id": "ED-02",
+        "reason": "the support desk escalation has no rule authorizing courier departure"
+      }
+    ],
+    "cross_language": false
+  },
+  {
+    "query_id": "dev-employee-01",
+    "query_language": "ar",
+    "query": "في الإصدار الحالي، من يتواصل مع مكتب التوزيع إذا بقي التتبع بلا تحديث بعد فتح حالة التأخر؟",
+    "scope": {
+      "role": "employee",
+      "organization": "SidrDesk Operations",
+      "document_family": "employee-delayed-order",
+      "version": 2
+    },
+    "expected": [
+      {
+        "document_id": "employee-delayed-order-v2",
+        "clause_id": "ED-02"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "employee-delayed-order-v1",
+        "clause_id": "ED-02",
+        "reason": "v1 assigned direct paging to the support agent"
+      }
+    ],
+    "cross_language": true
+  },
+  {
+    "query_id": "dev-employee-02",
+    "query_language": "en",
+    "query": "In the first version, what must I copy into the handover email before signing out?",
+    "scope": {
+      "role": "employee",
+      "organization": "SidrDesk Operations",
+      "document_family": "employee-delayed-order",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "employee-delayed-order-v1",
+        "clause_id": "ED-04"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "employee-delayed-order-v1",
+        "clause_id": "ED-01",
+        "reason": "opening a case and shift-email handover are separate actions"
+      }
+    ],
+    "cross_language": false
+  },
+  {
+    "query_id": "dev-employee-03",
+    "query_language": "ar",
+    "query": "متى أفتح حالة تأخر إذا تجاوز الطلب وقت التسليم المعروض؟",
+    "scope": {
+      "role": "employee",
+      "organization": "SidrDesk Operations",
+      "document_family": "employee-delayed-order",
+      "version": 2
+    },
+    "expected": [
+      {
+        "document_id": "employee-delayed-order-v2",
+        "clause_id": "ED-01"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "courier-pickup-wait-v2",
+        "clause_id": "CW-02",
+        "reason": "courier timer is measured from branch check-in"
+      }
+    ],
+    "cross_language": true
+  },
+  {
+    "query_id": "dev-employee-04",
+    "query_language": "en",
+    "query": "What must be confirmed before I give a revised delivery time in a case update?",
+    "scope": {
+      "role": "employee",
+      "organization": "SidrDesk Operations",
+      "document_family": "employee-delayed-order",
+      "version": 2
+    },
+    "expected": [
+      {
+        "document_id": "employee-delayed-order-v2",
+        "clause_id": "ED-03"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "employee-delayed-order-v2",
+        "clause_id": "ED-02",
+        "reason": "internal escalation does not authorize a customer promise"
+      }
+    ],
+    "cross_language": false
+  },
+  {
+    "query_id": "dev-employee-05",
+    "query_language": "en",
+    "query": "A customer sees one settled charge and one pending charge. What follow-up should I open?",
+    "scope": {
+      "role": "employee",
+      "organization": "SidrDesk Operations",
+      "document_family": "employee-duplicate-charge",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "employee-duplicate-charge-v1",
+        "clause_id": "EC-02"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "employee-duplicate-charge-v1",
+        "clause_id": "EC-03",
+        "reason": "refund review applies to two settled charges"
+      }
+    ],
+    "cross_language": true
+  },
+  {
+    "query_id": "dev-employee-06",
+    "query_language": "en",
+    "query": "Who approves the refund after two settled charges for the same order, and which IDs should I send?",
+    "scope": {
+      "role": "employee",
+      "organization": "SidrDesk Operations",
+      "document_family": "employee-duplicate-charge",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "employee-duplicate-charge-v1",
+        "clause_id": "EC-03"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "employee-duplicate-charge-v1",
+        "clause_id": "EC-01",
+        "reason": "the initial matching check does not authorize a refund"
+      }
+    ],
+    "cross_language": true
+  },
+  {
+    "query_id": "dev-employee-07",
+    "query_language": "ar",
+    "query": "خصمان بالقيمة نفسها لكن برقمَي طلب مختلفين. هل أسجلهما كخصم مكرر؟",
+    "scope": {
+      "role": "employee",
+      "organization": "SidrDesk Operations",
+      "document_family": "employee-duplicate-charge",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "employee-duplicate-charge-v1",
+        "clause_id": "EC-01"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "employee-duplicate-charge-v1",
+        "clause_id": "EC-03",
+        "reason": "completed duplicate workflow requires the same order"
+      }
+    ],
+    "cross_language": false
+  },
+  {
+    "query_id": "dev-employee-08",
+    "query_language": "en",
+    "query": "In the old delay process, who paged Dispatch directly when tracking stayed stale for eight minutes?",
+    "scope": {
+      "role": "employee",
+      "organization": "SidrDesk Operations",
+      "document_family": "employee-delayed-order",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "employee-delayed-order-v1",
+        "clause_id": "ED-02"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "employee-delayed-order-v2",
+        "clause_id": "ED-02",
+        "reason": "v2 transfers paging responsibility to the duty lead"
+      }
+    ],
+    "cross_language": false
+  },
+  {
+    "query_id": "dev-partner-01",
+    "query_language": "en",
+    "query": "In version 2, what should I do if a paper bag will not take the seal?",
+    "scope": {
+      "role": "partner",
+      "organization": "Copper Olive Kitchen",
+      "document_family": "partner-packing-sealing",
+      "version": 2
+    },
+    "expected": [
+      {
+        "document_id": "partner-packing-sealing-v2",
+        "clause_id": "PP-02"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "partner-packing-sealing-v1",
+        "clause_id": "PP-02",
+        "reason": "tape is the obsolete exception"
+      }
+    ],
+    "cross_language": true
+  },
+  {
+    "query_id": "dev-partner-02",
+    "query_language": "en",
+    "query": "What should I do if the seal tears before the courier collects the order?",
+    "scope": {
+      "role": "partner",
+      "organization": "Copper Olive Kitchen",
+      "document_family": "partner-packing-sealing",
+      "version": 2
+    },
+    "expected": [
+      {
+        "document_id": "partner-packing-sealing-v2",
+        "clause_id": "PP-03"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "courier-pickup-wait-v2",
+        "clause_id": "CW-04",
+        "reason": "courier departure rule does not authorize partner handover"
+      }
+    ],
+    "cross_language": true
+  },
+  {
+    "query_id": "dev-partner-03",
+    "query_language": "ar",
+    "query": "في إجراء التعبئة الجديد، متى أسجل عدد الأكياس وأين أسجله؟",
+    "scope": {
+      "role": "partner",
+      "organization": "Copper Olive Kitchen",
+      "document_family": "partner-packing-sealing",
+      "version": 2
+    },
+    "expected": [
+      {
+        "document_id": "partner-packing-sealing-v2",
+        "clause_id": "PP-04"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "partner-packing-sealing-v2",
+        "clause_id": "PP-01",
+        "reason": "label check does not require recording bag count"
+      }
+    ],
+    "cross_language": false
+  },
+  {
+    "query_id": "dev-partner-04",
+    "query_language": "ar",
+    "query": "حسب الإصدار الأول، ماذا أستخدم لكيس ورقي لا يقبل الختم؟",
+    "scope": {
+      "role": "partner",
+      "organization": "Copper Olive Kitchen",
+      "document_family": "partner-packing-sealing",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "partner-packing-sealing-v1",
+        "clause_id": "PP-02"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "partner-packing-sealing-v2",
+        "clause_id": "PP-02",
+        "reason": "outer bag exception is from v2"
+      }
+    ],
+    "cross_language": false
+  },
+  {
+    "query_id": "dev-partner-05",
+    "query_language": "ar",
+    "query": "اختار العميل عدم الاستبدال والصنف غير متوفر. كيف أتابع؟",
+    "scope": {
+      "role": "partner",
+      "organization": "Copper Olive Kitchen",
+      "document_family": "partner-item-substitution",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "partner-item-substitution-v1",
+        "clause_id": "PS-01"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "partner-item-substitution-v1",
+        "clause_id": "PS-02",
+        "reason": "suggestion flow requires substitutions to be allowed"
+      }
+    ],
+    "cross_language": true
+  },
+  {
+    "query_id": "dev-partner-06",
+    "query_language": "ar",
+    "query": "إذا سمح العميل بالاستبدال، ما السعر المقبول ومتى أضع البديل في الطلب؟",
+    "scope": {
+      "role": "partner",
+      "organization": "Copper Olive Kitchen",
+      "document_family": "partner-item-substitution",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "partner-item-substitution-v1",
+        "clause_id": "PS-02"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "partner-item-substitution-v1",
+        "clause_id": "PS-01",
+        "reason": "no-substitutions preference prohibits suggesting an item"
+      }
+    ],
+    "cross_language": true
+  },
+  {
+    "query_id": "dev-partner-07",
+    "query_language": "en",
+    "query": "A requested replacement has gone unanswered for seven minutes. What happens to that item and the rest of the order?",
+    "scope": {
+      "role": "partner",
+      "organization": "Copper Olive Kitchen",
+      "document_family": "partner-item-substitution",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "partner-item-substitution-v1",
+        "clause_id": "PS-03"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "partner-item-substitution-v1",
+        "clause_id": "PS-01",
+        "reason": "customer opted out in the other rule"
+      }
+    ],
+    "cross_language": false
+  },
+  {
+    "query_id": "dev-partner-08",
+    "query_language": "ar",
+    "query": "ماذا أفعل إذا اختلف رقم ملصق الكيس عن رقم الطلب في شاشة التجهيز؟",
+    "scope": {
+      "role": "partner",
+      "organization": "Copper Olive Kitchen",
+      "document_family": "partner-packing-sealing",
+      "version": 2
+    },
+    "expected": [
+      {
+        "document_id": "partner-packing-sealing-v2",
+        "clause_id": "PP-01"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "partner-packing-sealing-v2",
+        "clause_id": "PP-04",
+        "reason": "bag count does not resolve a mismatched label"
+      }
+    ],
+    "cross_language": false
+  },
+  {
+    "query_id": "dev-courier-09",
+    "query_language": "en",
+    "query": "My courier app would not record check-in. What time do I give Dispatch, and what should they do with it?",
+    "scope": {
+      "role": "courier",
+      "organization": "MadarFig Dispatch",
+      "document_family": "courier-pickup-wait",
+      "version": 2
+    },
+    "expected": [
+      {
+        "document_id": "courier-pickup-wait-v2",
+        "clause_id": "CW-10"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "courier-pickup-wait-v2",
+        "clause_id": "CW-01",
+        "reason": "The ordinary in-app check-in presumes the app works."
+      }
+    ],
+    "cross_language": true
+  },
+  {
+    "query_id": "dev-courier-10",
+    "query_language": "ar",
+    "query": "أرسل العميل عنواناً جديداً في محادثة الطلب. هل أتوجه إليه قبل تأكيد مسؤول التوزيع؟",
+    "scope": {
+      "role": "courier",
+      "organization": "MadarFig Dispatch",
+      "document_family": "courier-failed-handoff",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "courier-failed-handoff-v1",
+        "clause_id": "CH-11"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "courier-failed-handoff-v1",
+        "clause_id": "CH-01",
+        "reason": "Initial contact does not authorize rerouting."
+      }
+    ],
+    "cross_language": true
+  },
+  {
+    "query_id": "dev-employee-09",
+    "query_language": "ar",
+    "query": "وجدت حالة تأخر مفتوحة للطلب نفسه. أين أضيف رسالة العميل وهل أغيّر وقت فتح الحالة؟",
+    "scope": {
+      "role": "employee",
+      "organization": "SidrDesk Operations",
+      "document_family": "employee-delayed-order",
+      "version": 2
+    },
+    "expected": [
+      {
+        "document_id": "employee-delayed-order-v2",
+        "clause_id": "ED-10"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "employee-delayed-order-v2",
+        "clause_id": "ED-01",
+        "reason": "The opening procedure applies when there is no existing case to reuse."
+      }
+    ],
+    "cross_language": true
+  },
+  {
+    "query_id": "dev-employee-10",
+    "query_language": "en",
+    "query": "One of the two transactions was declined. Should support count it as a completed charge, and what should the agent record?",
+    "scope": {
+      "role": "employee",
+      "organization": "SidrDesk Operations",
+      "document_family": "employee-duplicate-charge",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "employee-duplicate-charge-v1",
+        "clause_id": "EC-12"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "employee-duplicate-charge-v1",
+        "clause_id": "EC-03",
+        "reason": "The two-completed-charges path does not apply to a decline."
+      }
+    ],
+    "cross_language": true
+  },
+  {
+    "query_id": "dev-partner-09",
+    "query_language": "en",
+    "query": "Which bags should I use when an order contains both hot and cold food, and what number goes on each bag?",
+    "scope": {
+      "role": "partner",
+      "organization": "Copper Olive Kitchen",
+      "document_family": "partner-packing-sealing",
+      "version": 2
+    },
+    "expected": [
+      {
+        "document_id": "partner-packing-sealing-v2",
+        "clause_id": "PP-11"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "partner-packing-sealing-v2",
+        "clause_id": "PP-02",
+        "reason": "The outer-bag exception concerns paper that cannot take a seal."
+      }
+    ],
+    "cross_language": true
+  },
+  {
+    "query_id": "dev-partner-10",
+    "query_language": "ar",
+    "query": "وافق العميل على البديل ثم نفد قبل التعبئة. ماذا أفعل بالصنف وإلى من أبلغ؟",
+    "scope": {
+      "role": "partner",
+      "organization": "Copper Olive Kitchen",
+      "document_family": "partner-item-substitution",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "partner-item-substitution-v1",
+        "clause_id": "PS-13"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "partner-item-substitution-v1",
+        "clause_id": "PS-02",
+        "reason": "First approval does not resolve stock loss after approval."
+      }
+    ],
+    "cross_language": true
+  }
+]

@@ -1,0 +1,766 @@
+[
+  {
+    "document_id": "courier-damaged-package-v1",
+    "title": "الإبلاغ عن تلف طرد أثناء التوصيل",
+    "scope_quote": "تُطبّق هذه القائمة بعد استلام الطرد من الفرع وقبل تسليمه للعميل.",
+    "procedures": [
+      {
+        "procedure_id": "courier-damaged-package:CD-01",
+        "title": "إيقاف التسليم",
+        "locator": {
+          "section": "١. إيقاف التسليم"
+        },
+        "clause_ids": [
+          "CD-01"
+        ]
+      },
+      {
+        "procedure_id": "courier-damaged-package:CD-02",
+        "title": "توثيق التلف",
+        "locator": {
+          "section": "٢. توثيق التلف"
+        },
+        "clause_ids": [
+          "CD-02"
+        ]
+      },
+      {
+        "procedure_id": "courier-damaged-package:CD-03",
+        "title": "متابعة التوصيل",
+        "locator": {
+          "section": "٣. متابعة التوصيل"
+        },
+        "clause_ids": [
+          "CD-03"
+        ]
+      },
+      {
+        "procedure_id": "courier-damaged-package:CD-10",
+        "title": "تمييز الكيس المتضرر",
+        "locator": {
+          "section": "٤. تمييز الكيس المتضرر"
+        },
+        "clause_ids": [
+          "CD-10"
+        ]
+      },
+      {
+        "procedure_id": "courier-damaged-package:CD-11",
+        "title": "تعذّر قراءة الملصق",
+        "locator": {
+          "section": "٥. تعذّر قراءة الملصق"
+        },
+        "clause_ids": [
+          "CD-11"
+        ]
+      },
+      {
+        "procedure_id": "courier-damaged-package:CD-12",
+        "title": "حماية بيانات العميل في الصورة",
+        "locator": {
+          "section": "٦. حماية بيانات العميل في الصورة"
+        },
+        "clause_ids": [
+          "CD-12"
+        ]
+      },
+      {
+        "procedure_id": "courier-damaged-package:CD-13",
+        "title": "طلب العميل فتح الطرد",
+        "locator": {
+          "section": "٧. طلب العميل فتح الطرد"
+        },
+        "clause_ids": [
+          "CD-13"
+        ]
+      },
+      {
+        "procedure_id": "courier-damaged-package:CD-14",
+        "title": "الزجاج البارز من الغلاف",
+        "locator": {
+          "section": "٨. الزجاج البارز من الغلاف"
+        },
+        "clause_ids": [
+          "CD-14"
+        ]
+      },
+      {
+        "procedure_id": "courier-damaged-package:CD-15",
+        "title": "تسليم المرتجع",
+        "locator": {
+          "section": "٩. تسليم المرتجع"
+        },
+        "clause_ids": [
+          "CD-15"
+        ]
+      },
+      {
+        "procedure_id": "courier-damaged-package:CD-16",
+        "title": "تلف يُكتشف بعد التسليم",
+        "locator": {
+          "section": "١٠. تلف يُكتشف بعد التسليم"
+        },
+        "clause_ids": [
+          "CD-16"
+        ]
+      }
+    ],
+    "clauses": [
+      {
+        "clause_id": "CD-01",
+        "quote": "إذا تسرّب سائل من الطرد أو انشق الغلاف الخارجي، أوقف التسليم واحفظ الطرد في حقيبة التوصيل بعيداً عن الطلبات الأخرى.",
+        "locator": {
+          "section": "١. إيقاف التسليم"
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "leak or torn outer wrapping",
+          "action": "stop delivery and isolate parcel"
+        }
+      },
+      {
+        "clause_id": "CD-02",
+        "quote": "أرسل إلى مسؤول التوزيع صورة واحدة للغلاف الخارجي مع رقم الطلب، مثل TF-729، خلال ٤ دقائق من ملاحظة التلف. لا تفتح الطرد للتصوير.",
+        "locator": {
+          "section": "٢. توثيق التلف"
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "action": "send one external photo and order ID to dispatch",
+          "threshold": {
+            "value": 4,
+            "unit": "minute",
+            "operator": "<="
+          },
+          "negation": "do not open parcel"
+        }
+      },
+      {
+        "clause_id": "CD-03",
+        "quote": "إذا اقتصر الأثر على خدش جاف وبقي ختم الإغلاق سليماً، سجّل ملاحظة في التطبيق وتابع التوصيل.",
+        "locator": {
+          "section": "٣. متابعة التوصيل"
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "action": "record a note and continue delivery",
+          "exceptions": [
+            "dry scuff only and intact seal"
+          ]
+        }
+      },
+      {
+        "clause_id": "CD-10",
+        "quote": "إذا كان الطلب موزعاً على أكثر من كيس، سجّل رمز الكيس المتضرر في البلاغ وبيّن أي الأكياس بقي سليماً.",
+        "locator": {
+          "section": "٤. تمييز الكيس المتضرر"
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا كان الطلب موزعاً على أكثر من كيس",
+          "action": "سجّل رمز الكيس المتضرر في البلاغ وبيّن أي الأكياس بقي سليماً.",
+          "threshold": {
+            "value": 2,
+            "unit": "bag",
+            "operator": ">=",
+            "source_value": "أكثر من كيس"
+          }
+        }
+      },
+      {
+        "clause_id": "CD-11",
+        "quote": "إذا صار الملصق غير مقروء بسبب البلل، استخدم رقم الطلب من التطبيق واذكر في البلاغ أن رمز الكيس غير ظاهر.",
+        "locator": {
+          "section": "٥. تعذّر قراءة الملصق"
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا صار الملصق غير مقروء بسبب البلل",
+          "action": "استخدم رقم الطلب من التطبيق واذكر في البلاغ أن رمز الكيس غير ظاهر."
+        }
+      },
+      {
+        "clause_id": "CD-12",
+        "quote": "إذا ظهر اسم العميل أو عنوانه في الصورة، أعد تصوير موضع التلف من زاوية تخفي تلك البيانات.",
+        "locator": {
+          "section": "٦. حماية بيانات العميل في الصورة"
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا ظهر اسم العميل أو عنوانه في الصورة",
+          "action": "أعد تصوير موضع التلف من زاوية تخفي تلك البيانات."
+        }
+      },
+      {
+        "clause_id": "CD-13",
+        "quote": "إذا طلب العميل فتح طرد متضرر قبل التسليم، أبقه مغلقاً واطلب من مسؤول التوزيع تحديد الخطوة التالية.",
+        "locator": {
+          "section": "٧. طلب العميل فتح الطرد"
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا طلب العميل فتح طرد متضرر قبل التسليم",
+          "action": "أبقه مغلقاً واطلب من مسؤول التوزيع تحديد الخطوة التالية."
+        }
+      },
+      {
+        "clause_id": "CD-14",
+        "quote": "إذا برز زجاج مكسور من الغلاف، لا تلمسه. أبعد الآخرين عنه واتصل بمسؤول التوزيع ليحدّد طريقة الاستلام.",
+        "locator": {
+          "section": "٨. الزجاج البارز من الغلاف"
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا برز زجاج مكسور من الغلاف",
+          "action": "لا تلمسه. أبعد الآخرين عنه واتصل بمسؤول التوزيع ليحدّد طريقة الاستلام.",
+          "negation": "لا تلمسه",
+          "exception_to": "CD-01"
+        }
+      },
+      {
+        "clause_id": "CD-15",
+        "quote": "إذا وجّهك مسؤول التوزيع لإرجاع الطرد، سلّمه لمشرف الفرع وسجّل رقم إيصال المرتجع في البلاغ.",
+        "locator": {
+          "section": "٩. تسليم المرتجع"
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا وجّهك مسؤول التوزيع لإرجاع الطرد",
+          "action": "سلّمه لمشرف الفرع وسجّل رقم إيصال المرتجع في البلاغ."
+        }
+      },
+      {
+        "clause_id": "CD-16",
+        "quote": "إذا أبلغك العميل بتلف بعد تسجيل التسليم، حوّل البلاغ إلى مسؤول التوزيع وأبقِ حالة التسليم كما هي.",
+        "locator": {
+          "section": "١٠. تلف يُكتشف بعد التسليم"
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا أبلغك العميل بتلف بعد تسجيل التسليم",
+          "action": "حوّل البلاغ إلى مسؤول التوزيع وأبقِ حالة التسليم كما هي."
+        }
+      }
+    ]
+  },
+  {
+    "document_id": "employee-complaint-escalation-v1",
+    "title": "Escalating customer complaints",
+    "scope_quote": "Use this memo when a customer reports a problem with conduct during delivery, such as case SD-731.",
+    "procedures": [
+      {
+        "procedure_id": "employee-complaint-escalation:EG-01",
+        "title": "Record the report",
+        "locator": {
+          "section": "1. Record the report",
+          "page": 1
+        },
+        "clause_ids": [
+          "EG-01"
+        ]
+      },
+      {
+        "procedure_id": "employee-complaint-escalation:EG-02",
+        "title": "Route a reported threat",
+        "locator": {
+          "section": "2. Route a reported threat",
+          "page": 1
+        },
+        "clause_ids": [
+          "EG-02"
+        ]
+      },
+      {
+        "procedure_id": "employee-complaint-escalation:EG-03",
+        "title": "Route a courtesy complaint",
+        "locator": {
+          "section": "3. Route a courtesy complaint",
+          "page": 1
+        },
+        "clause_ids": [
+          "EG-03"
+        ]
+      },
+      {
+        "procedure_id": "employee-complaint-escalation:EG-10",
+        "title": "Handle an unnamed report",
+        "locator": {
+          "section": "4. Handle an unnamed report",
+          "page": 1
+        },
+        "clause_ids": [
+          "EG-10"
+        ]
+      },
+      {
+        "procedure_id": "employee-complaint-escalation:EG-11",
+        "title": "Merge a repeat contact",
+        "locator": {
+          "section": "5. Merge a repeat contact",
+          "page": 1
+        },
+        "clause_ids": [
+          "EG-11"
+        ]
+      },
+      {
+        "procedure_id": "employee-complaint-escalation:EG-12",
+        "title": "Save supporting evidence",
+        "locator": {
+          "section": "6. Save supporting evidence",
+          "page": 1
+        },
+        "clause_ids": [
+          "EG-12"
+        ]
+      },
+      {
+        "procedure_id": "employee-complaint-escalation:EG-13",
+        "title": "Remove unrelated contact details",
+        "locator": {
+          "section": "7. Remove unrelated contact details",
+          "page": 1
+        },
+        "clause_ids": [
+          "EG-13"
+        ]
+      },
+      {
+        "procedure_id": "employee-complaint-escalation:EG-14",
+        "title": "Contact the backup supervisor",
+        "locator": {
+          "section": "8. Contact the backup supervisor",
+          "page": 1
+        },
+        "clause_ids": [
+          "EG-14"
+        ]
+      },
+      {
+        "procedure_id": "employee-complaint-escalation:EG-15",
+        "title": "Log a customer callback",
+        "locator": {
+          "section": "9. Log a customer callback",
+          "page": 1
+        },
+        "clause_ids": [
+          "EG-15"
+        ]
+      },
+      {
+        "procedure_id": "employee-complaint-escalation:EG-16",
+        "title": "Close after review",
+        "locator": {
+          "section": "10. Close after review",
+          "page": 1
+        },
+        "clause_ids": [
+          "EG-16"
+        ]
+      }
+    ],
+    "clauses": [
+      {
+        "clause_id": "EG-01",
+        "quote": "Open a Conduct Complaint case. Record the order ID and the customer's account of what happened.",
+        "locator": {
+          "section": "1. Record the report",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "action": "open case and record order ID and customer's account"
+        }
+      },
+      {
+        "clause_id": "EG-02",
+        "quote": "If the customer reports a threat, mark the case Urgent and route it to the duty supervisor within 5 minutes of opening it.",
+        "locator": {
+          "section": "2. Route a reported threat",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "action": "mark Urgent and route to duty supervisor",
+          "threshold": {
+            "value": 5,
+            "unit": "minute",
+            "operator": "<="
+          }
+        }
+      },
+      {
+        "clause_id": "EG-03",
+        "quote": "For a complaint about tone with no reported threat, assign the case to the service quality queue. Do not contact the courier from the case.",
+        "locator": {
+          "section": "3. Route a courtesy complaint",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "tone complaint without reported threat",
+          "action": "route to service quality",
+          "negation": "do not contact courier from case"
+        }
+      },
+      {
+        "clause_id": "EG-10",
+        "quote": "If the customer declines to give a name, file the complaint under the order ID and record that the name was withheld.",
+        "locator": {
+          "section": "4. Handle an unnamed report",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If the customer declines to give a name",
+          "action": "file the complaint under the order ID and record that the name was withheld."
+        }
+      },
+      {
+        "clause_id": "EG-11",
+        "quote": "If the customer calls again about the same incident, add the update to the original case and preserve its opening time.",
+        "locator": {
+          "section": "5. Merge a repeat contact",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If the customer calls again about the same incident",
+          "action": "add the update to the original case and preserve its opening time."
+        }
+      },
+      {
+        "clause_id": "EG-12",
+        "quote": "If the customer offers a screenshot, send the case upload link and attach the image through the complaint portal.",
+        "locator": {
+          "section": "6. Save supporting evidence",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If the customer offers a screenshot",
+          "action": "send the case upload link and attach the image through the complaint portal."
+        }
+      },
+      {
+        "clause_id": "EG-13",
+        "quote": "If a screenshot shows an unrelated person's phone number, mask that number in the review copy before sharing it with the queue.",
+        "locator": {
+          "section": "7. Remove unrelated contact details",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If a screenshot shows an unrelated person's phone number",
+          "action": "mask that number in the review copy before sharing it with the queue."
+        }
+      },
+      {
+        "clause_id": "EG-14",
+        "quote": "If an Urgent case is routed and the duty supervisor is unavailable, notify the on-call backup using the same case ID.",
+        "locator": {
+          "section": "8. Contact the backup supervisor",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If an Urgent case is routed and the duty supervisor is unavailable",
+          "action": "notify the on-call backup using the same case ID."
+        }
+      },
+      {
+        "clause_id": "EG-15",
+        "quote": "If the customer asks to be called back, record their preferred time and assign the callback to the case owner.",
+        "locator": {
+          "section": "9. Log a customer callback",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If the customer asks to be called back",
+          "action": "record their preferred time and assign the callback to the case owner."
+        }
+      },
+      {
+        "clause_id": "EG-16",
+        "quote": "After the assigned queue records its decision, log the outcome and send the approved response before closing the complaint.",
+        "locator": {
+          "section": "10. Close after review",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "After the assigned queue records its decision",
+          "action": "log the outcome and send the approved response before closing the complaint."
+        }
+      }
+    ]
+  },
+  {
+    "document_id": "partner-counter-verification-v1",
+    "title": "التحقق عند نقطة الاستلام",
+    "scope_quote": "يطبّق موظف نقطة الاستلام الخطوات التالية عند تسليم طلب مثل ZN-803 إلى المندوب.",
+    "procedures": [
+      {
+        "procedure_id": "partner-counter-verification:PV-01",
+        "title": "فحص رمز الاستلام",
+        "locator": {
+          "section": "١. فحص رمز الاستلام",
+          "table_row": 2
+        },
+        "clause_ids": [
+          "PV-01"
+        ]
+      },
+      {
+        "procedure_id": "partner-counter-verification:PV-02",
+        "title": "التعامل مع رمز غير مطابق",
+        "locator": {
+          "section": "٢. التعامل مع رمز غير مطابق",
+          "table_row": 3
+        },
+        "clause_ids": [
+          "PV-02"
+        ]
+      },
+      {
+        "procedure_id": "partner-counter-verification:PV-03",
+        "title": "انقطاع شاشة الفرع",
+        "locator": {
+          "section": "٣. انقطاع شاشة الفرع",
+          "table_row": 4
+        },
+        "clause_ids": [
+          "PV-03"
+        ]
+      },
+      {
+        "procedure_id": "partner-counter-verification:PV-10",
+        "title": "مطابقة عدد الأكياس",
+        "locator": {
+          "section": "٤. مطابقة عدد الأكياس",
+          "table_row": 5
+        },
+        "clause_ids": [
+          "PV-10"
+        ]
+      },
+      {
+        "procedure_id": "partner-counter-verification:PV-11",
+        "title": "التحقق من الفرع",
+        "locator": {
+          "section": "٥. التحقق من الفرع",
+          "table_row": 6
+        },
+        "clause_ids": [
+          "PV-11"
+        ]
+      },
+      {
+        "procedure_id": "partner-counter-verification:PV-12",
+        "title": "تمييز طلبين برمز واحد",
+        "locator": {
+          "section": "٦. تمييز طلبين برمز واحد",
+          "table_row": 7
+        },
+        "clause_ids": [
+          "PV-12"
+        ]
+      },
+      {
+        "procedure_id": "partner-counter-verification:PV-13",
+        "title": "تحديث تعيين المندوب",
+        "locator": {
+          "section": "٧. تحديث تعيين المندوب",
+          "table_row": 8
+        },
+        "clause_ids": [
+          "PV-13"
+        ]
+      },
+      {
+        "procedure_id": "partner-counter-verification:PV-14",
+        "title": "تنظيم الطلب عند الانتظار",
+        "locator": {
+          "section": "٨. تنظيم الطلب عند الانتظار",
+          "table_row": 9
+        },
+        "clause_ids": [
+          "PV-14"
+        ]
+      },
+      {
+        "procedure_id": "partner-counter-verification:PV-15",
+        "title": "توثيق التسليم الفعلي",
+        "locator": {
+          "section": "٩. توثيق التسليم الفعلي",
+          "table_row": 10
+        },
+        "clause_ids": [
+          "PV-15"
+        ]
+      },
+      {
+        "procedure_id": "partner-counter-verification:PV-16",
+        "title": "تصحيح حالة سُجّلت مبكراً",
+        "locator": {
+          "section": "١٠. تصحيح حالة سُجّلت مبكراً",
+          "table_row": 11
+        },
+        "clause_ids": [
+          "PV-16"
+        ]
+      }
+    ],
+    "clauses": [
+      {
+        "clause_id": "PV-01",
+        "quote": "اطلب من المندوب عرض رمز الاستلام المكوّن من ٤ أرقام في التطبيق. طابق الرمز مع شاشة الفرع قبل تسليم الأكياس.",
+        "locator": {
+          "section": "١. فحص رمز الاستلام",
+          "table_row": 2
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "action": "match app pickup code to branch screen",
+          "threshold": {
+            "value": 4,
+            "unit": "digit",
+            "operator": "="
+          }
+        }
+      },
+      {
+        "clause_id": "PV-02",
+        "quote": "إذا لم يتطابق رمز الاستلام، أبقِ الأكياس خلف نقطة الاستلام وأبلغ مشرف الفرع. لا تسلّم الطلب بناءً على اسم العميل وحده.",
+        "locator": {
+          "section": "٢. التعامل مع رمز غير مطابق",
+          "table_row": 3
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "action": "hold bags and inform branch supervisor",
+          "negation": "do not release based on customer name alone"
+        }
+      },
+      {
+        "clause_id": "PV-03",
+        "quote": "إذا تعطّلت شاشة الفرع، يجوز التسليم بعد أن يطابق المشرف الرمز في سجل الاستلام الاحتياطي ويسجّل وقت التسليم.",
+        "locator": {
+          "section": "٣. انقطاع شاشة الفرع",
+          "table_row": 4
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "actor": "branch supervisor",
+          "exceptions": [
+            "screen unavailable and supervisor checks backup record and logs handover time"
+          ]
+        }
+      },
+      {
+        "clause_id": "PV-10",
+        "quote": "إذا ظهر أكثر من كيس على طلب واحد، طابق عدد الأكياس المعروضة مع سجل التجهيز قبل بدء التسليم.",
+        "locator": {
+          "section": "٤. مطابقة عدد الأكياس",
+          "table_row": 5
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "إذا ظهر أكثر من كيس على طلب واحد",
+          "action": "طابق عدد الأكياس المعروضة مع سجل التجهيز قبل بدء التسليم.",
+          "threshold": {
+            "value": 2,
+            "unit": "bag",
+            "operator": ">=",
+            "source_value": "أكثر من كيس"
+          }
+        }
+      },
+      {
+        "clause_id": "PV-11",
+        "quote": "إذا عرض المندوب طلباً لفرع آخر، أدلّه على اسم الفرع الظاهر في التطبيق وأبقِ الأكياس في مكانها.",
+        "locator": {
+          "section": "٥. التحقق من الفرع",
+          "table_row": 6
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "إذا عرض المندوب طلباً لفرع آخر",
+          "action": "أدلّه على اسم الفرع الظاهر في التطبيق وأبقِ الأكياس في مكانها."
+        }
+      },
+      {
+        "clause_id": "PV-12",
+        "quote": "إذا ظهر الرمز نفسه على طلبين في الشاشة، أوقف تسليمهما واطلب من المشرف المطابقة برقم الطلب وتعيين المندوب.",
+        "locator": {
+          "section": "٦. تمييز طلبين برمز واحد",
+          "table_row": 7
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "إذا ظهر الرمز نفسه على طلبين في الشاشة",
+          "action": "أوقف تسليمهما واطلب من المشرف المطابقة برقم الطلب وتعيين المندوب.",
+          "threshold": {
+            "value": 2,
+            "unit": "order",
+            "operator": ">=",
+            "source_value": "طلبين"
+          }
+        }
+      },
+      {
+        "clause_id": "PV-13",
+        "quote": "إذا تغيّر المندوب المعيّن قبل الاستلام، حدّث العرض في شاشة الفرع واطلب الرمز من المندوب المعيّن حالياً.",
+        "locator": {
+          "section": "٧. تحديث تعيين المندوب",
+          "table_row": 8
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "إذا تغيّر المندوب المعيّن قبل الاستلام",
+          "action": "حدّث العرض في شاشة الفرع واطلب الرمز من المندوب المعيّن حالياً."
+        }
+      },
+      {
+        "clause_id": "PV-14",
+        "quote": "إذا لم يكن الطلب المعروض جاهزاً، اطلب من المندوب الانتظار خارج المسار وسجّل رقم الطلب في قائمة الانتظار.",
+        "locator": {
+          "section": "٨. تنظيم الطلب عند الانتظار",
+          "table_row": 9
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "إذا لم يكن الطلب المعروض جاهزاً",
+          "action": "اطلب من المندوب الانتظار خارج المسار وسجّل رقم الطلب في قائمة الانتظار."
+        }
+      },
+      {
+        "clause_id": "PV-15",
+        "quote": "بعد أن يتسلم المندوب جميع الأكياس المطابقة، حدّث حالة الطلب إلى «تم الاستلام» وسجّل وقت خروجه من النقطة.",
+        "locator": {
+          "section": "٩. توثيق التسليم الفعلي",
+          "table_row": 10
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "بعد أن يتسلم المندوب جميع الأكياس المطابقة",
+          "action": "حدّث حالة الطلب إلى «تم الاستلام» وسجّل وقت خروجه من النقطة."
+        }
+      },
+      {
+        "clause_id": "PV-16",
+        "quote": "إذا ظهرت حالة «تم الاستلام» والأكياس ما زالت خلف النقطة، أبلغ المشرف ليصحح الحالة قبل أي محاولة تسليم.",
+        "locator": {
+          "section": "١٠. تصحيح حالة سُجّلت مبكراً",
+          "table_row": 11
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "إذا ظهرت حالة «تم الاستلام» والأكياس ما زالت خلف النقطة",
+          "action": "أبلغ المشرف ليصحح الحالة قبل أي محاولة تسليم."
+        }
+      }
+    ]
+  }
+]

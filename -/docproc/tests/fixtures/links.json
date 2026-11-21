@@ -1,0 +1,33 @@
+{
+  "_comment": "Keys are stable IDs or '@<version_id>#<clause_number>' selectors resolved at compare time.",
+  "@v1#1.1": {
+    "lesson_ids": [
+      "lesson-leave-101"
+    ],
+    "badge_ids": [
+      "badge-hr-basics"
+    ]
+  },
+  "@v1#1.2": {
+    "lesson_ids": [
+      "lesson-expenses-201"
+    ],
+    "badge_ids": [
+      "badge-finance"
+    ]
+  },
+  "@v1#1.3": {
+    "lesson_ids": [
+      "lesson-partner-privacy"
+    ],
+    "badge_ids": []
+  },
+  "@v1#1.4": {
+    "lesson_ids": [
+      "lesson-remote-work"
+    ],
+    "badge_ids": [
+      "badge-remote"
+    ]
+  }
+}

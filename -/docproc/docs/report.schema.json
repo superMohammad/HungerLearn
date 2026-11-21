@@ -1,0 +1,508 @@
+{
+  "$defs": {
+    "Audience": {
+      "enum": [
+        "owner",
+        "employee",
+        "partner",
+        "unspecified"
+      ],
+      "title": "Audience",
+      "type": "string"
+    },
+    "ClauseChange": {
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/Status"
+        },
+        "stable_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Null only for needs_review when identity is unclear",
+          "title": "Stable Id"
+        },
+        "old": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ClauseSide"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "new": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ClauseSide"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "affected_audiences": {
+          "items": {
+            "$ref": "#/$defs/Audience"
+          },
+          "title": "Affected Audiences",
+          "type": "array"
+        },
+        "change_reasons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Change Reasons",
+          "type": "array"
+        },
+        "review_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Review Reason"
+        },
+        "candidate_stable_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Candidate Stable Ids",
+          "type": "array"
+        },
+        "cosine": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cosine"
+        },
+        "lexical": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lexical"
+        },
+        "lesson_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Lesson Ids",
+          "type": "array"
+        },
+        "badge_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Badge Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "ClauseChange",
+      "type": "object"
+    },
+    "ClauseSide": {
+      "properties": {
+        "record_id": {
+          "title": "Record Id",
+          "type": "string"
+        },
+        "quote": {
+          "title": "Quote",
+          "type": "string"
+        },
+        "statement": {
+          "title": "Statement",
+          "type": "string"
+        },
+        "steps": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Steps",
+          "type": "array"
+        },
+        "audiences": {
+          "items": {
+            "$ref": "#/$defs/Audience"
+          },
+          "title": "Audiences",
+          "type": "array"
+        },
+        "audience_source": {
+          "title": "Audience Source",
+          "type": "string"
+        },
+        "audience_evidence": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Audience Evidence"
+        },
+        "clause_number": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Clause Number"
+        },
+        "heading": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Heading"
+        },
+        "location": {
+          "$ref": "#/$defs/SourceLocation"
+        },
+        "content_hash": {
+          "title": "Content Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "record_id",
+        "quote",
+        "statement",
+        "steps",
+        "audiences",
+        "audience_source",
+        "audience_evidence",
+        "clause_number",
+        "heading",
+        "location",
+        "content_hash"
+      ],
+      "title": "ClauseSide",
+      "type": "object"
+    },
+    "ExtractionIssue": {
+      "properties": {
+        "kind": {
+          "enum": [
+            "page_failed",
+            "ocr_failed",
+            "invalid_extraction",
+            "quote_not_found",
+            "quote_fuzzy_matched",
+            "audience_evidence_missing",
+            "llm_error",
+            "duplicate_hash",
+            "reading_order_repaired"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "detail": {
+          "title": "Detail",
+          "type": "string"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page"
+        },
+        "section_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Section Id"
+        },
+        "blocking": {
+          "default": true,
+          "description": "True if text may be missing (comparison incomplete)",
+          "title": "Blocking",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "kind",
+        "detail"
+      ],
+      "title": "ExtractionIssue",
+      "type": "object"
+    },
+    "RegenerationItem": {
+      "properties": {
+        "stable_id": {
+          "title": "Stable Id",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/Status"
+        },
+        "affected_audiences": {
+          "items": {
+            "$ref": "#/$defs/Audience"
+          },
+          "title": "Affected Audiences",
+          "type": "array"
+        },
+        "lesson_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Lesson Ids",
+          "type": "array"
+        },
+        "badge_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Badge Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "stable_id",
+        "status",
+        "affected_audiences",
+        "lesson_ids",
+        "badge_ids"
+      ],
+      "title": "RegenerationItem",
+      "type": "object"
+    },
+    "SourceLocation": {
+      "description": "Where a clause came from. Never part of the content hash.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "pdf_page",
+            "docx",
+            "image"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1-based PDF page number",
+          "title": "Page"
+        },
+        "image_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Image Name"
+        },
+        "image_index": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Image Index"
+        },
+        "block_index": {
+          "description": "Position of the first source block in the document",
+          "title": "Block Index",
+          "type": "integer"
+        },
+        "heading_path": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Heading Path",
+          "type": "array"
+        },
+        "text_source": {
+          "default": "text_layer",
+          "enum": [
+            "text_layer",
+            "docx",
+            "ocr"
+          ],
+          "title": "Text Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "block_index"
+      ],
+      "title": "SourceLocation",
+      "type": "object"
+    },
+    "Status": {
+      "enum": [
+        "unchanged",
+        "moved",
+        "changed",
+        "added",
+        "removed",
+        "needs_review"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "contract_version": {
+      "default": "1.0",
+      "title": "Contract Version",
+      "type": "string"
+    },
+    "document_id": {
+      "title": "Document Id",
+      "type": "string"
+    },
+    "old_version_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Old Version Id"
+    },
+    "new_version_id": {
+      "title": "New Version Id",
+      "type": "string"
+    },
+    "complete": {
+      "title": "Complete",
+      "type": "boolean"
+    },
+    "incomplete_reasons": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Incomplete Reasons",
+      "type": "array"
+    },
+    "embedding_model": {
+      "title": "Embedding Model",
+      "type": "string"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "title": "Generated At",
+      "type": "string"
+    },
+    "summary": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "title": "Summary",
+      "type": "object"
+    },
+    "clauses": {
+      "items": {
+        "$ref": "#/$defs/ClauseChange"
+      },
+      "title": "Clauses",
+      "type": "array"
+    },
+    "lesson_regeneration": {
+      "description": "changed/added/removed only; unchanged and moved never appear here",
+      "items": {
+        "$ref": "#/$defs/RegenerationItem"
+      },
+      "title": "Lesson Regeneration",
+      "type": "array"
+    },
+    "needs_review": {
+      "items": {
+        "$ref": "#/$defs/ClauseChange"
+      },
+      "title": "Needs Review",
+      "type": "array"
+    },
+    "issues": {
+      "items": {
+        "$ref": "#/$defs/ExtractionIssue"
+      },
+      "title": "Issues",
+      "type": "array"
+    }
+  },
+  "required": [
+    "document_id",
+    "old_version_id",
+    "new_version_id",
+    "complete",
+    "embedding_model",
+    "summary",
+    "clauses",
+    "lesson_regeneration",
+    "needs_review",
+    "issues"
+  ],
+  "title": "ComparisonReport",
+  "type": "object"
+}

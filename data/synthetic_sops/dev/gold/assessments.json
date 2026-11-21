@@ -1,0 +1,118 @@
+[
+  {
+    "case_id": "A-C1",
+    "document_id": "courier-pickup-wait-v2",
+    "role": "courier",
+    "language": "ar",
+    "scenario": "سجّلت وصولك إلى بوابة التين قبل 10 دقائق. الطلب TF-418 لا يزال قيد التجهيز ونقطة الاستلام مفتوحة. ما الخطوة الآن؟",
+    "correct_action": "أرسل بلاغ «تأخر الاستلام» إلى مسؤول التوزيع.",
+    "explanation": "بلغ انتظار التجهيز المهلة المحددة في الإصدار الثاني.",
+    "supporting_clause_ids": [
+      "CW-02"
+    ],
+    "wrong_answer": {
+      "text": "انتظر حتى تمر ١٥ دقيقة.",
+      "expected_route": "remedial_practice",
+      "practice_items": [
+        "training-cw-02"
+      ]
+    }
+  },
+  {
+    "case_id": "A-C2",
+    "document_id": "courier-failed-handoff-v1",
+    "role": "courier",
+    "language": "en",
+    "scenario": "You called and messaged at the delivery address. Six minutes have elapsed since the message, the customer is unreachable, and there is no Leave at Door authorization. What do you do?",
+    "correct_action": "Open a Failed Handoff ticket with Dispatch and leave the delivery status unchanged.",
+    "explanation": "The six-minute contact timer has elapsed and the customer did not authorize a doorstep drop.",
+    "supporting_clause_ids": [
+      "CH-02",
+      "CH-03"
+    ],
+    "wrong_answer": {
+      "text": "Leave the order at the door and mark it delivered.",
+      "expected_route": "remedial_practice",
+      "practice_items": [
+        "training-ch-02"
+      ]
+    }
+  },
+  {
+    "case_id": "A-E1",
+    "document_id": "employee-delayed-order-v2",
+    "role": "employee",
+    "language": "en",
+    "scenario": "Case SD-286 has been open for eight minutes with no tracking refresh. Who should act next?",
+    "correct_action": "Route the case to the duty lead, who pages the dispatch desk.",
+    "explanation": "Version 2 assigns paging to the duty lead after the eight-minute trigger.",
+    "supporting_clause_ids": [
+      "ED-02"
+    ],
+    "wrong_answer": {
+      "text": "Page the dispatch desk yourself.",
+      "expected_route": "remedial_practice",
+      "practice_items": [
+        "training-ed-02"
+      ]
+    }
+  },
+  {
+    "case_id": "A-E2",
+    "document_id": "employee-duplicate-charge-v1",
+    "role": "employee",
+    "language": "ar",
+    "scenario": "في الطلب SD-512، ظهرت عملية مكتملة وأخرى معلّقة بالمبلغ والعملة نفسيهما. هل تطلب الاسترداد الآن؟",
+    "correct_action": "افتح متابعة لمدة ٢٤ ساعة واترك العملية المعلّقة دون طلب استرداد.",
+    "explanation": "وجود عملية معلّقة يستدعي المتابعة. تُرفع للمراجعة حالة الخصمين المكتملين.",
+    "supporting_clause_ids": [
+      "EC-02",
+      "EC-03"
+    ],
+    "wrong_answer": {
+      "text": "اطلب استرداد العملية المعلّقة فوراً.",
+      "expected_route": "remedial_practice",
+      "practice_items": [
+        "training-ec-02"
+      ]
+    }
+  },
+  {
+    "case_id": "A-P1",
+    "document_id": "partner-packing-sealing-v2",
+    "role": "partner",
+    "language": "ar",
+    "scenario": "كيس ورقي في الطلب ZN-358 لا يقبل الختم. كيف تجهزه للتسليم؟",
+    "correct_action": "ضعه داخل كيس خارجي وأغلق الكيس الخارجي بالختم.",
+    "explanation": "الإصدار الثاني يحدد الكيس الخارجي لهذا النوع من الأكياس الورقية.",
+    "supporting_clause_ids": [
+      "PP-02"
+    ],
+    "wrong_answer": {
+      "text": "استخدم شريط الإغلاق عند طاولة التعبئة.",
+      "expected_route": "remedial_practice",
+      "practice_items": [
+        "training-pp-02"
+      ]
+    }
+  },
+  {
+    "case_id": "A-P2",
+    "document_id": "partner-item-substitution-v1",
+    "role": "partner",
+    "language": "en",
+    "scenario": "An item is unavailable. The customer allows substitutions and a cheaper replacement is available, but the customer has yet to approve it. How do you proceed?",
+    "correct_action": "Send that option through the order screen and wait for approval before packing it.",
+    "explanation": "The price qualifies and the customer's in-app approval is required before packing.",
+    "supporting_clause_ids": [
+      "PS-02"
+    ],
+    "wrong_answer": {
+      "text": "Pack it immediately because it costs less.",
+      "expected_route": "remedial_practice",
+      "practice_items": [
+        "training-ps-02"
+      ]
+    }
+  }
+]

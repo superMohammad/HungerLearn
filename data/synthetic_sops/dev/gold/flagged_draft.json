@@ -1,0 +1,16 @@
+{
+  "draft_id": "draft-ed-002-unapproved",
+  "state": "awaiting_trainer_approval",
+  "role": "employee",
+  "language": "en",
+  "claim": "If tracking has not refreshed eight minutes after the case opens, the support agent can issue a delivery-fee refund without review.",
+  "citation": {
+    "document_id": "employee-delayed-order-v2",
+    "clause_id": "ED-02",
+    "locator": {
+      "section": "2. Escalate a stalled status"
+    }
+  },
+  "expected_decision": "block_publication",
+  "reason": "The clause assigns escalation to the duty lead and gives no authority to issue a refund."
+}

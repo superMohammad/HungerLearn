@@ -1,0 +1,227 @@
+[
+  {
+    "query_id": "held_out-courier-01",
+    "query_language": "en",
+    "query": "What do I send Dispatch if a package leaks after pickup, how soon, and may I open it for the photo?",
+    "scope": {
+      "role": "courier",
+      "organization": "MadarFig Dispatch",
+      "document_family": "courier-damaged-package",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "courier-damaged-package-v1",
+        "clause_id": "CD-02"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "courier-damaged-package-v1",
+        "clause_id": "CD-01",
+        "reason": "isolation step does not specify photo evidence or deadline"
+      }
+    ],
+    "cross_language": true
+  },
+  {
+    "query_id": "held_out-courier-02",
+    "query_language": "ar",
+    "query": "ما التصرف إذا كان الأثر خدشاً جافاً فقط والختم سليم؟",
+    "scope": {
+      "role": "courier",
+      "organization": "MadarFig Dispatch",
+      "document_family": "courier-damaged-package",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "courier-damaged-package-v1",
+        "clause_id": "CD-03"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "courier-damaged-package-v1",
+        "clause_id": "CD-01",
+        "reason": "leaks and torn wrapping follow a different rule"
+      }
+    ],
+    "cross_language": false
+  },
+  {
+    "query_id": "held_out-employee-01",
+    "query_language": "ar",
+    "query": "أبلغ عميل عن تهديد أثناء التوصيل. إلى من أرفع الحالة ومتى؟",
+    "scope": {
+      "role": "employee",
+      "organization": "SidrDesk Operations",
+      "document_family": "employee-complaint-escalation",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "employee-complaint-escalation-v1",
+        "clause_id": "EG-02"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "employee-complaint-escalation-v1",
+        "clause_id": "EG-03",
+        "reason": "tone complaint without a threat goes to a different queue"
+      }
+    ],
+    "cross_language": true
+  },
+  {
+    "query_id": "held_out-employee-02",
+    "query_language": "en",
+    "query": "A customer reports a rude tone and mentions no threat. Where should I send the complaint?",
+    "scope": {
+      "role": "employee",
+      "organization": "SidrDesk Operations",
+      "document_family": "employee-complaint-escalation",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "employee-complaint-escalation-v1",
+        "clause_id": "EG-03"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "employee-complaint-escalation-v1",
+        "clause_id": "EG-02",
+        "reason": "urgent supervisor routing requires a reported threat"
+      }
+    ],
+    "cross_language": false
+  },
+  {
+    "query_id": "held_out-partner-01",
+    "query_language": "en",
+    "query": "The branch screen is down. Who can check the backup pickup record, and what must they log before a handover is allowed?",
+    "scope": {
+      "role": "partner",
+      "organization": "Copper Olive Kitchen",
+      "document_family": "partner-counter-verification",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "partner-counter-verification-v1",
+        "clause_id": "PV-03"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "partner-counter-verification-v1",
+        "clause_id": "PV-02",
+        "reason": "code mismatch and screen outage are distinct cases"
+      }
+    ],
+    "cross_language": true
+  },
+  {
+    "query_id": "held_out-partner-02",
+    "query_language": "ar",
+    "query": "الرمز لا يطابق الشاشة والمندوب يعرف اسم العميل. هل أسلمه الأكياس؟",
+    "scope": {
+      "role": "partner",
+      "organization": "Copper Olive Kitchen",
+      "document_family": "partner-counter-verification",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "partner-counter-verification-v1",
+        "clause_id": "PV-02"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "partner-counter-verification-v1",
+        "clause_id": "PV-01",
+        "reason": "standard verification does not cover a mismatch"
+      }
+    ],
+    "cross_language": false
+  },
+  {
+    "query_id": "held_out-courier-03",
+    "query_language": "en",
+    "query": "The leak made the parcel label unreadable. What identifying information can I put in the incident report?",
+    "scope": {
+      "role": "courier",
+      "organization": "MadarFig Dispatch",
+      "document_family": "courier-damaged-package",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "courier-damaged-package-v1",
+        "clause_id": "CD-11"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "courier-damaged-package-v1",
+        "clause_id": "CD-10",
+        "reason": "Identifying a damaged bag by its code assumes the code is readable."
+      }
+    ],
+    "cross_language": true
+  },
+  {
+    "query_id": "held_out-employee-03",
+    "query_language": "ar",
+    "query": "اتصل العميل مرة أخرى عن الواقعة نفسها. أين أسجّل إفادته الجديدة وهل يتغير وقت فتح البلاغ؟",
+    "scope": {
+      "role": "employee",
+      "organization": "SidrDesk Operations",
+      "document_family": "employee-complaint-escalation",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "employee-complaint-escalation-v1",
+        "clause_id": "EG-11"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "employee-complaint-escalation-v1",
+        "clause_id": "EG-01",
+        "reason": "The initial intake rule covers a complaint that has no existing case."
+      }
+    ],
+    "cross_language": true
+  },
+  {
+    "query_id": "held_out-partner-03",
+    "query_language": "en",
+    "query": "Two orders show the same pickup code. What should counter staff do before releasing either one?",
+    "scope": {
+      "role": "partner",
+      "organization": "Copper Olive Kitchen",
+      "document_family": "partner-counter-verification",
+      "version": 1
+    },
+    "expected": [
+      {
+        "document_id": "partner-counter-verification-v1",
+        "clause_id": "PV-12"
+      }
+    ],
+    "wrong_matches": [
+      {
+        "document_id": "partner-counter-verification-v1",
+        "clause_id": "PV-01",
+        "reason": "A normal single-order code match cannot resolve a code collision."
+      }
+    ],
+    "cross_language": true
+  }
+]

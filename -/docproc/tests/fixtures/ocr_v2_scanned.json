@@ -1,0 +1,22 @@
+{
+  "format": "docproc-ocr/1",
+  "engine": "ATH-MaaS/OvisOCR3 (fixture)",
+  "versions": {
+    "v2-scan": {
+      "pages": {
+        "2": {
+          "status": "ok",
+          "text": "Section 2: For Partners / القسم ٢: للشركاء\nThis section applies to all partners. / ينطبق هذا القسم على جميع الشركاء.\n2.1 Partners must keep all customer data confidential / يجب على الشركاء الحفاظ على سرية بيانات العملاء.\n2.2 Complete the information security training every year / إكمال تدريب أمن المعلومات سنويًا:\n- Enrol through the learning portal / التسجيل عبر بوابة التعلم\n- Pass the final quiz / اجتياز الاختبار النهائي"
+        }
+      }
+    },
+    "img-1": {
+      "pages": {
+        "page2_scan.png": {
+          "status": "ok",
+          "text": "Section 2: For Partners / القسم ٢: للشركاء\nThis section applies to all partners. / ينطبق هذا القسم على جميع الشركاء.\n2.1 Partners must keep all customer data confidential / يجب على الشركاء الحفاظ على سرية بيانات العملاء.\n2.2 Complete the information security training every year / إكمال تدريب أمن المعلومات سنويًا:\n- Enrol through the learning portal / التسجيل عبر بوابة التعلم\n- Pass the final quiz / اجتياز الاختبار النهائي"
+        }
+      }
+    }
+  }
+}

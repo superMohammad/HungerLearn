@@ -1,0 +1,40 @@
+{
+  "document_id": "employee-delayed-order-v1-scan",
+  "source_document_id": "employee-delayed-order-v1",
+  "scan_sha256": "c4a52ccc507049a92cc1a48f9883b97e8e56713784ecb27130aa5acb8da8ee47",
+  "pages": [
+    {
+      "page": 1,
+      "lines": [
+        "Delayed order support triage",
+        "Synthetic training data",
+        "SidrDesk Operations | Sidr Square branch | Version 1",
+        "To: Company employee",
+        "Support desk memo. Apply the relevant procedure to late deliveries in the Sidr Square queue, such as SD-286.",
+        "1. Open the delay case",
+        "When the displayed delivery estimate is at least 12 minutes past, open a Delay case and record the order ID and last status timestamp.",
+        "2. Escalate a stalled status",
+        "If tracking has not refreshed for 8 minutes after the case opens, the support agent must page the dispatch desk directly.",
+        "3. Message the customer",
+        "Send the customer a status update from the case. Do not promise a new delivery time until Dispatch confirms it.",
+        "4. Reuse an open case",
+        "If the same order already has an open Delay case, add the customer's latest message there and keep its original opening time.",
+        "5. Handle a missing estimate",
+        "If the order timeline shows no delivery estimate, request the last confirmed status from Dispatch and record that the estimate is unavailable.",
+        "6. Transfer a misrouted case",
+        "If the order belongs to another branch queue, transfer the existing case to that queue with the status history attached.",
+        "7. Route a cancellation request",
+        "If the customer asks to cancel a late order, link a Cancellation Request and route it to the cancellations desk.",
+        "8. Track related delays",
+        "If several late orders share one dispatch incident, keep a case for each order and add the shared incident ID to each case.",
+        "9. Handle restored tracking",
+        "If tracking resumes during an open Delay case, record the fresh status and notify the case owner that the stalled-tracking alert can be cleared.",
+        "10. Close a recovered delivery",
+        "When the timeline confirms delivery, send the customer a closure message and record the confirmation time before closing the case.",
+        "11. End-of-shift memo",
+        "Before signing out, copy each open Delay case ID into the shift email to the duty lead."
+      ],
+      "text": "Delayed order support triage\nSynthetic training data\nSidrDesk Operations | Sidr Square branch | Version 1\nTo: Company employee\nSupport desk memo. Apply the relevant procedure to late deliveries in the Sidr Square queue, such as SD-286.\n1. Open the delay case\nWhen the displayed delivery estimate is at least 12 minutes past, open a Delay case and record the order ID and last status timestamp.\n2. Escalate a stalled status\nIf tracking has not refreshed for 8 minutes after the case opens, the support agent must page the dispatch desk directly.\n3. Message the customer\nSend the customer a status update from the case. Do not promise a new delivery time until Dispatch confirms it.\n4. Reuse an open case\nIf the same order already has an open Delay case, add the customer's latest message there and keep its original opening time.\n5. Handle a missing estimate\nIf the order timeline shows no delivery estimate, request the last confirmed status from Dispatch and record that the estimate is unavailable.\n6. Transfer a misrouted case\nIf the order belongs to another branch queue, transfer the existing case to that queue with the status history attached.\n7. Route a cancellation request\nIf the customer asks to cancel a late order, link a Cancellation Request and route it to the cancellations desk.\n8. Track related delays\nIf several late orders share one dispatch incident, keep a case for each order and add the shared incident ID to each case.\n9. Handle restored tracking\nIf tracking resumes during an open Delay case, record the fresh status and notify the case owner that the stalled-tracking alert can be cleared.\n10. Close a recovered delivery\nWhen the timeline confirms delivery, send the customer a closure message and record the confirmation time before closing the case.\n11. End-of-shift memo\nBefore signing out, copy each open Delay case ID into the shift email to the duty lead."
+    }
+  ]
+}

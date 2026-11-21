@@ -1,0 +1,769 @@
+[
+  {
+    "scope": {
+      "role": "courier",
+      "organization": "MadarFig Dispatch",
+      "branch": "Fig Gate",
+      "document_family": "courier-pickup-wait"
+    },
+    "from_document_id": "courier-pickup-wait-v1",
+    "to_document_id": "courier-pickup-wait-v2",
+    "clauses": [
+      {
+        "clause_id": "CW-01",
+        "change": "unchanged",
+        "before": {
+          "section": "١. عند الوصول",
+          "table_row": 2
+        },
+        "after": {
+          "section": "١. عند الوصول",
+          "table_row": 2
+        },
+        "moved": false,
+        "reason": "Rule text and section are unchanged.",
+        "training_item": {
+          "item_id": "training-cw-01",
+          "decision": "remains_valid",
+          "update_citation": false,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-02",
+        "change": "changed",
+        "before": {
+          "section": "٢. تأخر التجهيز",
+          "table_row": 3
+        },
+        "after": {
+          "section": "٢. تأخر التجهيز",
+          "table_row": 3
+        },
+        "moved": false,
+        "reason": "Pickup escalation timer changes from 15 to 10 minutes.",
+        "training_item": {
+          "item_id": "training-cw-02",
+          "decision": "reapprove",
+          "update_citation": true,
+          "assessment_case_ids": [
+            "A-C1"
+          ]
+        }
+      },
+      {
+        "clause_id": "CW-03",
+        "change": "unchanged",
+        "before": {
+          "section": "٣. إغلاق نقطة الاستلام",
+          "table_row": 4
+        },
+        "after": {
+          "section": "٣. إغلاق نقطة الاستلام",
+          "table_row": 4
+        },
+        "moved": false,
+        "reason": "Rule text and section are unchanged.",
+        "training_item": {
+          "item_id": "training-cw-03",
+          "decision": "remains_valid",
+          "update_citation": false,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-04",
+        "change": "unchanged",
+        "before": {
+          "section": "٤. قبل المغادرة",
+          "table_row": 5
+        },
+        "after": {
+          "section": "٤. إنهاء الانتظار"
+        },
+        "moved": true,
+        "reason": "Same departure rule now appears in the End Wait section.",
+        "training_item": {
+          "item_id": "training-cw-04",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-10",
+        "change": "unchanged",
+        "reason": "The procedure and its rule are identical in both versions.",
+        "training_item": {
+          "item_id": "training-cw-10",
+          "decision": "remains_valid",
+          "assessment_case_ids": [],
+          "update_citation": true
+        },
+        "before": {
+          "section": "٥. تعذّر تسجيل الوصول",
+          "table_row": 6
+        },
+        "after": {
+          "section": "٥. تعذّر تسجيل الوصول"
+        },
+        "moved": false
+      },
+      {
+        "clause_id": "CW-11",
+        "change": "unchanged",
+        "reason": "The procedure and its rule are identical in both versions.",
+        "training_item": {
+          "item_id": "training-cw-11",
+          "decision": "remains_valid",
+          "assessment_case_ids": [],
+          "update_citation": true
+        },
+        "before": {
+          "section": "٦. استلام أكثر من طلب",
+          "table_row": 7
+        },
+        "after": {
+          "section": "٦. استلام أكثر من طلب"
+        },
+        "moved": false
+      },
+      {
+        "clause_id": "CW-12",
+        "change": "unchanged",
+        "reason": "The procedure and its rule are identical in both versions.",
+        "training_item": {
+          "item_id": "training-cw-12",
+          "decision": "remains_valid",
+          "assessment_case_ids": [],
+          "update_citation": true
+        },
+        "before": {
+          "section": "٧. الدخول من الباب الصحيح",
+          "table_row": 8
+        },
+        "after": {
+          "section": "٧. الدخول من الباب الصحيح"
+        },
+        "moved": false
+      },
+      {
+        "clause_id": "CW-13",
+        "change": "unchanged",
+        "reason": "The procedure and its rule are identical in both versions.",
+        "training_item": {
+          "item_id": "training-cw-13",
+          "decision": "remains_valid",
+          "assessment_case_ids": [],
+          "update_citation": true
+        },
+        "before": {
+          "section": "٨. طلب معلّم بأنه جاهز",
+          "table_row": 9
+        },
+        "after": {
+          "section": "٨. طلب معلّم بأنه جاهز"
+        },
+        "moved": false
+      },
+      {
+        "clause_id": "CW-14",
+        "change": "unchanged",
+        "reason": "The procedure and its rule are identical in both versions.",
+        "training_item": {
+          "item_id": "training-cw-14",
+          "decision": "remains_valid",
+          "assessment_case_ids": [],
+          "update_citation": true
+        },
+        "before": {
+          "section": "٩. اختلاف ملصق الاستلام",
+          "table_row": 10
+        },
+        "after": {
+          "section": "٩. اختلاف ملصق الاستلام"
+        },
+        "moved": false
+      },
+      {
+        "clause_id": "CW-15",
+        "change": "unchanged",
+        "reason": "The procedure and its rule are identical in both versions.",
+        "training_item": {
+          "item_id": "training-cw-15",
+          "decision": "remains_valid",
+          "assessment_case_ids": [],
+          "update_citation": true
+        },
+        "before": {
+          "section": "١٠. طلب الإلغاء من الفرع",
+          "table_row": 11
+        },
+        "after": {
+          "section": "١٠. طلب الإلغاء من الفرع"
+        },
+        "moved": false
+      },
+      {
+        "clause_id": "CW-16",
+        "change": "unchanged",
+        "reason": "The procedure and its rule are identical in both versions.",
+        "training_item": {
+          "item_id": "training-cw-16",
+          "decision": "remains_valid",
+          "assessment_case_ids": [],
+          "update_citation": true
+        },
+        "before": {
+          "section": "١١. إغلاق بلاغ الانتظار",
+          "table_row": 12
+        },
+        "after": {
+          "section": "١١. إغلاق بلاغ الانتظار"
+        },
+        "moved": false
+      }
+    ],
+    "learner_impacts": [
+      {
+        "learner_id": "HL-101",
+        "expected_action": "reassess"
+      },
+      {
+        "learner_id": "HL-102",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-103",
+        "expected_action": "update_in_progress_assignment"
+      },
+      {
+        "learner_id": "HL-201",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-202",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-301",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-302",
+        "expected_action": "unaffected_out_of_scope"
+      }
+    ],
+    "reassessment_clause_ids": [
+      "CW-02"
+    ]
+  },
+  {
+    "scope": {
+      "role": "employee",
+      "organization": "SidrDesk Operations",
+      "branch": "Sidr Square",
+      "document_family": "employee-delayed-order"
+    },
+    "from_document_id": "employee-delayed-order-v1",
+    "to_document_id": "employee-delayed-order-v2",
+    "clauses": [
+      {
+        "clause_id": "ED-01",
+        "change": "unchanged",
+        "before": {
+          "section": "1. Open the delay case",
+          "page": 1
+        },
+        "after": {
+          "section": "1. Open the delay case"
+        },
+        "moved": false,
+        "reason": "Rule text and section are unchanged.",
+        "training_item": {
+          "item_id": "training-ed-01",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-02",
+        "change": "changed",
+        "before": {
+          "section": "2. Escalate a stalled status",
+          "page": 1
+        },
+        "after": {
+          "section": "2. Escalate a stalled status"
+        },
+        "moved": false,
+        "reason": "The duty lead pages Dispatch after receiving the case from support.",
+        "training_item": {
+          "item_id": "training-ed-02",
+          "decision": "reapprove",
+          "update_citation": true,
+          "assessment_case_ids": [
+            "A-E1"
+          ]
+        }
+      },
+      {
+        "clause_id": "ED-03",
+        "change": "unchanged",
+        "before": {
+          "section": "3. Message the customer",
+          "page": 1
+        },
+        "after": {
+          "section": "3. Message the customer"
+        },
+        "moved": false,
+        "reason": "Rule text and section are unchanged.",
+        "training_item": {
+          "item_id": "training-ed-03",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-10",
+        "change": "unchanged",
+        "reason": "The procedure and its rule are identical in both versions.",
+        "training_item": {
+          "item_id": "training-ed-10",
+          "decision": "remains_valid",
+          "assessment_case_ids": [],
+          "update_citation": true
+        },
+        "before": {
+          "section": "4. Reuse an open case",
+          "page": 1
+        },
+        "after": {
+          "section": "4. Reuse an open case"
+        },
+        "moved": false
+      },
+      {
+        "clause_id": "ED-11",
+        "change": "unchanged",
+        "reason": "The procedure and its rule are identical in both versions.",
+        "training_item": {
+          "item_id": "training-ed-11",
+          "decision": "remains_valid",
+          "assessment_case_ids": [],
+          "update_citation": true
+        },
+        "before": {
+          "section": "5. Handle a missing estimate",
+          "page": 1
+        },
+        "after": {
+          "section": "5. Handle a missing estimate"
+        },
+        "moved": false
+      },
+      {
+        "clause_id": "ED-12",
+        "change": "unchanged",
+        "reason": "The procedure and its rule are identical in both versions.",
+        "training_item": {
+          "item_id": "training-ed-12",
+          "decision": "remains_valid",
+          "assessment_case_ids": [],
+          "update_citation": true
+        },
+        "before": {
+          "section": "6. Transfer a misrouted case",
+          "page": 1
+        },
+        "after": {
+          "section": "6. Transfer a misrouted case"
+        },
+        "moved": false
+      },
+      {
+        "clause_id": "ED-13",
+        "change": "unchanged",
+        "reason": "The procedure and its rule are identical in both versions.",
+        "training_item": {
+          "item_id": "training-ed-13",
+          "decision": "remains_valid",
+          "assessment_case_ids": [],
+          "update_citation": true
+        },
+        "before": {
+          "section": "7. Route a cancellation request",
+          "page": 1
+        },
+        "after": {
+          "section": "7. Route a cancellation request"
+        },
+        "moved": false
+      },
+      {
+        "clause_id": "ED-14",
+        "change": "unchanged",
+        "reason": "The procedure and its rule are identical in both versions.",
+        "training_item": {
+          "item_id": "training-ed-14",
+          "decision": "remains_valid",
+          "assessment_case_ids": [],
+          "update_citation": true
+        },
+        "before": {
+          "section": "8. Track related delays",
+          "page": 1
+        },
+        "after": {
+          "section": "8. Track related delays"
+        },
+        "moved": false
+      },
+      {
+        "clause_id": "ED-15",
+        "change": "unchanged",
+        "reason": "The procedure and its rule are identical in both versions.",
+        "training_item": {
+          "item_id": "training-ed-15",
+          "decision": "remains_valid",
+          "assessment_case_ids": [],
+          "update_citation": true
+        },
+        "before": {
+          "section": "9. Handle restored tracking",
+          "page": 1
+        },
+        "after": {
+          "section": "9. Handle restored tracking"
+        },
+        "moved": false
+      },
+      {
+        "clause_id": "ED-16",
+        "change": "unchanged",
+        "reason": "The procedure and its rule are identical in both versions.",
+        "training_item": {
+          "item_id": "training-ed-16",
+          "decision": "remains_valid",
+          "assessment_case_ids": [],
+          "update_citation": true
+        },
+        "before": {
+          "section": "10. Close a recovered delivery",
+          "page": 1
+        },
+        "after": {
+          "section": "10. Close a recovered delivery"
+        },
+        "moved": false
+      },
+      {
+        "clause_id": "ED-04",
+        "change": "removed",
+        "before": {
+          "section": "11. End-of-shift memo",
+          "page": 1
+        },
+        "after": null,
+        "moved": false,
+        "reason": "The end-of-shift email step is removed.",
+        "training_item": {
+          "item_id": "training-ed-04",
+          "decision": "retire",
+          "update_citation": false,
+          "assessment_case_ids": []
+        }
+      }
+    ],
+    "learner_impacts": [
+      {
+        "learner_id": "HL-101",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-102",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-103",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-201",
+        "expected_action": "reassess"
+      },
+      {
+        "learner_id": "HL-202",
+        "expected_action": "unaffected_no_assignment"
+      },
+      {
+        "learner_id": "HL-301",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-302",
+        "expected_action": "unaffected_out_of_scope"
+      }
+    ],
+    "reassessment_clause_ids": [
+      "ED-02"
+    ]
+  },
+  {
+    "scope": {
+      "role": "partner",
+      "organization": "Copper Olive Kitchen",
+      "branch": "Olive Lane",
+      "document_family": "partner-packing-sealing"
+    },
+    "from_document_id": "partner-packing-sealing-v1",
+    "to_document_id": "partner-packing-sealing-v2",
+    "clauses": [
+      {
+        "clause_id": "PP-01",
+        "change": "unchanged",
+        "before": {
+          "section": "١. مطابقة الملصق",
+          "table_row": 2
+        },
+        "after": {
+          "section": "١. مطابقة الملصق"
+        },
+        "moved": false,
+        "reason": "Rule text and section are unchanged.",
+        "training_item": {
+          "item_id": "training-pp-01",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-02",
+        "change": "changed",
+        "before": {
+          "section": "٢. إغلاق الأكياس",
+          "table_row": 3
+        },
+        "after": {
+          "section": "٢. إغلاق الأكياس"
+        },
+        "moved": false,
+        "reason": "A paper bag that cannot take the seal goes in a sealed outer bag.",
+        "training_item": {
+          "item_id": "training-pp-02",
+          "decision": "reapprove",
+          "update_citation": true,
+          "assessment_case_ids": [
+            "A-P1"
+          ]
+        }
+      },
+      {
+        "clause_id": "PP-03",
+        "change": "unchanged",
+        "before": {
+          "section": "٣. فحص الختم",
+          "table_row": 4
+        },
+        "after": {
+          "section": "٣. فحص الختم"
+        },
+        "moved": false,
+        "reason": "Rule text and section are unchanged.",
+        "training_item": {
+          "item_id": "training-pp-03",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-10",
+        "change": "unchanged",
+        "reason": "The procedure and its rule are identical in both versions.",
+        "training_item": {
+          "item_id": "training-pp-10",
+          "decision": "remains_valid",
+          "assessment_case_ids": [],
+          "update_citation": true
+        },
+        "before": {
+          "section": "٤. مطابقة محتوى الطلب",
+          "table_row": 5
+        },
+        "after": {
+          "section": "٤. مطابقة محتوى الطلب"
+        },
+        "moved": false
+      },
+      {
+        "clause_id": "PP-11",
+        "change": "unchanged",
+        "reason": "The procedure and its rule are identical in both versions.",
+        "training_item": {
+          "item_id": "training-pp-11",
+          "decision": "remains_valid",
+          "assessment_case_ids": [],
+          "update_citation": true
+        },
+        "before": {
+          "section": "٥. فصل البارد عن الساخن",
+          "table_row": 6
+        },
+        "after": {
+          "section": "٥. فصل البارد عن الساخن"
+        },
+        "moved": false
+      },
+      {
+        "clause_id": "PP-12",
+        "change": "unchanged",
+        "reason": "The procedure and its rule are identical in both versions.",
+        "training_item": {
+          "item_id": "training-pp-12",
+          "decision": "remains_valid",
+          "assessment_case_ids": [],
+          "update_citation": true
+        },
+        "before": {
+          "section": "٦. تثبيت المشروبات",
+          "table_row": 7
+        },
+        "after": {
+          "section": "٦. تثبيت المشروبات"
+        },
+        "moved": false
+      },
+      {
+        "clause_id": "PP-13",
+        "change": "unchanged",
+        "reason": "The procedure and its rule are identical in both versions.",
+        "training_item": {
+          "item_id": "training-pp-13",
+          "decision": "remains_valid",
+          "assessment_case_ids": [],
+          "update_citation": true
+        },
+        "before": {
+          "section": "٧. التعامل مع ملاحظة الحساسية",
+          "table_row": 8
+        },
+        "after": {
+          "section": "٧. التعامل مع ملاحظة الحساسية"
+        },
+        "moved": false
+      },
+      {
+        "clause_id": "PP-14",
+        "change": "unchanged",
+        "reason": "The procedure and its rule are identical in both versions.",
+        "training_item": {
+          "item_id": "training-pp-14",
+          "decision": "remains_valid",
+          "assessment_case_ids": [],
+          "update_citation": true
+        },
+        "before": {
+          "section": "٨. استبدال كيس مبتل",
+          "table_row": 9
+        },
+        "after": {
+          "section": "٨. استبدال كيس مبتل"
+        },
+        "moved": false
+      },
+      {
+        "clause_id": "PP-15",
+        "change": "unchanged",
+        "reason": "The procedure and its rule are identical in both versions.",
+        "training_item": {
+          "item_id": "training-pp-15",
+          "decision": "remains_valid",
+          "assessment_case_ids": [],
+          "update_citation": true
+        },
+        "before": {
+          "section": "٩. وسم العبوات الهشة",
+          "table_row": 10
+        },
+        "after": {
+          "section": "٩. وسم العبوات الهشة"
+        },
+        "moved": false
+      },
+      {
+        "clause_id": "PP-16",
+        "change": "unchanged",
+        "reason": "The procedure and its rule are identical in both versions.",
+        "training_item": {
+          "item_id": "training-pp-16",
+          "decision": "remains_valid",
+          "assessment_case_ids": [],
+          "update_citation": true
+        },
+        "before": {
+          "section": "١٠. اختيار رف التجهيز",
+          "table_row": 11
+        },
+        "after": {
+          "section": "١٠. اختيار رف التجهيز"
+        },
+        "moved": false
+      },
+      {
+        "clause_id": "PP-04",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "١١. تسجيل العبوات"
+        },
+        "moved": false,
+        "reason": "Record the bag count before moving orders with at least two bags.",
+        "training_item": {
+          "item_id": "training-pp-04",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      }
+    ],
+    "learner_impacts": [
+      {
+        "learner_id": "HL-101",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-102",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-103",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-201",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-202",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-301",
+        "expected_action": "reassess"
+      },
+      {
+        "learner_id": "HL-302",
+        "expected_action": "unaffected_out_of_scope"
+      }
+    ],
+    "reassessment_clause_ids": [
+      "PP-02",
+      "PP-04"
+    ]
+  }
+]

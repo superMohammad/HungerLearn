@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "docproc"
+version = "0.1.0"
+description = "Bilingual (Arabic/English) policy understanding and version comparison with LangGraph"
+readme = "README.md"
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "langgraph>=0.2",
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+    "pymupdf>=1.24",
+    "mammoth>=1.7",
+    "numpy>=1.26",
+    "rapidfuzz>=3.6",
+    "httpx>=0.27",
+    "typer>=0.12",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+pg = ["psycopg[binary]>=3.1", "pgvector>=0.2.5"]
+st = ["sentence-transformers>=3.0"]
+anthropic = ["anthropic>=0.40"]
+ovis = ["transformers>=4.57", "accelerate", "torch", "pillow"]
+dev = ["pytest>=8", "python-docx>=1.1", "pillow>=10"]
+
+[project.scripts]
+docproc = "docproc.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+docproc = ["storage/*.sql"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "real_models: uses real Ollama/BGE-M3/LLM backends (skipped unless configured)",
+    "postgres: needs DOCPROC_PG_DSN pointing at PostgreSQL with pgvector",
+]

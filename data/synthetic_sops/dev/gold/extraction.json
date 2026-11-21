@@ -1,0 +1,3199 @@
+[
+  {
+    "document_id": "courier-pickup-wait-v1",
+    "title": "انتظار استلام الطلب من الفرع",
+    "scope_quote": "تُطبّق هذه التعليمات عند استلام الطلبات من نقطة الاستلام في فرع بوابة التين.",
+    "procedures": [
+      {
+        "procedure_id": "courier-pickup-wait:CW-01",
+        "title": "عند الوصول",
+        "locator": {
+          "section": "١. عند الوصول",
+          "table_row": 2
+        },
+        "clause_ids": [
+          "CW-01"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-02",
+        "title": "تأخر التجهيز",
+        "locator": {
+          "section": "٢. تأخر التجهيز",
+          "table_row": 3
+        },
+        "clause_ids": [
+          "CW-02"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-03",
+        "title": "إغلاق نقطة الاستلام",
+        "locator": {
+          "section": "٣. إغلاق نقطة الاستلام",
+          "table_row": 4
+        },
+        "clause_ids": [
+          "CW-03"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-04",
+        "title": "قبل المغادرة",
+        "locator": {
+          "section": "٤. قبل المغادرة",
+          "table_row": 5
+        },
+        "clause_ids": [
+          "CW-04"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-10",
+        "title": "تعذّر تسجيل الوصول",
+        "locator": {
+          "section": "٥. تعذّر تسجيل الوصول",
+          "table_row": 6
+        },
+        "clause_ids": [
+          "CW-10"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-11",
+        "title": "استلام أكثر من طلب",
+        "locator": {
+          "section": "٦. استلام أكثر من طلب",
+          "table_row": 7
+        },
+        "clause_ids": [
+          "CW-11"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-12",
+        "title": "الدخول من الباب الصحيح",
+        "locator": {
+          "section": "٧. الدخول من الباب الصحيح",
+          "table_row": 8
+        },
+        "clause_ids": [
+          "CW-12"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-13",
+        "title": "طلب معلّم بأنه جاهز",
+        "locator": {
+          "section": "٨. طلب معلّم بأنه جاهز",
+          "table_row": 9
+        },
+        "clause_ids": [
+          "CW-13"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-14",
+        "title": "اختلاف ملصق الاستلام",
+        "locator": {
+          "section": "٩. اختلاف ملصق الاستلام",
+          "table_row": 10
+        },
+        "clause_ids": [
+          "CW-14"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-15",
+        "title": "طلب الإلغاء من الفرع",
+        "locator": {
+          "section": "١٠. طلب الإلغاء من الفرع",
+          "table_row": 11
+        },
+        "clause_ids": [
+          "CW-15"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-16",
+        "title": "إغلاق بلاغ الانتظار",
+        "locator": {
+          "section": "١١. إغلاق بلاغ الانتظار",
+          "table_row": 12
+        },
+        "clause_ids": [
+          "CW-16"
+        ]
+      }
+    ],
+    "clauses": [
+      {
+        "clause_id": "CW-01",
+        "quote": "ابدأ حساب الانتظار عند اختيار «وصلت إلى الفرع» في التطبيق. سجّل رقم الطلب، مثل TF-418، ووقت الوصول.",
+        "locator": {
+          "section": "١. عند الوصول",
+          "table_row": 2
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "courier checks in at pickup",
+          "action": "start wait timer and record order ID and check-in time"
+        }
+      },
+      {
+        "clause_id": "CW-02",
+        "quote": "إذا بقي الطلب قيد التجهيز بعد ١٥ دقيقة من تسجيل الوصول، أرسل بلاغ «تأخر الاستلام» إلى مسؤول التوزيع.",
+        "locator": {
+          "section": "٢. تأخر التجهيز",
+          "table_row": 3
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "action": "notify dispatch",
+          "threshold": {
+            "value": 15,
+            "unit": "minute",
+            "operator": ">="
+          },
+          "trigger": "elapsed since check-in and order still being prepared"
+        }
+      },
+      {
+        "clause_id": "CW-03",
+        "quote": "إذا وجدت نقطة الاستلام مغلقة، اتصل بمسؤول التوزيع فوراً ولا تنتظر انتهاء المهلة.",
+        "locator": {
+          "section": "٣. إغلاق نقطة الاستلام",
+          "table_row": 4
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "pickup counter closed",
+          "action": "contact dispatch immediately",
+          "negation": "do not wait out the timer",
+          "exception_to": "CW-02"
+        }
+      },
+      {
+        "clause_id": "CW-04",
+        "quote": "لا تغادر الفرع حتى يوجّهك مسؤول التوزيع بالمغادرة أو يسلّمك موظف الفرع الطلب.",
+        "locator": {
+          "section": "٤. قبل المغادرة",
+          "table_row": 5
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "negation": "do not leave the branch",
+          "exceptions": [
+            "dispatch instructs departure",
+            "branch staff hand over the order"
+          ]
+        }
+      },
+      {
+        "clause_id": "CW-10",
+        "quote": "إذا تعذّر تسجيل الوصول في التطبيق، أبلغ مسؤول التوزيع بوقت وصولك الفعلي واطلب منه تسجيله في البلاغ.",
+        "locator": {
+          "section": "٥. تعذّر تسجيل الوصول",
+          "table_row": 6
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا تعذّر تسجيل الوصول في التطبيق",
+          "action": "أبلغ مسؤول التوزيع بوقت وصولك الفعلي واطلب منه تسجيله في البلاغ."
+        }
+      },
+      {
+        "clause_id": "CW-11",
+        "quote": "إذا عُيّنت لك عدة طلبات من الفرع نفسه، تابع وقت الانتظار لكل طلب على حدة وسجّل وصولك لكل طلب مفتوح.",
+        "locator": {
+          "section": "٦. استلام أكثر من طلب",
+          "table_row": 7
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا عُيّنت لك عدة طلبات من الفرع نفسه",
+          "action": "تابع وقت الانتظار لكل طلب على حدة وسجّل وصولك لكل طلب مفتوح."
+        }
+      },
+      {
+        "clause_id": "CW-12",
+        "quote": "إذا وجدت مدخل الخدمة مغلقاً والمدخل العام مفتوحاً، اسأل موظف الاستقبال عن نقطة الاستلام المخصصة للمندوبين.",
+        "locator": {
+          "section": "٧. الدخول من الباب الصحيح",
+          "table_row": 8
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا وجدت مدخل الخدمة مغلقاً والمدخل العام مفتوحاً",
+          "action": "اسأل موظف الاستقبال عن نقطة الاستلام المخصصة للمندوبين."
+        }
+      },
+      {
+        "clause_id": "CW-13",
+        "quote": "إذا ظهر الطلب جاهزاً ولم تجده على رف الاستلام، اطلب من موظف الفرع تحديد مكانه برقم الطلب قبل تحديث حالته.",
+        "locator": {
+          "section": "٨. طلب معلّم بأنه جاهز",
+          "table_row": 9
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا ظهر الطلب جاهزاً ولم تجده على رف الاستلام",
+          "action": "اطلب من موظف الفرع تحديد مكانه برقم الطلب قبل تحديث حالته."
+        }
+      },
+      {
+        "clause_id": "CW-14",
+        "quote": "إذا عرض عليك الموظف كيساً يحمل رقم طلب مختلفاً، اتركه عند نقطة الاستلام واطلب الكيس المطابق.",
+        "locator": {
+          "section": "٩. اختلاف ملصق الاستلام",
+          "table_row": 10
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا عرض عليك الموظف كيساً يحمل رقم طلب مختلفاً",
+          "action": "اتركه عند نقطة الاستلام واطلب الكيس المطابق."
+        }
+      },
+      {
+        "clause_id": "CW-15",
+        "quote": "إذا طلب منك موظف الفرع إلغاء الطلب أثناء الانتظار، انقل السبب إلى مسؤول التوزيع ولا تلغِ الطلب من حسابك.",
+        "locator": {
+          "section": "١٠. طلب الإلغاء من الفرع",
+          "table_row": 11
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا طلب منك موظف الفرع إلغاء الطلب أثناء الانتظار",
+          "action": "انقل السبب إلى مسؤول التوزيع ولا تلغِ الطلب من حسابك.",
+          "negation": "لا تلغِ الطلب من حسابك"
+        }
+      },
+      {
+        "clause_id": "CW-16",
+        "quote": "عند استلام طلب سبق أن رفعت عنه بلاغ تأخير، سجّل وقت الاستلام في البلاغ نفسه ليغلقه مسؤول التوزيع.",
+        "locator": {
+          "section": "١١. إغلاق بلاغ الانتظار",
+          "table_row": 12
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "عند استلام طلب سبق أن رفعت عنه بلاغ تأخير",
+          "action": "سجّل وقت الاستلام في البلاغ نفسه ليغلقه مسؤول التوزيع."
+        }
+      }
+    ]
+  },
+  {
+    "document_id": "courier-pickup-wait-v2",
+    "title": "انتظار استلام الطلب من الفرع",
+    "scope_quote": "تُطبّق هذه التعليمات عند استلام الطلبات من نقطة الاستلام في فرع بوابة التين.",
+    "procedures": [
+      {
+        "procedure_id": "courier-pickup-wait:CW-01",
+        "title": "عند الوصول",
+        "locator": {
+          "section": "١. عند الوصول",
+          "table_row": 2
+        },
+        "clause_ids": [
+          "CW-01"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-02",
+        "title": "تأخر التجهيز",
+        "locator": {
+          "section": "٢. تأخر التجهيز",
+          "table_row": 3
+        },
+        "clause_ids": [
+          "CW-02"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-03",
+        "title": "إغلاق نقطة الاستلام",
+        "locator": {
+          "section": "٣. إغلاق نقطة الاستلام",
+          "table_row": 4
+        },
+        "clause_ids": [
+          "CW-03"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-04",
+        "title": "إنهاء الانتظار",
+        "locator": {
+          "section": "٤. إنهاء الانتظار"
+        },
+        "clause_ids": [
+          "CW-04"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-10",
+        "title": "تعذّر تسجيل الوصول",
+        "locator": {
+          "section": "٥. تعذّر تسجيل الوصول"
+        },
+        "clause_ids": [
+          "CW-10"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-11",
+        "title": "استلام أكثر من طلب",
+        "locator": {
+          "section": "٦. استلام أكثر من طلب"
+        },
+        "clause_ids": [
+          "CW-11"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-12",
+        "title": "الدخول من الباب الصحيح",
+        "locator": {
+          "section": "٧. الدخول من الباب الصحيح"
+        },
+        "clause_ids": [
+          "CW-12"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-13",
+        "title": "طلب معلّم بأنه جاهز",
+        "locator": {
+          "section": "٨. طلب معلّم بأنه جاهز"
+        },
+        "clause_ids": [
+          "CW-13"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-14",
+        "title": "اختلاف ملصق الاستلام",
+        "locator": {
+          "section": "٩. اختلاف ملصق الاستلام"
+        },
+        "clause_ids": [
+          "CW-14"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-15",
+        "title": "طلب الإلغاء من الفرع",
+        "locator": {
+          "section": "١٠. طلب الإلغاء من الفرع"
+        },
+        "clause_ids": [
+          "CW-15"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-16",
+        "title": "إغلاق بلاغ الانتظار",
+        "locator": {
+          "section": "١١. إغلاق بلاغ الانتظار"
+        },
+        "clause_ids": [
+          "CW-16"
+        ]
+      }
+    ],
+    "clauses": [
+      {
+        "clause_id": "CW-01",
+        "quote": "ابدأ حساب الانتظار عند اختيار «وصلت إلى الفرع» في التطبيق. سجّل رقم الطلب، مثل TF-418، ووقت الوصول.",
+        "locator": {
+          "section": "١. عند الوصول",
+          "table_row": 2
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "courier checks in at pickup",
+          "action": "start wait timer and record order ID and check-in time"
+        }
+      },
+      {
+        "clause_id": "CW-02",
+        "quote": "إذا بقي الطلب قيد التجهيز بعد 10 دقائق من تسجيل الوصول، أرسل بلاغ «تأخر الاستلام» إلى مسؤول التوزيع.",
+        "locator": {
+          "section": "٢. تأخر التجهيز",
+          "table_row": 3
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "action": "notify dispatch",
+          "threshold": {
+            "value": 10,
+            "unit": "minute",
+            "operator": ">="
+          },
+          "trigger": "elapsed since check-in and order still being prepared"
+        }
+      },
+      {
+        "clause_id": "CW-03",
+        "quote": "إذا وجدت نقطة الاستلام مغلقة، اتصل بمسؤول التوزيع فوراً ولا تنتظر انتهاء المهلة.",
+        "locator": {
+          "section": "٣. إغلاق نقطة الاستلام",
+          "table_row": 4
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "pickup counter closed",
+          "action": "contact dispatch immediately",
+          "negation": "do not wait out the timer",
+          "exception_to": "CW-02"
+        }
+      },
+      {
+        "clause_id": "CW-04",
+        "quote": "لا تغادر الفرع حتى يوجّهك مسؤول التوزيع بالمغادرة أو يسلّمك موظف الفرع الطلب.",
+        "locator": {
+          "section": "٤. إنهاء الانتظار"
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "negation": "do not leave the branch",
+          "exceptions": [
+            "dispatch instructs departure",
+            "branch staff hand over the order"
+          ]
+        }
+      },
+      {
+        "clause_id": "CW-10",
+        "quote": "إذا تعذّر تسجيل الوصول في التطبيق، أبلغ مسؤول التوزيع بوقت وصولك الفعلي واطلب منه تسجيله في البلاغ.",
+        "locator": {
+          "section": "٥. تعذّر تسجيل الوصول"
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا تعذّر تسجيل الوصول في التطبيق",
+          "action": "أبلغ مسؤول التوزيع بوقت وصولك الفعلي واطلب منه تسجيله في البلاغ."
+        }
+      },
+      {
+        "clause_id": "CW-11",
+        "quote": "إذا عُيّنت لك عدة طلبات من الفرع نفسه، تابع وقت الانتظار لكل طلب على حدة وسجّل وصولك لكل طلب مفتوح.",
+        "locator": {
+          "section": "٦. استلام أكثر من طلب"
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا عُيّنت لك عدة طلبات من الفرع نفسه",
+          "action": "تابع وقت الانتظار لكل طلب على حدة وسجّل وصولك لكل طلب مفتوح."
+        }
+      },
+      {
+        "clause_id": "CW-12",
+        "quote": "إذا وجدت مدخل الخدمة مغلقاً والمدخل العام مفتوحاً، اسأل موظف الاستقبال عن نقطة الاستلام المخصصة للمندوبين.",
+        "locator": {
+          "section": "٧. الدخول من الباب الصحيح"
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا وجدت مدخل الخدمة مغلقاً والمدخل العام مفتوحاً",
+          "action": "اسأل موظف الاستقبال عن نقطة الاستلام المخصصة للمندوبين."
+        }
+      },
+      {
+        "clause_id": "CW-13",
+        "quote": "إذا ظهر الطلب جاهزاً ولم تجده على رف الاستلام، اطلب من موظف الفرع تحديد مكانه برقم الطلب قبل تحديث حالته.",
+        "locator": {
+          "section": "٨. طلب معلّم بأنه جاهز"
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا ظهر الطلب جاهزاً ولم تجده على رف الاستلام",
+          "action": "اطلب من موظف الفرع تحديد مكانه برقم الطلب قبل تحديث حالته."
+        }
+      },
+      {
+        "clause_id": "CW-14",
+        "quote": "إذا عرض عليك الموظف كيساً يحمل رقم طلب مختلفاً، اتركه عند نقطة الاستلام واطلب الكيس المطابق.",
+        "locator": {
+          "section": "٩. اختلاف ملصق الاستلام"
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا عرض عليك الموظف كيساً يحمل رقم طلب مختلفاً",
+          "action": "اتركه عند نقطة الاستلام واطلب الكيس المطابق."
+        }
+      },
+      {
+        "clause_id": "CW-15",
+        "quote": "إذا طلب منك موظف الفرع إلغاء الطلب أثناء الانتظار، انقل السبب إلى مسؤول التوزيع ولا تلغِ الطلب من حسابك.",
+        "locator": {
+          "section": "١٠. طلب الإلغاء من الفرع"
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا طلب منك موظف الفرع إلغاء الطلب أثناء الانتظار",
+          "action": "انقل السبب إلى مسؤول التوزيع ولا تلغِ الطلب من حسابك.",
+          "negation": "لا تلغِ الطلب من حسابك"
+        }
+      },
+      {
+        "clause_id": "CW-16",
+        "quote": "عند استلام طلب سبق أن رفعت عنه بلاغ تأخير، سجّل وقت الاستلام في البلاغ نفسه ليغلقه مسؤول التوزيع.",
+        "locator": {
+          "section": "١١. إغلاق بلاغ الانتظار"
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "عند استلام طلب سبق أن رفعت عنه بلاغ تأخير",
+          "action": "سجّل وقت الاستلام في البلاغ نفسه ليغلقه مسؤول التوزيع."
+        }
+      }
+    ]
+  },
+  {
+    "document_id": "courier-failed-handoff-v1",
+    "title": "Failed customer handoff",
+    "scope_quote": "Use these procedures when you have the order and the customer handoff cannot proceed as planned.",
+    "procedures": [
+      {
+        "procedure_id": "courier-failed-handoff:CH-01",
+        "title": "Attempt contact",
+        "locator": {
+          "section": "1. Attempt contact",
+          "page": 1
+        },
+        "clause_ids": [
+          "CH-01"
+        ]
+      },
+      {
+        "procedure_id": "courier-failed-handoff:CH-02",
+        "title": "Escalate from the address",
+        "locator": {
+          "section": "2. Escalate from the address",
+          "page": 1
+        },
+        "clause_ids": [
+          "CH-02"
+        ]
+      },
+      {
+        "procedure_id": "courier-failed-handoff:CH-03",
+        "title": "Check for authorized drop-off",
+        "locator": {
+          "section": "3. Check for authorized drop-off",
+          "page": 1
+        },
+        "clause_ids": [
+          "CH-03"
+        ]
+      },
+      {
+        "procedure_id": "courier-failed-handoff:CH-10",
+        "title": "Request gate access",
+        "locator": {
+          "section": "4. Request gate access",
+          "page": 1
+        },
+        "clause_ids": [
+          "CH-10"
+        ]
+      },
+      {
+        "procedure_id": "courier-failed-handoff:CH-11",
+        "title": "Handle an address change",
+        "locator": {
+          "section": "5. Handle an address change",
+          "page": 1
+        },
+        "clause_ids": [
+          "CH-11"
+        ]
+      },
+      {
+        "procedure_id": "courier-failed-handoff:CH-12",
+        "title": "Verify a named recipient",
+        "locator": {
+          "section": "6. Verify a named recipient",
+          "page": 1
+        },
+        "clause_ids": [
+          "CH-12"
+        ]
+      },
+      {
+        "procedure_id": "courier-failed-handoff:CH-13",
+        "title": "Handle a lobby drop request",
+        "locator": {
+          "section": "7. Handle a lobby drop request",
+          "page": 1
+        },
+        "clause_ids": [
+          "CH-13"
+        ]
+      },
+      {
+        "procedure_id": "courier-failed-handoff:CH-14",
+        "title": "Report an app outage",
+        "locator": {
+          "section": "8. Report an app outage",
+          "page": 1
+        },
+        "clause_ids": [
+          "CH-14"
+        ]
+      },
+      {
+        "procedure_id": "courier-failed-handoff:CH-15",
+        "title": "Record a return",
+        "locator": {
+          "section": "9. Record a return",
+          "page": 1
+        },
+        "clause_ids": [
+          "CH-15"
+        ]
+      },
+      {
+        "procedure_id": "courier-failed-handoff:CH-16",
+        "title": "Handle a late reply",
+        "locator": {
+          "section": "10. Handle a late reply",
+          "page": 1
+        },
+        "clause_ids": [
+          "CH-16"
+        ]
+      }
+    ],
+    "clauses": [
+      {
+        "clause_id": "CH-01",
+        "quote": "For an unanswered handoff, place one in-app call and send one chat message. Start the handoff timer after sending the message.",
+        "locator": {
+          "section": "1. Attempt contact",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "action": "call once and send one message",
+          "threshold": {
+            "value": 1,
+            "unit": "call",
+            "operator": "=",
+            "source_value": "one"
+          }
+        }
+      },
+      {
+        "clause_id": "CH-02",
+        "quote": "If the customer is still unreachable after 6 minutes on the handoff timer, open a Failed Handoff ticket with Dispatch. Do not mark the order delivered.",
+        "locator": {
+          "section": "2. Escalate from the address",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "action": "open Failed Handoff ticket",
+          "threshold": {
+            "value": 6,
+            "unit": "minute",
+            "operator": ">="
+          },
+          "negation": "do not mark delivered"
+        }
+      },
+      {
+        "clause_id": "CH-03",
+        "quote": "Leave the order at the door only if the customer selected Leave at Door and the app accepts a proof photo.",
+        "locator": {
+          "section": "3. Check for authorized drop-off",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "action": "leave at door only with authorization and app-accepted proof photo",
+          "exceptions": [
+            "customer selected Leave at Door and app accepts photo"
+          ]
+        }
+      },
+      {
+        "clause_id": "CH-10",
+        "quote": "If a locked gate blocks the listed address, ask the customer for access through the order chat. Stay outside the gate while waiting.",
+        "locator": {
+          "section": "4. Request gate access",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "If a locked gate blocks the listed address",
+          "action": "ask the customer for access through the order chat. Stay outside the gate while waiting."
+        }
+      },
+      {
+        "clause_id": "CH-11",
+        "quote": "If the customer sends a different address in chat, note it in the order record and wait for Dispatch to confirm the route before moving.",
+        "locator": {
+          "section": "5. Handle an address change",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "If the customer sends a different address in chat",
+          "action": "note it in the order record and wait for Dispatch to confirm the route before moving."
+        }
+      },
+      {
+        "clause_id": "CH-12",
+        "quote": "If someone else offers to take the order, hand it over only when the app lists that person as an alternate recipient.",
+        "locator": {
+          "section": "6. Verify a named recipient",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "If someone else offers to take the order",
+          "action": "hand it over only when the app lists that person as an alternate recipient.",
+          "exceptions": [
+            "the app lists the person as an alternate recipient"
+          ]
+        }
+      },
+      {
+        "clause_id": "CH-13",
+        "quote": "If building staff ask you to leave the order in the lobby, keep it with you unless the app authorizes that drop-off and accepts a proof photo.",
+        "locator": {
+          "section": "7. Handle a lobby drop request",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "If building staff ask you to leave the order in the lobby",
+          "action": "keep it with you unless the app authorizes that drop-off and accepts a proof photo.",
+          "exceptions": [
+            "the app authorizes the drop-off and accepts a proof photo"
+          ]
+        }
+      },
+      {
+        "clause_id": "CH-14",
+        "quote": "If the app stops responding during handoff, relay the order ID and contact attempts to Dispatch by phone and keep the order with you.",
+        "locator": {
+          "section": "8. Report an app outage",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "If the app stops responding during handoff",
+          "action": "relay the order ID and contact attempts to Dispatch by phone and keep the order with you."
+        }
+      },
+      {
+        "clause_id": "CH-15",
+        "quote": "If Dispatch directs a return, give the order to the branch lead and record the branch's receipt code in the Failed Handoff ticket.",
+        "locator": {
+          "section": "9. Record a return",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "If Dispatch directs a return",
+          "action": "give the order to the branch lead and record the branch's receipt code in the Failed Handoff ticket."
+        }
+      },
+      {
+        "clause_id": "CH-16",
+        "quote": "If the customer responds after a Failed Handoff ticket opens, add their reply to the ticket and follow the next instruction from Dispatch.",
+        "locator": {
+          "section": "10. Handle a late reply",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "If the customer responds after a Failed Handoff ticket opens",
+          "action": "add their reply to the ticket and follow the next instruction from Dispatch."
+        }
+      }
+    ]
+  },
+  {
+    "document_id": "employee-delayed-order-v1",
+    "title": "Delayed order support triage",
+    "scope_quote": "Support desk memo. Apply the relevant procedure to late deliveries in the Sidr Square queue, such as SD-286.",
+    "procedures": [
+      {
+        "procedure_id": "employee-delayed-order:ED-01",
+        "title": "Open the delay case",
+        "locator": {
+          "section": "1. Open the delay case",
+          "page": 1
+        },
+        "clause_ids": [
+          "ED-01"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-02",
+        "title": "Escalate a stalled status",
+        "locator": {
+          "section": "2. Escalate a stalled status",
+          "page": 1
+        },
+        "clause_ids": [
+          "ED-02"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-03",
+        "title": "Message the customer",
+        "locator": {
+          "section": "3. Message the customer",
+          "page": 1
+        },
+        "clause_ids": [
+          "ED-03"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-10",
+        "title": "Reuse an open case",
+        "locator": {
+          "section": "4. Reuse an open case",
+          "page": 1
+        },
+        "clause_ids": [
+          "ED-10"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-11",
+        "title": "Handle a missing estimate",
+        "locator": {
+          "section": "5. Handle a missing estimate",
+          "page": 1
+        },
+        "clause_ids": [
+          "ED-11"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-12",
+        "title": "Transfer a misrouted case",
+        "locator": {
+          "section": "6. Transfer a misrouted case",
+          "page": 1
+        },
+        "clause_ids": [
+          "ED-12"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-13",
+        "title": "Route a cancellation request",
+        "locator": {
+          "section": "7. Route a cancellation request",
+          "page": 1
+        },
+        "clause_ids": [
+          "ED-13"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-14",
+        "title": "Track related delays",
+        "locator": {
+          "section": "8. Track related delays",
+          "page": 1
+        },
+        "clause_ids": [
+          "ED-14"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-15",
+        "title": "Handle restored tracking",
+        "locator": {
+          "section": "9. Handle restored tracking",
+          "page": 1
+        },
+        "clause_ids": [
+          "ED-15"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-16",
+        "title": "Close a recovered delivery",
+        "locator": {
+          "section": "10. Close a recovered delivery",
+          "page": 1
+        },
+        "clause_ids": [
+          "ED-16"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-04",
+        "title": "End-of-shift memo",
+        "locator": {
+          "section": "11. End-of-shift memo",
+          "page": 1
+        },
+        "clause_ids": [
+          "ED-04"
+        ]
+      }
+    ],
+    "clauses": [
+      {
+        "clause_id": "ED-01",
+        "quote": "When the displayed delivery estimate is at least 12 minutes past, open a Delay case and record the order ID and last status timestamp.",
+        "locator": {
+          "section": "1. Open the delay case",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "action": "open Delay case and record order ID and last status time",
+          "threshold": {
+            "value": 12,
+            "unit": "minute",
+            "operator": ">="
+          }
+        }
+      },
+      {
+        "clause_id": "ED-02",
+        "quote": "If tracking has not refreshed for 8 minutes after the case opens, the support agent must page the dispatch desk directly.",
+        "locator": {
+          "section": "2. Escalate a stalled status",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "actor": "support agent",
+          "action": "page dispatch directly",
+          "threshold": {
+            "value": 8,
+            "unit": "minute",
+            "operator": ">="
+          }
+        }
+      },
+      {
+        "clause_id": "ED-03",
+        "quote": "Send the customer a status update from the case. Do not promise a new delivery time until Dispatch confirms it.",
+        "locator": {
+          "section": "3. Message the customer",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "action": "send a status update",
+          "negation": "do not promise new delivery time",
+          "exceptions": [
+            "Dispatch confirms a new time"
+          ]
+        }
+      },
+      {
+        "clause_id": "ED-10",
+        "quote": "If the same order already has an open Delay case, add the customer's latest message there and keep its original opening time.",
+        "locator": {
+          "section": "4. Reuse an open case",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If the same order already has an open Delay case",
+          "action": "add the customer's latest message there and keep its original opening time.",
+          "exception_to": "ED-01"
+        }
+      },
+      {
+        "clause_id": "ED-11",
+        "quote": "If the order timeline shows no delivery estimate, request the last confirmed status from Dispatch and record that the estimate is unavailable.",
+        "locator": {
+          "section": "5. Handle a missing estimate",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If the order timeline shows no delivery estimate",
+          "action": "request the last confirmed status from Dispatch and record that the estimate is unavailable."
+        }
+      },
+      {
+        "clause_id": "ED-12",
+        "quote": "If the order belongs to another branch queue, transfer the existing case to that queue with the status history attached.",
+        "locator": {
+          "section": "6. Transfer a misrouted case",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If the order belongs to another branch queue",
+          "action": "transfer the existing case to that queue with the status history attached."
+        }
+      },
+      {
+        "clause_id": "ED-13",
+        "quote": "If the customer asks to cancel a late order, link a Cancellation Request and route it to the cancellations desk.",
+        "locator": {
+          "section": "7. Route a cancellation request",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If the customer asks to cancel a late order",
+          "action": "link a Cancellation Request and route it to the cancellations desk."
+        }
+      },
+      {
+        "clause_id": "ED-14",
+        "quote": "If several late orders share one dispatch incident, keep a case for each order and add the shared incident ID to each case.",
+        "locator": {
+          "section": "8. Track related delays",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If several late orders share one dispatch incident",
+          "action": "keep a case for each order and add the shared incident ID to each case."
+        }
+      },
+      {
+        "clause_id": "ED-15",
+        "quote": "If tracking resumes during an open Delay case, record the fresh status and notify the case owner that the stalled-tracking alert can be cleared.",
+        "locator": {
+          "section": "9. Handle restored tracking",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If tracking resumes during an open Delay case",
+          "action": "record the fresh status and notify the case owner that the stalled-tracking alert can be cleared."
+        }
+      },
+      {
+        "clause_id": "ED-16",
+        "quote": "When the timeline confirms delivery, send the customer a closure message and record the confirmation time before closing the case.",
+        "locator": {
+          "section": "10. Close a recovered delivery",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "When the timeline confirms delivery",
+          "action": "send the customer a closure message and record the confirmation time before closing the case."
+        }
+      },
+      {
+        "clause_id": "ED-04",
+        "quote": "Before signing out, copy each open Delay case ID into the shift email to the duty lead.",
+        "locator": {
+          "section": "11. End-of-shift memo",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "action": "copy each open case ID into shift email"
+        }
+      }
+    ]
+  },
+  {
+    "document_id": "employee-delayed-order-v2",
+    "title": "Delayed order support triage",
+    "scope_quote": "Support desk memo. Apply the relevant procedure to late deliveries in the Sidr Square queue, such as SD-286.",
+    "procedures": [
+      {
+        "procedure_id": "employee-delayed-order:ED-01",
+        "title": "Open the delay case",
+        "locator": {
+          "section": "1. Open the delay case"
+        },
+        "clause_ids": [
+          "ED-01"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-02",
+        "title": "Escalate a stalled status",
+        "locator": {
+          "section": "2. Escalate a stalled status"
+        },
+        "clause_ids": [
+          "ED-02"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-03",
+        "title": "Message the customer",
+        "locator": {
+          "section": "3. Message the customer"
+        },
+        "clause_ids": [
+          "ED-03"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-10",
+        "title": "Reuse an open case",
+        "locator": {
+          "section": "4. Reuse an open case"
+        },
+        "clause_ids": [
+          "ED-10"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-11",
+        "title": "Handle a missing estimate",
+        "locator": {
+          "section": "5. Handle a missing estimate"
+        },
+        "clause_ids": [
+          "ED-11"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-12",
+        "title": "Transfer a misrouted case",
+        "locator": {
+          "section": "6. Transfer a misrouted case"
+        },
+        "clause_ids": [
+          "ED-12"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-13",
+        "title": "Route a cancellation request",
+        "locator": {
+          "section": "7. Route a cancellation request"
+        },
+        "clause_ids": [
+          "ED-13"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-14",
+        "title": "Track related delays",
+        "locator": {
+          "section": "8. Track related delays"
+        },
+        "clause_ids": [
+          "ED-14"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-15",
+        "title": "Handle restored tracking",
+        "locator": {
+          "section": "9. Handle restored tracking"
+        },
+        "clause_ids": [
+          "ED-15"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-16",
+        "title": "Close a recovered delivery",
+        "locator": {
+          "section": "10. Close a recovered delivery"
+        },
+        "clause_ids": [
+          "ED-16"
+        ]
+      }
+    ],
+    "clauses": [
+      {
+        "clause_id": "ED-01",
+        "quote": "When the displayed delivery estimate is at least 12 minutes past, open a Delay case and record the order ID and last status timestamp.",
+        "locator": {
+          "section": "1. Open the delay case"
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "action": "open Delay case and record order ID and last status time",
+          "threshold": {
+            "value": 12,
+            "unit": "minute",
+            "operator": ">="
+          }
+        }
+      },
+      {
+        "clause_id": "ED-02",
+        "quote": "If tracking has not refreshed for 8 minutes after the case opens, the support agent must route the case to the duty lead. The duty lead pages the dispatch desk.",
+        "locator": {
+          "section": "2. Escalate a stalled status"
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "actor": "support agent and duty lead",
+          "action": "support routes case to duty lead, who pages dispatch",
+          "threshold": {
+            "value": 8,
+            "unit": "minute",
+            "operator": ">="
+          }
+        }
+      },
+      {
+        "clause_id": "ED-03",
+        "quote": "Send the customer a status update from the case. Do not promise a new delivery time until Dispatch confirms it.",
+        "locator": {
+          "section": "3. Message the customer"
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "action": "send a status update",
+          "negation": "do not promise new delivery time",
+          "exceptions": [
+            "Dispatch confirms a new time"
+          ]
+        }
+      },
+      {
+        "clause_id": "ED-10",
+        "quote": "If the same order already has an open Delay case, add the customer's latest message there and keep its original opening time.",
+        "locator": {
+          "section": "4. Reuse an open case"
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If the same order already has an open Delay case",
+          "action": "add the customer's latest message there and keep its original opening time.",
+          "exception_to": "ED-01"
+        }
+      },
+      {
+        "clause_id": "ED-11",
+        "quote": "If the order timeline shows no delivery estimate, request the last confirmed status from Dispatch and record that the estimate is unavailable.",
+        "locator": {
+          "section": "5. Handle a missing estimate"
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If the order timeline shows no delivery estimate",
+          "action": "request the last confirmed status from Dispatch and record that the estimate is unavailable."
+        }
+      },
+      {
+        "clause_id": "ED-12",
+        "quote": "If the order belongs to another branch queue, transfer the existing case to that queue with the status history attached.",
+        "locator": {
+          "section": "6. Transfer a misrouted case"
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If the order belongs to another branch queue",
+          "action": "transfer the existing case to that queue with the status history attached."
+        }
+      },
+      {
+        "clause_id": "ED-13",
+        "quote": "If the customer asks to cancel a late order, link a Cancellation Request and route it to the cancellations desk.",
+        "locator": {
+          "section": "7. Route a cancellation request"
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If the customer asks to cancel a late order",
+          "action": "link a Cancellation Request and route it to the cancellations desk."
+        }
+      },
+      {
+        "clause_id": "ED-14",
+        "quote": "If several late orders share one dispatch incident, keep a case for each order and add the shared incident ID to each case.",
+        "locator": {
+          "section": "8. Track related delays"
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If several late orders share one dispatch incident",
+          "action": "keep a case for each order and add the shared incident ID to each case."
+        }
+      },
+      {
+        "clause_id": "ED-15",
+        "quote": "If tracking resumes during an open Delay case, record the fresh status and notify the case owner that the stalled-tracking alert can be cleared.",
+        "locator": {
+          "section": "9. Handle restored tracking"
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If tracking resumes during an open Delay case",
+          "action": "record the fresh status and notify the case owner that the stalled-tracking alert can be cleared."
+        }
+      },
+      {
+        "clause_id": "ED-16",
+        "quote": "When the timeline confirms delivery, send the customer a closure message and record the confirmation time before closing the case.",
+        "locator": {
+          "section": "10. Close a recovered delivery"
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "When the timeline confirms delivery",
+          "action": "send the customer a closure message and record the confirmation time before closing the case."
+        }
+      }
+    ]
+  },
+  {
+    "document_id": "employee-duplicate-charge-v1",
+    "title": "مراجعة بلاغ خصم مكرر",
+    "scope_quote": "يستخدم موظف الدعم هذه الإجراءات عند ورود بلاغ عن خصمين للطلب نفسه، مثل SD-512.",
+    "procedures": [
+      {
+        "procedure_id": "employee-duplicate-charge:EC-01",
+        "title": "التحقق من العمليتين",
+        "locator": {
+          "section": "١. التحقق من العمليتين"
+        },
+        "clause_ids": [
+          "EC-01"
+        ]
+      },
+      {
+        "procedure_id": "employee-duplicate-charge:EC-02",
+        "title": "معالجة مبلغ معلّق",
+        "locator": {
+          "section": "٢. معالجة مبلغ معلّق"
+        },
+        "clause_ids": [
+          "EC-02"
+        ]
+      },
+      {
+        "procedure_id": "employee-duplicate-charge:EC-03",
+        "title": "رفع الحالة للمراجعة",
+        "locator": {
+          "section": "٣. رفع الحالة للمراجعة"
+        },
+        "clause_ids": [
+          "EC-03"
+        ]
+      },
+      {
+        "procedure_id": "employee-duplicate-charge:EC-10",
+        "title": "توحيد التوقيت",
+        "locator": {
+          "section": "٤. توحيد التوقيت"
+        },
+        "clause_ids": [
+          "EC-10"
+        ]
+      },
+      {
+        "procedure_id": "employee-duplicate-charge:EC-11",
+        "title": "دمج بلاغين للطلب نفسه",
+        "locator": {
+          "section": "٥. دمج بلاغين للطلب نفسه"
+        },
+        "clause_ids": [
+          "EC-11"
+        ]
+      },
+      {
+        "procedure_id": "employee-duplicate-charge:EC-12",
+        "title": "التمييز بين الرفض والخصم",
+        "locator": {
+          "section": "٦. التمييز بين الرفض والخصم"
+        },
+        "clause_ids": [
+          "EC-12"
+        ]
+      },
+      {
+        "procedure_id": "employee-duplicate-charge:EC-13",
+        "title": "التحقق من استرداد سابق",
+        "locator": {
+          "section": "٧. التحقق من استرداد سابق"
+        },
+        "clause_ids": [
+          "EC-13"
+        ]
+      },
+      {
+        "procedure_id": "employee-duplicate-charge:EC-14",
+        "title": "استكمال البيانات الناقصة",
+        "locator": {
+          "section": "٨. استكمال البيانات الناقصة"
+        },
+        "clause_ids": [
+          "EC-14"
+        ]
+      },
+      {
+        "procedure_id": "employee-duplicate-charge:EC-15",
+        "title": "مراجعة الدفع النقدي",
+        "locator": {
+          "section": "٩. مراجعة الدفع النقدي"
+        },
+        "clause_ids": [
+          "EC-15"
+        ]
+      },
+      {
+        "procedure_id": "employee-duplicate-charge:EC-16",
+        "title": "اختلاف العملة",
+        "locator": {
+          "section": "١٠. اختلاف العملة"
+        },
+        "clause_ids": [
+          "EC-16"
+        ]
+      }
+    ],
+    "clauses": [
+      {
+        "clause_id": "EC-01",
+        "quote": "طابق رقم الطلب والمبلغ والعملة في سجل المدفوعات. لا تعتبر العمليتين خصماً مكرراً إذا اختلف رقم الطلب.",
+        "locator": {
+          "section": "١. التحقق من العمليتين"
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "action": "match order ID, amount and currency",
+          "negation": "do not classify as duplicate across different order IDs"
+        }
+      },
+      {
+        "clause_id": "EC-02",
+        "quote": "إذا كانت إحدى العمليتين معلّقة والأخرى مكتملة، افتح متابعة لمدة ٢٤ ساعة ولا تطلب استرداداً للمبلغ المعلّق.",
+        "locator": {
+          "section": "٢. معالجة مبلغ معلّق"
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "one pending and one settled payment",
+          "action": "open follow-up",
+          "threshold": {
+            "value": 24,
+            "unit": "hour",
+            "operator": "="
+          },
+          "negation": "do not request refund of pending payment"
+        }
+      },
+      {
+        "clause_id": "EC-03",
+        "quote": "إذا اكتمل الخصمان للطلب نفسه، أحل الحالة إلى مراجع المدفوعات مع رقمي العمليتين. مراجع المدفوعات هو المسؤول عن اعتماد الاسترداد.",
+        "locator": {
+          "section": "٣. رفع الحالة للمراجعة"
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "action": "route to payments reviewer with transaction IDs",
+          "actor": "payments reviewer approves refund"
+        }
+      },
+      {
+        "clause_id": "EC-10",
+        "quote": "إذا عرض السجل توقيت العمليتين بمنطقتين زمنيتين مختلفتين، حوّل التوقيتين إلى توقيت الفرع قبل ترتيب الأحداث في البلاغ.",
+        "locator": {
+          "section": "٤. توحيد التوقيت"
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "إذا عرض السجل توقيت العمليتين بمنطقتين زمنيتين مختلفتين",
+          "action": "حوّل التوقيتين إلى توقيت الفرع قبل ترتيب الأحداث في البلاغ."
+        }
+      },
+      {
+        "clause_id": "EC-11",
+        "quote": "إذا تكرر بلاغ العميل عن العمليتين نفسيهما، أضف الرسالة الجديدة إلى البلاغ المفتوح وأغلق البلاغ الثاني بوصفه مكرراً.",
+        "locator": {
+          "section": "٥. دمج بلاغين للطلب نفسه"
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "إذا تكرر بلاغ العميل عن العمليتين نفسيهما",
+          "action": "أضف الرسالة الجديدة إلى البلاغ المفتوح وأغلق البلاغ الثاني بوصفه مكرراً."
+        }
+      },
+      {
+        "clause_id": "EC-12",
+        "quote": "إذا ظهرت إحدى العمليتين مرفوضة في سجل المدفوعات، وثّق رمز الرفض ولا تسجلها كخصم مكتمل.",
+        "locator": {
+          "section": "٦. التمييز بين الرفض والخصم"
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "إذا ظهرت إحدى العمليتين مرفوضة في سجل المدفوعات",
+          "action": "وثّق رمز الرفض ولا تسجلها كخصم مكتمل.",
+          "negation": "لا تسجلها كخصم مكتمل"
+        }
+      },
+      {
+        "clause_id": "EC-13",
+        "quote": "إذا ظهر استرداد مكتمل لإحدى العمليتين، أبلغ العميل برقم مرجع الاسترداد ولا ترفع طلب استرداد ثانياً.",
+        "locator": {
+          "section": "٧. التحقق من استرداد سابق"
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "إذا ظهر استرداد مكتمل لإحدى العمليتين",
+          "action": "أبلغ العميل برقم مرجع الاسترداد ولا ترفع طلب استرداد ثانياً.",
+          "negation": "لا ترفع طلب استرداد ثانياً"
+        }
+      },
+      {
+        "clause_id": "EC-14",
+        "quote": "إذا غاب رقم العملية من البلاغ، اطلب المرجع الظاهر في الإيصال ولا تطلب رقم البطاقة كاملاً.",
+        "locator": {
+          "section": "٨. استكمال البيانات الناقصة"
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "إذا غاب رقم العملية من البلاغ",
+          "action": "اطلب المرجع الظاهر في الإيصال ولا تطلب رقم البطاقة كاملاً.",
+          "negation": "لا تطلب رقم البطاقة كاملاً"
+        }
+      },
+      {
+        "clause_id": "EC-15",
+        "quote": "إذا أظهر السجل دفعة نقدية وأخرى إلكترونية للطلب نفسه، أحل الحالة إلى فريق تسوية الطلبات مع الإيصالين.",
+        "locator": {
+          "section": "٩. مراجعة الدفع النقدي"
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "إذا أظهر السجل دفعة نقدية وأخرى إلكترونية للطلب نفسه",
+          "action": "أحل الحالة إلى فريق تسوية الطلبات مع الإيصالين."
+        }
+      },
+      {
+        "clause_id": "EC-16",
+        "quote": "إذا اختلفت عملة العمليتين، وثّق القيمتين كما ظهرتا وأحل الحالة إلى مراجع المدفوعات للتحقق من التحويل.",
+        "locator": {
+          "section": "١٠. اختلاف العملة"
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "إذا اختلفت عملة العمليتين",
+          "action": "وثّق القيمتين كما ظهرتا وأحل الحالة إلى مراجع المدفوعات للتحقق من التحويل."
+        }
+      }
+    ]
+  },
+  {
+    "document_id": "partner-packing-sealing-v1",
+    "title": "تعبئة الطلبات وإغلاق الأكياس",
+    "scope_quote": "يستخدم موظف التعبئة هذه الإجراءات قبل نقل طلب مثل ZN-358 إلى نقطة الاستلام.",
+    "procedures": [
+      {
+        "procedure_id": "partner-packing-sealing:PP-01",
+        "title": "مطابقة الملصق",
+        "locator": {
+          "section": "١. مطابقة الملصق",
+          "table_row": 2
+        },
+        "clause_ids": [
+          "PP-01"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-02",
+        "title": "إغلاق الأكياس",
+        "locator": {
+          "section": "٢. إغلاق الأكياس",
+          "table_row": 3
+        },
+        "clause_ids": [
+          "PP-02"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-03",
+        "title": "فحص الختم",
+        "locator": {
+          "section": "٣. فحص الختم",
+          "table_row": 4
+        },
+        "clause_ids": [
+          "PP-03"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-10",
+        "title": "مطابقة محتوى الطلب",
+        "locator": {
+          "section": "٤. مطابقة محتوى الطلب",
+          "table_row": 5
+        },
+        "clause_ids": [
+          "PP-10"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-11",
+        "title": "فصل البارد عن الساخن",
+        "locator": {
+          "section": "٥. فصل البارد عن الساخن",
+          "table_row": 6
+        },
+        "clause_ids": [
+          "PP-11"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-12",
+        "title": "تثبيت المشروبات",
+        "locator": {
+          "section": "٦. تثبيت المشروبات",
+          "table_row": 7
+        },
+        "clause_ids": [
+          "PP-12"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-13",
+        "title": "التعامل مع ملاحظة الحساسية",
+        "locator": {
+          "section": "٧. التعامل مع ملاحظة الحساسية",
+          "table_row": 8
+        },
+        "clause_ids": [
+          "PP-13"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-14",
+        "title": "استبدال كيس مبتل",
+        "locator": {
+          "section": "٨. استبدال كيس مبتل",
+          "table_row": 9
+        },
+        "clause_ids": [
+          "PP-14"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-15",
+        "title": "وسم العبوات الهشة",
+        "locator": {
+          "section": "٩. وسم العبوات الهشة",
+          "table_row": 10
+        },
+        "clause_ids": [
+          "PP-15"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-16",
+        "title": "اختيار رف التجهيز",
+        "locator": {
+          "section": "١٠. اختيار رف التجهيز",
+          "table_row": 11
+        },
+        "clause_ids": [
+          "PP-16"
+        ]
+      }
+    ],
+    "clauses": [
+      {
+        "clause_id": "PP-01",
+        "quote": "طابق رقم الطلب على ملصق كل كيس مع شاشة التجهيز قبل الإغلاق. إذا اختلف الرقم، أعد الكيس إلى طاولة التجهيز.",
+        "locator": {
+          "section": "١. مطابقة الملصق",
+          "table_row": 2
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "action": "match each bag's label to screen; return mismatched bags"
+        }
+      },
+      {
+        "clause_id": "PP-02",
+        "quote": "أغلق فتحات الأكياس بختم ظاهر. إذا كان الكيس ورقياً ولا يقبل الختم، استخدم شريط الإغلاق عند طاولة التعبئة.",
+        "locator": {
+          "section": "٢. إغلاق الأكياس",
+          "table_row": 3
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "action": "seal bag openings",
+          "exceptions": [
+            "use packing-station tape for a paper bag that cannot take the seal"
+          ]
+        }
+      },
+      {
+        "clause_id": "PP-03",
+        "quote": "إذا تمزّق الختم قبل تسليم الطلب للمندوب، أعد إغلاق الكيس بختم جديد. لا تسلّم كيساً بختم ممزق.",
+        "locator": {
+          "section": "٣. فحص الختم",
+          "table_row": 4
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "action": "reseal before courier handover",
+          "negation": "do not hand over a bag with a torn seal"
+        }
+      },
+      {
+        "clause_id": "PP-10",
+        "quote": "قبل إغلاق الكيس، طابق كل صنف وكميته مع شاشة التجهيز. أعد الطلب الناقص إلى محطة التحضير لاستكماله.",
+        "locator": {
+          "section": "٤. مطابقة محتوى الطلب",
+          "table_row": 5
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "قبل إغلاق الكيس",
+          "action": "طابق كل صنف وكميته مع شاشة التجهيز. أعد الطلب الناقص إلى محطة التحضير لاستكماله."
+        }
+      },
+      {
+        "clause_id": "PP-11",
+        "quote": "إذا جمع الطلب أصنافاً ساخنة وباردة، ضع كل مجموعة في كيس مستقل وألصق رقم الطلب على الكيسين.",
+        "locator": {
+          "section": "٥. فصل البارد عن الساخن",
+          "table_row": 6
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "إذا جمع الطلب أصنافاً ساخنة وباردة",
+          "action": "ضع كل مجموعة في كيس مستقل وألصق رقم الطلب على الكيسين."
+        }
+      },
+      {
+        "clause_id": "PP-12",
+        "quote": "إذا تضمن الطلب مشروباً، ثبّت الكوب في حامل عمودي داخل كيس منفصل وتأكد من إحكام الغطاء قبل الإغلاق.",
+        "locator": {
+          "section": "٦. تثبيت المشروبات",
+          "table_row": 7
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "إذا تضمن الطلب مشروباً",
+          "action": "ثبّت الكوب في حامل عمودي داخل كيس منفصل وتأكد من إحكام الغطاء قبل الإغلاق."
+        }
+      },
+      {
+        "clause_id": "PP-13",
+        "quote": "إذا ظهرت ملاحظة حساسية على الطلب، اعرضها على مشرف التحضير قبل الإغلاق وانتظر تأكيده لمطابقة المحتوى.",
+        "locator": {
+          "section": "٧. التعامل مع ملاحظة الحساسية",
+          "table_row": 8
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "إذا ظهرت ملاحظة حساسية على الطلب",
+          "action": "اعرضها على مشرف التحضير قبل الإغلاق وانتظر تأكيده لمطابقة المحتوى."
+        }
+      },
+      {
+        "clause_id": "PP-14",
+        "quote": "إذا ابتل الكيس أثناء التعبئة، افحص العبوات الداخلية واستبدل الكيس قبل الختم. أبلغ المشرف إذا تضررت عبوة داخلية.",
+        "locator": {
+          "section": "٨. استبدال كيس مبتل",
+          "table_row": 9
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "إذا ابتل الكيس أثناء التعبئة",
+          "action": "افحص العبوات الداخلية واستبدل الكيس قبل الختم. أبلغ المشرف إذا تضررت عبوة داخلية."
+        }
+      },
+      {
+        "clause_id": "PP-15",
+        "quote": "إذا احتوى الكيس على عبوة هشة، ألصق علامة المناولة على وجه الكيس الظاهر لموظف نقطة الاستلام.",
+        "locator": {
+          "section": "٩. وسم العبوات الهشة",
+          "table_row": 10
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "إذا احتوى الكيس على عبوة هشة",
+          "action": "ألصق علامة المناولة على وجه الكيس الظاهر لموظف نقطة الاستلام."
+        }
+      },
+      {
+        "clause_id": "PP-16",
+        "quote": "بعد ختم الأكياس، ضع الطلب في رف الفئة المبيّنة على شاشة التجهيز واجعل ملصق الرقم ظاهراً من جهة الممر.",
+        "locator": {
+          "section": "١٠. اختيار رف التجهيز",
+          "table_row": 11
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "بعد ختم الأكياس",
+          "action": "ضع الطلب في رف الفئة المبيّنة على شاشة التجهيز واجعل ملصق الرقم ظاهراً من جهة الممر."
+        }
+      }
+    ]
+  },
+  {
+    "document_id": "partner-packing-sealing-v2",
+    "title": "تعبئة الطلبات وإغلاق الأكياس",
+    "scope_quote": "يستخدم موظف التعبئة هذه الإجراءات قبل نقل طلب مثل ZN-358 إلى نقطة الاستلام.",
+    "procedures": [
+      {
+        "procedure_id": "partner-packing-sealing:PP-01",
+        "title": "مطابقة الملصق",
+        "locator": {
+          "section": "١. مطابقة الملصق"
+        },
+        "clause_ids": [
+          "PP-01"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-02",
+        "title": "إغلاق الأكياس",
+        "locator": {
+          "section": "٢. إغلاق الأكياس"
+        },
+        "clause_ids": [
+          "PP-02"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-03",
+        "title": "فحص الختم",
+        "locator": {
+          "section": "٣. فحص الختم"
+        },
+        "clause_ids": [
+          "PP-03"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-10",
+        "title": "مطابقة محتوى الطلب",
+        "locator": {
+          "section": "٤. مطابقة محتوى الطلب"
+        },
+        "clause_ids": [
+          "PP-10"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-11",
+        "title": "فصل البارد عن الساخن",
+        "locator": {
+          "section": "٥. فصل البارد عن الساخن"
+        },
+        "clause_ids": [
+          "PP-11"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-12",
+        "title": "تثبيت المشروبات",
+        "locator": {
+          "section": "٦. تثبيت المشروبات"
+        },
+        "clause_ids": [
+          "PP-12"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-13",
+        "title": "التعامل مع ملاحظة الحساسية",
+        "locator": {
+          "section": "٧. التعامل مع ملاحظة الحساسية"
+        },
+        "clause_ids": [
+          "PP-13"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-14",
+        "title": "استبدال كيس مبتل",
+        "locator": {
+          "section": "٨. استبدال كيس مبتل"
+        },
+        "clause_ids": [
+          "PP-14"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-15",
+        "title": "وسم العبوات الهشة",
+        "locator": {
+          "section": "٩. وسم العبوات الهشة"
+        },
+        "clause_ids": [
+          "PP-15"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-16",
+        "title": "اختيار رف التجهيز",
+        "locator": {
+          "section": "١٠. اختيار رف التجهيز"
+        },
+        "clause_ids": [
+          "PP-16"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-04",
+        "title": "تسجيل العبوات",
+        "locator": {
+          "section": "١١. تسجيل العبوات"
+        },
+        "clause_ids": [
+          "PP-04"
+        ]
+      }
+    ],
+    "clauses": [
+      {
+        "clause_id": "PP-01",
+        "quote": "طابق رقم الطلب على ملصق كل كيس مع شاشة التجهيز قبل الإغلاق. إذا اختلف الرقم، أعد الكيس إلى طاولة التجهيز.",
+        "locator": {
+          "section": "١. مطابقة الملصق"
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "action": "match each bag's label to screen; return mismatched bags"
+        }
+      },
+      {
+        "clause_id": "PP-02",
+        "quote": "أغلق فتحات الأكياس بختم ظاهر. إذا كان الكيس ورقياً ولا يقبل الختم، ضعه داخل كيس خارجي وأغلق الكيس الخارجي بالختم.",
+        "locator": {
+          "section": "٢. إغلاق الأكياس"
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "action": "seal bag openings",
+          "exceptions": [
+            "place a paper bag that cannot take the seal in an outer bag and seal the outer bag"
+          ]
+        }
+      },
+      {
+        "clause_id": "PP-03",
+        "quote": "إذا تمزّق الختم قبل تسليم الطلب للمندوب، أعد إغلاق الكيس بختم جديد. لا تسلّم كيساً بختم ممزق.",
+        "locator": {
+          "section": "٣. فحص الختم"
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "action": "reseal before courier handover",
+          "negation": "do not hand over a bag with a torn seal"
+        }
+      },
+      {
+        "clause_id": "PP-10",
+        "quote": "قبل إغلاق الكيس، طابق كل صنف وكميته مع شاشة التجهيز. أعد الطلب الناقص إلى محطة التحضير لاستكماله.",
+        "locator": {
+          "section": "٤. مطابقة محتوى الطلب"
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "قبل إغلاق الكيس",
+          "action": "طابق كل صنف وكميته مع شاشة التجهيز. أعد الطلب الناقص إلى محطة التحضير لاستكماله."
+        }
+      },
+      {
+        "clause_id": "PP-11",
+        "quote": "إذا جمع الطلب أصنافاً ساخنة وباردة، ضع كل مجموعة في كيس مستقل وألصق رقم الطلب على الكيسين.",
+        "locator": {
+          "section": "٥. فصل البارد عن الساخن"
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "إذا جمع الطلب أصنافاً ساخنة وباردة",
+          "action": "ضع كل مجموعة في كيس مستقل وألصق رقم الطلب على الكيسين."
+        }
+      },
+      {
+        "clause_id": "PP-12",
+        "quote": "إذا تضمن الطلب مشروباً، ثبّت الكوب في حامل عمودي داخل كيس منفصل وتأكد من إحكام الغطاء قبل الإغلاق.",
+        "locator": {
+          "section": "٦. تثبيت المشروبات"
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "إذا تضمن الطلب مشروباً",
+          "action": "ثبّت الكوب في حامل عمودي داخل كيس منفصل وتأكد من إحكام الغطاء قبل الإغلاق."
+        }
+      },
+      {
+        "clause_id": "PP-13",
+        "quote": "إذا ظهرت ملاحظة حساسية على الطلب، اعرضها على مشرف التحضير قبل الإغلاق وانتظر تأكيده لمطابقة المحتوى.",
+        "locator": {
+          "section": "٧. التعامل مع ملاحظة الحساسية"
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "إذا ظهرت ملاحظة حساسية على الطلب",
+          "action": "اعرضها على مشرف التحضير قبل الإغلاق وانتظر تأكيده لمطابقة المحتوى."
+        }
+      },
+      {
+        "clause_id": "PP-14",
+        "quote": "إذا ابتل الكيس أثناء التعبئة، افحص العبوات الداخلية واستبدل الكيس قبل الختم. أبلغ المشرف إذا تضررت عبوة داخلية.",
+        "locator": {
+          "section": "٨. استبدال كيس مبتل"
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "إذا ابتل الكيس أثناء التعبئة",
+          "action": "افحص العبوات الداخلية واستبدل الكيس قبل الختم. أبلغ المشرف إذا تضررت عبوة داخلية."
+        }
+      },
+      {
+        "clause_id": "PP-15",
+        "quote": "إذا احتوى الكيس على عبوة هشة، ألصق علامة المناولة على وجه الكيس الظاهر لموظف نقطة الاستلام.",
+        "locator": {
+          "section": "٩. وسم العبوات الهشة"
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "إذا احتوى الكيس على عبوة هشة",
+          "action": "ألصق علامة المناولة على وجه الكيس الظاهر لموظف نقطة الاستلام."
+        }
+      },
+      {
+        "clause_id": "PP-16",
+        "quote": "بعد ختم الأكياس، ضع الطلب في رف الفئة المبيّنة على شاشة التجهيز واجعل ملصق الرقم ظاهراً من جهة الممر.",
+        "locator": {
+          "section": "١٠. اختيار رف التجهيز"
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "بعد ختم الأكياس",
+          "action": "ضع الطلب في رف الفئة المبيّنة على شاشة التجهيز واجعل ملصق الرقم ظاهراً من جهة الممر."
+        }
+      },
+      {
+        "clause_id": "PP-04",
+        "quote": "إذا احتوى الطلب على كيسين أو أكثر، سجّل عدد الأكياس في شاشة التجهيز قبل نقله إلى نقطة الاستلام.",
+        "locator": {
+          "section": "١١. تسجيل العبوات"
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "action": "record bag count before moving order to pickup",
+          "threshold": {
+            "value": 2,
+            "unit": "bag",
+            "operator": ">=",
+            "source_value": "كيسين"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "document_id": "partner-item-substitution-v1",
+    "title": "Item substitutions",
+    "scope_quote": "Follow this checklist when a paid order such as ZN-624 contains an unavailable item.",
+    "procedures": [
+      {
+        "procedure_id": "partner-item-substitution:PS-01",
+        "title": "Check the preference",
+        "locator": {
+          "section": "1. Check the preference"
+        },
+        "clause_ids": [
+          "PS-01"
+        ]
+      },
+      {
+        "procedure_id": "partner-item-substitution:PS-02",
+        "title": "Request approval",
+        "locator": {
+          "section": "2. Request approval"
+        },
+        "clause_ids": [
+          "PS-02"
+        ]
+      },
+      {
+        "procedure_id": "partner-item-substitution:PS-03",
+        "title": "Close an unanswered request",
+        "locator": {
+          "section": "3. Close an unanswered request"
+        },
+        "clause_ids": [
+          "PS-03"
+        ]
+      },
+      {
+        "procedure_id": "partner-item-substitution:PS-10",
+        "title": "Confirm shelf availability",
+        "locator": {
+          "section": "4. Confirm shelf availability"
+        },
+        "clause_ids": [
+          "PS-10"
+        ]
+      },
+      {
+        "procedure_id": "partner-item-substitution:PS-11",
+        "title": "Match the requested quantity",
+        "locator": {
+          "section": "5. Match the requested quantity"
+        },
+        "clause_ids": [
+          "PS-11"
+        ]
+      },
+      {
+        "procedure_id": "partner-item-substitution:PS-12",
+        "title": "Record a rejected offer",
+        "locator": {
+          "section": "6. Record a rejected offer"
+        },
+        "clause_ids": [
+          "PS-12"
+        ]
+      },
+      {
+        "procedure_id": "partner-item-substitution:PS-13",
+        "title": "Handle stock loss after approval",
+        "locator": {
+          "section": "7. Handle stock loss after approval"
+        },
+        "clause_ids": [
+          "PS-13"
+        ]
+      },
+      {
+        "procedure_id": "partner-item-substitution:PS-14",
+        "title": "Handle a price difference",
+        "locator": {
+          "section": "8. Handle a price difference"
+        },
+        "clause_ids": [
+          "PS-14"
+        ]
+      },
+      {
+        "procedure_id": "partner-item-substitution:PS-15",
+        "title": "Label the approved item",
+        "locator": {
+          "section": "9. Label the approved item"
+        },
+        "clause_ids": [
+          "PS-15"
+        ]
+      },
+      {
+        "procedure_id": "partner-item-substitution:PS-16",
+        "title": "Stop a cancelled order",
+        "locator": {
+          "section": "10. Stop a cancelled order"
+        },
+        "clause_ids": [
+          "PS-16"
+        ]
+      }
+    ],
+    "clauses": [
+      {
+        "clause_id": "PS-01",
+        "quote": "If the customer selected No substitutions, mark the item unavailable and notify Partner Support. Do not suggest a replacement.",
+        "locator": {
+          "section": "1. Check the preference"
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "action": "mark unavailable and notify Partner Support",
+          "negation": "do not suggest a replacement"
+        }
+      },
+      {
+        "clause_id": "PS-02",
+        "quote": "When substitutions are allowed, send one replacement of equal or lower price through the order screen. Pack it only after the customer approves it there.",
+        "locator": {
+          "section": "2. Request approval"
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "action": "offer one equal-or-cheaper option and wait for in-app approval",
+          "threshold": {
+            "value": 1,
+            "unit": "suggestion",
+            "operator": "=",
+            "source_value": "one"
+          },
+          "negation": "do not pack without in-app approval"
+        }
+      },
+      {
+        "clause_id": "PS-03",
+        "quote": "If the customer has not answered after 7 minutes, mark the item unavailable and notify Partner Support. Keep any remaining items in preparation.",
+        "locator": {
+          "section": "3. Close an unanswered request"
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "action": "mark unavailable, notify Partner Support and continue other items",
+          "threshold": {
+            "value": 7,
+            "unit": "minute",
+            "operator": ">="
+          }
+        }
+      },
+      {
+        "clause_id": "PS-10",
+        "quote": "Before offering a replacement, check available stock and tell the prep station to hold one unit until the request is resolved.",
+        "locator": {
+          "section": "4. Confirm shelf availability"
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "Before offering a replacement",
+          "action": "check available stock and tell the prep station to hold one unit until the request is resolved.",
+          "threshold": {
+            "value": 1,
+            "unit": "unit",
+            "operator": "=",
+            "source_value": "one"
+          }
+        }
+      },
+      {
+        "clause_id": "PS-11",
+        "quote": "If a customer ordered several units, offer a replacement only when you can supply the full requested quantity at the allowed price.",
+        "locator": {
+          "section": "5. Match the requested quantity"
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "If a customer ordered several units",
+          "action": "offer a replacement only when you can supply the full requested quantity at the allowed price."
+        }
+      },
+      {
+        "clause_id": "PS-12",
+        "quote": "If the customer rejects the offer, mark that item unavailable and send Partner Support the rejection recorded in the order screen.",
+        "locator": {
+          "section": "6. Record a rejected offer"
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "If the customer rejects the offer",
+          "action": "mark that item unavailable and send Partner Support the rejection recorded in the order screen."
+        }
+      },
+      {
+        "clause_id": "PS-13",
+        "quote": "If an approved replacement sells out before packing, report it to Partner Support and leave the item unpacked pending instructions.",
+        "locator": {
+          "section": "7. Handle stock loss after approval"
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "If an approved replacement sells out before packing",
+          "action": "report it to Partner Support and leave the item unpacked pending instructions."
+        }
+      },
+      {
+        "clause_id": "PS-14",
+        "quote": "If the approved replacement costs less, record the lower price in the order screen and leave any payment adjustment to Partner Support.",
+        "locator": {
+          "section": "8. Handle a price difference"
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "If the approved replacement costs less",
+          "action": "record the lower price in the order screen and leave any payment adjustment to Partner Support."
+        }
+      },
+      {
+        "clause_id": "PS-15",
+        "quote": "After packing an approved replacement, mark the preparation slip with the actual item and retain the approval in the order record.",
+        "locator": {
+          "section": "9. Label the approved item"
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "After packing an approved replacement",
+          "action": "mark the preparation slip with the actual item and retain the approval in the order record."
+        }
+      },
+      {
+        "clause_id": "PS-16",
+        "quote": "If the entire order is cancelled while an offer is pending, release the held unit and stop preparing that order.",
+        "locator": {
+          "section": "10. Stop a cancelled order"
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "If the entire order is cancelled while an offer is pending",
+          "action": "release the held unit and stop preparing that order."
+        }
+      }
+    ]
+  },
+  {
+    "document_id": "courier-pickup-wait-v1-scan",
+    "title": "انتظار استلام الطلب من الفرع",
+    "scope_quote": "تُطبّق هذه التعليمات عند استلام الطلبات من نقطة الاستلام في فرع بوابة التين.",
+    "procedures": [
+      {
+        "procedure_id": "courier-pickup-wait:CW-01",
+        "title": "عند الوصول",
+        "locator": {
+          "section": "١. عند الوصول",
+          "table_row": 2,
+          "page": 1
+        },
+        "clause_ids": [
+          "CW-01"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-02",
+        "title": "تأخر التجهيز",
+        "locator": {
+          "section": "٢. تأخر التجهيز",
+          "table_row": 3,
+          "page": 1
+        },
+        "clause_ids": [
+          "CW-02"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-03",
+        "title": "إغلاق نقطة الاستلام",
+        "locator": {
+          "section": "٣. إغلاق نقطة الاستلام",
+          "table_row": 4,
+          "page": 1
+        },
+        "clause_ids": [
+          "CW-03"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-04",
+        "title": "قبل المغادرة",
+        "locator": {
+          "section": "٤. قبل المغادرة",
+          "table_row": 5,
+          "page": 1
+        },
+        "clause_ids": [
+          "CW-04"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-10",
+        "title": "تعذّر تسجيل الوصول",
+        "locator": {
+          "section": "٥. تعذّر تسجيل الوصول",
+          "table_row": 6,
+          "page": 1
+        },
+        "clause_ids": [
+          "CW-10"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-11",
+        "title": "استلام أكثر من طلب",
+        "locator": {
+          "section": "٦. استلام أكثر من طلب",
+          "table_row": 7,
+          "page": 1
+        },
+        "clause_ids": [
+          "CW-11"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-12",
+        "title": "الدخول من الباب الصحيح",
+        "locator": {
+          "section": "٧. الدخول من الباب الصحيح",
+          "table_row": 8,
+          "page": 1
+        },
+        "clause_ids": [
+          "CW-12"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-13",
+        "title": "طلب معلّم بأنه جاهز",
+        "locator": {
+          "section": "٨. طلب معلّم بأنه جاهز",
+          "table_row": 9,
+          "page": 1
+        },
+        "clause_ids": [
+          "CW-13"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-14",
+        "title": "اختلاف ملصق الاستلام",
+        "locator": {
+          "section": "٩. اختلاف ملصق الاستلام",
+          "table_row": 10,
+          "page": 1
+        },
+        "clause_ids": [
+          "CW-14"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-15",
+        "title": "طلب الإلغاء من الفرع",
+        "locator": {
+          "section": "١٠. طلب الإلغاء من الفرع",
+          "table_row": 11,
+          "page": 1
+        },
+        "clause_ids": [
+          "CW-15"
+        ]
+      },
+      {
+        "procedure_id": "courier-pickup-wait:CW-16",
+        "title": "إغلاق بلاغ الانتظار",
+        "locator": {
+          "section": "١١. إغلاق بلاغ الانتظار",
+          "table_row": 12,
+          "page": 1
+        },
+        "clause_ids": [
+          "CW-16"
+        ]
+      }
+    ],
+    "clauses": [
+      {
+        "clause_id": "CW-01",
+        "quote": "ابدأ حساب الانتظار عند اختيار «وصلت إلى الفرع» في التطبيق. سجّل رقم الطلب، مثل TF-418، ووقت الوصول.",
+        "locator": {
+          "section": "١. عند الوصول",
+          "table_row": 2,
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "courier checks in at pickup",
+          "action": "start wait timer and record order ID and check-in time"
+        }
+      },
+      {
+        "clause_id": "CW-02",
+        "quote": "إذا بقي الطلب قيد التجهيز بعد ١٥ دقيقة من تسجيل الوصول، أرسل بلاغ «تأخر الاستلام» إلى مسؤول التوزيع.",
+        "locator": {
+          "section": "٢. تأخر التجهيز",
+          "table_row": 3,
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "action": "notify dispatch",
+          "threshold": {
+            "value": 15,
+            "unit": "minute",
+            "operator": ">="
+          },
+          "trigger": "elapsed since check-in and order still being prepared"
+        }
+      },
+      {
+        "clause_id": "CW-03",
+        "quote": "إذا وجدت نقطة الاستلام مغلقة، اتصل بمسؤول التوزيع فوراً ولا تنتظر انتهاء المهلة.",
+        "locator": {
+          "section": "٣. إغلاق نقطة الاستلام",
+          "table_row": 4,
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "pickup counter closed",
+          "action": "contact dispatch immediately",
+          "negation": "do not wait out the timer",
+          "exception_to": "CW-02"
+        }
+      },
+      {
+        "clause_id": "CW-04",
+        "quote": "لا تغادر الفرع حتى يوجّهك مسؤول التوزيع بالمغادرة أو يسلّمك موظف الفرع الطلب.",
+        "locator": {
+          "section": "٤. قبل المغادرة",
+          "table_row": 5,
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "negation": "do not leave the branch",
+          "exceptions": [
+            "dispatch instructs departure",
+            "branch staff hand over the order"
+          ]
+        }
+      },
+      {
+        "clause_id": "CW-10",
+        "quote": "إذا تعذّر تسجيل الوصول في التطبيق، أبلغ مسؤول التوزيع بوقت وصولك الفعلي واطلب منه تسجيله في البلاغ.",
+        "locator": {
+          "section": "٥. تعذّر تسجيل الوصول",
+          "table_row": 6,
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا تعذّر تسجيل الوصول في التطبيق",
+          "action": "أبلغ مسؤول التوزيع بوقت وصولك الفعلي واطلب منه تسجيله في البلاغ."
+        }
+      },
+      {
+        "clause_id": "CW-11",
+        "quote": "إذا عُيّنت لك عدة طلبات من الفرع نفسه، تابع وقت الانتظار لكل طلب على حدة وسجّل وصولك لكل طلب مفتوح.",
+        "locator": {
+          "section": "٦. استلام أكثر من طلب",
+          "table_row": 7,
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا عُيّنت لك عدة طلبات من الفرع نفسه",
+          "action": "تابع وقت الانتظار لكل طلب على حدة وسجّل وصولك لكل طلب مفتوح."
+        }
+      },
+      {
+        "clause_id": "CW-12",
+        "quote": "إذا وجدت مدخل الخدمة مغلقاً والمدخل العام مفتوحاً، اسأل موظف الاستقبال عن نقطة الاستلام المخصصة للمندوبين.",
+        "locator": {
+          "section": "٧. الدخول من الباب الصحيح",
+          "table_row": 8,
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا وجدت مدخل الخدمة مغلقاً والمدخل العام مفتوحاً",
+          "action": "اسأل موظف الاستقبال عن نقطة الاستلام المخصصة للمندوبين."
+        }
+      },
+      {
+        "clause_id": "CW-13",
+        "quote": "إذا ظهر الطلب جاهزاً ولم تجده على رف الاستلام، اطلب من موظف الفرع تحديد مكانه برقم الطلب قبل تحديث حالته.",
+        "locator": {
+          "section": "٨. طلب معلّم بأنه جاهز",
+          "table_row": 9,
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا ظهر الطلب جاهزاً ولم تجده على رف الاستلام",
+          "action": "اطلب من موظف الفرع تحديد مكانه برقم الطلب قبل تحديث حالته."
+        }
+      },
+      {
+        "clause_id": "CW-14",
+        "quote": "إذا عرض عليك الموظف كيساً يحمل رقم طلب مختلفاً، اتركه عند نقطة الاستلام واطلب الكيس المطابق.",
+        "locator": {
+          "section": "٩. اختلاف ملصق الاستلام",
+          "table_row": 10,
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا عرض عليك الموظف كيساً يحمل رقم طلب مختلفاً",
+          "action": "اتركه عند نقطة الاستلام واطلب الكيس المطابق."
+        }
+      },
+      {
+        "clause_id": "CW-15",
+        "quote": "إذا طلب منك موظف الفرع إلغاء الطلب أثناء الانتظار، انقل السبب إلى مسؤول التوزيع ولا تلغِ الطلب من حسابك.",
+        "locator": {
+          "section": "١٠. طلب الإلغاء من الفرع",
+          "table_row": 11,
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "إذا طلب منك موظف الفرع إلغاء الطلب أثناء الانتظار",
+          "action": "انقل السبب إلى مسؤول التوزيع ولا تلغِ الطلب من حسابك.",
+          "negation": "لا تلغِ الطلب من حسابك"
+        }
+      },
+      {
+        "clause_id": "CW-16",
+        "quote": "عند استلام طلب سبق أن رفعت عنه بلاغ تأخير، سجّل وقت الاستلام في البلاغ نفسه ليغلقه مسؤول التوزيع.",
+        "locator": {
+          "section": "١١. إغلاق بلاغ الانتظار",
+          "table_row": 12,
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "courier",
+          "trigger": "عند استلام طلب سبق أن رفعت عنه بلاغ تأخير",
+          "action": "سجّل وقت الاستلام في البلاغ نفسه ليغلقه مسؤول التوزيع."
+        }
+      }
+    ]
+  },
+  {
+    "document_id": "employee-delayed-order-v1-scan",
+    "title": "Delayed order support triage",
+    "scope_quote": "Support desk memo. Apply the relevant procedure to late deliveries in the Sidr Square queue, such as SD-286.",
+    "procedures": [
+      {
+        "procedure_id": "employee-delayed-order:ED-01",
+        "title": "Open the delay case",
+        "locator": {
+          "section": "1. Open the delay case",
+          "page": 1
+        },
+        "clause_ids": [
+          "ED-01"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-02",
+        "title": "Escalate a stalled status",
+        "locator": {
+          "section": "2. Escalate a stalled status",
+          "page": 1
+        },
+        "clause_ids": [
+          "ED-02"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-03",
+        "title": "Message the customer",
+        "locator": {
+          "section": "3. Message the customer",
+          "page": 1
+        },
+        "clause_ids": [
+          "ED-03"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-10",
+        "title": "Reuse an open case",
+        "locator": {
+          "section": "4. Reuse an open case",
+          "page": 1
+        },
+        "clause_ids": [
+          "ED-10"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-11",
+        "title": "Handle a missing estimate",
+        "locator": {
+          "section": "5. Handle a missing estimate",
+          "page": 1
+        },
+        "clause_ids": [
+          "ED-11"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-12",
+        "title": "Transfer a misrouted case",
+        "locator": {
+          "section": "6. Transfer a misrouted case",
+          "page": 1
+        },
+        "clause_ids": [
+          "ED-12"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-13",
+        "title": "Route a cancellation request",
+        "locator": {
+          "section": "7. Route a cancellation request",
+          "page": 1
+        },
+        "clause_ids": [
+          "ED-13"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-14",
+        "title": "Track related delays",
+        "locator": {
+          "section": "8. Track related delays",
+          "page": 1
+        },
+        "clause_ids": [
+          "ED-14"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-15",
+        "title": "Handle restored tracking",
+        "locator": {
+          "section": "9. Handle restored tracking",
+          "page": 1
+        },
+        "clause_ids": [
+          "ED-15"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-16",
+        "title": "Close a recovered delivery",
+        "locator": {
+          "section": "10. Close a recovered delivery",
+          "page": 1
+        },
+        "clause_ids": [
+          "ED-16"
+        ]
+      },
+      {
+        "procedure_id": "employee-delayed-order:ED-04",
+        "title": "End-of-shift memo",
+        "locator": {
+          "section": "11. End-of-shift memo",
+          "page": 1
+        },
+        "clause_ids": [
+          "ED-04"
+        ]
+      }
+    ],
+    "clauses": [
+      {
+        "clause_id": "ED-01",
+        "quote": "When the displayed delivery estimate is at least 12 minutes past, open a Delay case and record the order ID and last status timestamp.",
+        "locator": {
+          "section": "1. Open the delay case",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "action": "open Delay case and record order ID and last status time",
+          "threshold": {
+            "value": 12,
+            "unit": "minute",
+            "operator": ">="
+          }
+        }
+      },
+      {
+        "clause_id": "ED-02",
+        "quote": "If tracking has not refreshed for 8 minutes after the case opens, the support agent must page the dispatch desk directly.",
+        "locator": {
+          "section": "2. Escalate a stalled status",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "actor": "support agent",
+          "action": "page dispatch directly",
+          "threshold": {
+            "value": 8,
+            "unit": "minute",
+            "operator": ">="
+          }
+        }
+      },
+      {
+        "clause_id": "ED-03",
+        "quote": "Send the customer a status update from the case. Do not promise a new delivery time until Dispatch confirms it.",
+        "locator": {
+          "section": "3. Message the customer",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "action": "send a status update",
+          "negation": "do not promise new delivery time",
+          "exceptions": [
+            "Dispatch confirms a new time"
+          ]
+        }
+      },
+      {
+        "clause_id": "ED-10",
+        "quote": "If the same order already has an open Delay case, add the customer's latest message there and keep its original opening time.",
+        "locator": {
+          "section": "4. Reuse an open case",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If the same order already has an open Delay case",
+          "action": "add the customer's latest message there and keep its original opening time.",
+          "exception_to": "ED-01"
+        }
+      },
+      {
+        "clause_id": "ED-11",
+        "quote": "If the order timeline shows no delivery estimate, request the last confirmed status from Dispatch and record that the estimate is unavailable.",
+        "locator": {
+          "section": "5. Handle a missing estimate",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If the order timeline shows no delivery estimate",
+          "action": "request the last confirmed status from Dispatch and record that the estimate is unavailable."
+        }
+      },
+      {
+        "clause_id": "ED-12",
+        "quote": "If the order belongs to another branch queue, transfer the existing case to that queue with the status history attached.",
+        "locator": {
+          "section": "6. Transfer a misrouted case",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If the order belongs to another branch queue",
+          "action": "transfer the existing case to that queue with the status history attached."
+        }
+      },
+      {
+        "clause_id": "ED-13",
+        "quote": "If the customer asks to cancel a late order, link a Cancellation Request and route it to the cancellations desk.",
+        "locator": {
+          "section": "7. Route a cancellation request",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If the customer asks to cancel a late order",
+          "action": "link a Cancellation Request and route it to the cancellations desk."
+        }
+      },
+      {
+        "clause_id": "ED-14",
+        "quote": "If several late orders share one dispatch incident, keep a case for each order and add the shared incident ID to each case.",
+        "locator": {
+          "section": "8. Track related delays",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If several late orders share one dispatch incident",
+          "action": "keep a case for each order and add the shared incident ID to each case."
+        }
+      },
+      {
+        "clause_id": "ED-15",
+        "quote": "If tracking resumes during an open Delay case, record the fresh status and notify the case owner that the stalled-tracking alert can be cleared.",
+        "locator": {
+          "section": "9. Handle restored tracking",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "If tracking resumes during an open Delay case",
+          "action": "record the fresh status and notify the case owner that the stalled-tracking alert can be cleared."
+        }
+      },
+      {
+        "clause_id": "ED-16",
+        "quote": "When the timeline confirms delivery, send the customer a closure message and record the confirmation time before closing the case.",
+        "locator": {
+          "section": "10. Close a recovered delivery",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "trigger": "When the timeline confirms delivery",
+          "action": "send the customer a closure message and record the confirmation time before closing the case."
+        }
+      },
+      {
+        "clause_id": "ED-04",
+        "quote": "Before signing out, copy each open Delay case ID into the shift email to the duty lead.",
+        "locator": {
+          "section": "11. End-of-shift memo",
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "employee",
+          "action": "copy each open case ID into shift email"
+        }
+      }
+    ]
+  },
+  {
+    "document_id": "partner-packing-sealing-v1-scan",
+    "title": "تعبئة الطلبات وإغلاق الأكياس",
+    "scope_quote": "يستخدم موظف التعبئة هذه الإجراءات قبل نقل طلب مثل ZN-358 إلى نقطة الاستلام.",
+    "procedures": [
+      {
+        "procedure_id": "partner-packing-sealing:PP-01",
+        "title": "مطابقة الملصق",
+        "locator": {
+          "section": "١. مطابقة الملصق",
+          "table_row": 2,
+          "page": 1
+        },
+        "clause_ids": [
+          "PP-01"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-02",
+        "title": "إغلاق الأكياس",
+        "locator": {
+          "section": "٢. إغلاق الأكياس",
+          "table_row": 3,
+          "page": 1
+        },
+        "clause_ids": [
+          "PP-02"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-03",
+        "title": "فحص الختم",
+        "locator": {
+          "section": "٣. فحص الختم",
+          "table_row": 4,
+          "page": 1
+        },
+        "clause_ids": [
+          "PP-03"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-10",
+        "title": "مطابقة محتوى الطلب",
+        "locator": {
+          "section": "٤. مطابقة محتوى الطلب",
+          "table_row": 5,
+          "page": 1
+        },
+        "clause_ids": [
+          "PP-10"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-11",
+        "title": "فصل البارد عن الساخن",
+        "locator": {
+          "section": "٥. فصل البارد عن الساخن",
+          "table_row": 6,
+          "page": 1
+        },
+        "clause_ids": [
+          "PP-11"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-12",
+        "title": "تثبيت المشروبات",
+        "locator": {
+          "section": "٦. تثبيت المشروبات",
+          "table_row": 7,
+          "page": 1
+        },
+        "clause_ids": [
+          "PP-12"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-13",
+        "title": "التعامل مع ملاحظة الحساسية",
+        "locator": {
+          "section": "٧. التعامل مع ملاحظة الحساسية",
+          "table_row": 8,
+          "page": 1
+        },
+        "clause_ids": [
+          "PP-13"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-14",
+        "title": "استبدال كيس مبتل",
+        "locator": {
+          "section": "٨. استبدال كيس مبتل",
+          "table_row": 9,
+          "page": 1
+        },
+        "clause_ids": [
+          "PP-14"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-15",
+        "title": "وسم العبوات الهشة",
+        "locator": {
+          "section": "٩. وسم العبوات الهشة",
+          "table_row": 10,
+          "page": 1
+        },
+        "clause_ids": [
+          "PP-15"
+        ]
+      },
+      {
+        "procedure_id": "partner-packing-sealing:PP-16",
+        "title": "اختيار رف التجهيز",
+        "locator": {
+          "section": "١٠. اختيار رف التجهيز",
+          "table_row": 11,
+          "page": 1
+        },
+        "clause_ids": [
+          "PP-16"
+        ]
+      }
+    ],
+    "clauses": [
+      {
+        "clause_id": "PP-01",
+        "quote": "طابق رقم الطلب على ملصق كل كيس مع شاشة التجهيز قبل الإغلاق. إذا اختلف الرقم، أعد الكيس إلى طاولة التجهيز.",
+        "locator": {
+          "section": "١. مطابقة الملصق",
+          "table_row": 2,
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "action": "match each bag's label to screen; return mismatched bags"
+        }
+      },
+      {
+        "clause_id": "PP-02",
+        "quote": "أغلق فتحات الأكياس بختم ظاهر. إذا كان الكيس ورقياً ولا يقبل الختم، استخدم شريط الإغلاق عند طاولة التعبئة.",
+        "locator": {
+          "section": "٢. إغلاق الأكياس",
+          "table_row": 3,
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "action": "seal bag openings",
+          "exceptions": [
+            "use packing-station tape for a paper bag that cannot take the seal"
+          ]
+        }
+      },
+      {
+        "clause_id": "PP-03",
+        "quote": "إذا تمزّق الختم قبل تسليم الطلب للمندوب، أعد إغلاق الكيس بختم جديد. لا تسلّم كيساً بختم ممزق.",
+        "locator": {
+          "section": "٣. فحص الختم",
+          "table_row": 4,
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "action": "reseal before courier handover",
+          "negation": "do not hand over a bag with a torn seal"
+        }
+      },
+      {
+        "clause_id": "PP-10",
+        "quote": "قبل إغلاق الكيس، طابق كل صنف وكميته مع شاشة التجهيز. أعد الطلب الناقص إلى محطة التحضير لاستكماله.",
+        "locator": {
+          "section": "٤. مطابقة محتوى الطلب",
+          "table_row": 5,
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "قبل إغلاق الكيس",
+          "action": "طابق كل صنف وكميته مع شاشة التجهيز. أعد الطلب الناقص إلى محطة التحضير لاستكماله."
+        }
+      },
+      {
+        "clause_id": "PP-11",
+        "quote": "إذا جمع الطلب أصنافاً ساخنة وباردة، ضع كل مجموعة في كيس مستقل وألصق رقم الطلب على الكيسين.",
+        "locator": {
+          "section": "٥. فصل البارد عن الساخن",
+          "table_row": 6,
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "إذا جمع الطلب أصنافاً ساخنة وباردة",
+          "action": "ضع كل مجموعة في كيس مستقل وألصق رقم الطلب على الكيسين."
+        }
+      },
+      {
+        "clause_id": "PP-12",
+        "quote": "إذا تضمن الطلب مشروباً، ثبّت الكوب في حامل عمودي داخل كيس منفصل وتأكد من إحكام الغطاء قبل الإغلاق.",
+        "locator": {
+          "section": "٦. تثبيت المشروبات",
+          "table_row": 7,
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "إذا تضمن الطلب مشروباً",
+          "action": "ثبّت الكوب في حامل عمودي داخل كيس منفصل وتأكد من إحكام الغطاء قبل الإغلاق."
+        }
+      },
+      {
+        "clause_id": "PP-13",
+        "quote": "إذا ظهرت ملاحظة حساسية على الطلب، اعرضها على مشرف التحضير قبل الإغلاق وانتظر تأكيده لمطابقة المحتوى.",
+        "locator": {
+          "section": "٧. التعامل مع ملاحظة الحساسية",
+          "table_row": 8,
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "إذا ظهرت ملاحظة حساسية على الطلب",
+          "action": "اعرضها على مشرف التحضير قبل الإغلاق وانتظر تأكيده لمطابقة المحتوى."
+        }
+      },
+      {
+        "clause_id": "PP-14",
+        "quote": "إذا ابتل الكيس أثناء التعبئة، افحص العبوات الداخلية واستبدل الكيس قبل الختم. أبلغ المشرف إذا تضررت عبوة داخلية.",
+        "locator": {
+          "section": "٨. استبدال كيس مبتل",
+          "table_row": 9,
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "إذا ابتل الكيس أثناء التعبئة",
+          "action": "افحص العبوات الداخلية واستبدل الكيس قبل الختم. أبلغ المشرف إذا تضررت عبوة داخلية."
+        }
+      },
+      {
+        "clause_id": "PP-15",
+        "quote": "إذا احتوى الكيس على عبوة هشة، ألصق علامة المناولة على وجه الكيس الظاهر لموظف نقطة الاستلام.",
+        "locator": {
+          "section": "٩. وسم العبوات الهشة",
+          "table_row": 10,
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "إذا احتوى الكيس على عبوة هشة",
+          "action": "ألصق علامة المناولة على وجه الكيس الظاهر لموظف نقطة الاستلام."
+        }
+      },
+      {
+        "clause_id": "PP-16",
+        "quote": "بعد ختم الأكياس، ضع الطلب في رف الفئة المبيّنة على شاشة التجهيز واجعل ملصق الرقم ظاهراً من جهة الممر.",
+        "locator": {
+          "section": "١٠. اختيار رف التجهيز",
+          "table_row": 11,
+          "page": 1
+        },
+        "facts": {
+          "responsible_role": "partner",
+          "trigger": "بعد ختم الأكياس",
+          "action": "ضع الطلب في رف الفئة المبيّنة على شاشة التجهيز واجعل ملصق الرقم ظاهراً من جهة الممر."
+        }
+      }
+    ]
+  }
+]

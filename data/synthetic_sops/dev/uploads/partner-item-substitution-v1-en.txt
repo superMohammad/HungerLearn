@@ -1,0 +1,36 @@
+Item substitutions
+Synthetic training data
+Copper Olive Kitchen | Olive Lane branch | Version 1
+To: Partner restaurant staff
+
+Follow this checklist when a paid order such as ZN-624 contains an unavailable item.
+
+[ ] 1. Check the preference
+If the customer selected No substitutions, mark the item unavailable and notify Partner Support. Do not suggest a replacement.
+
+[ ] 2. Request approval
+When substitutions are allowed, send one replacement of equal or lower price through the order screen. Pack it only after the customer approves it there.
+
+[ ] 3. Close an unanswered request
+If the customer has not answered after 7 minutes, mark the item unavailable and notify Partner Support. Keep any remaining items in preparation.
+
+[ ] 4. Confirm shelf availability
+Before offering a replacement, check available stock and tell the prep station to hold one unit until the request is resolved.
+
+[ ] 5. Match the requested quantity
+If a customer ordered several units, offer a replacement only when you can supply the full requested quantity at the allowed price.
+
+[ ] 6. Record a rejected offer
+If the customer rejects the offer, mark that item unavailable and send Partner Support the rejection recorded in the order screen.
+
+[ ] 7. Handle stock loss after approval
+If an approved replacement sells out before packing, report it to Partner Support and leave the item unpacked pending instructions.
+
+[ ] 8. Handle a price difference
+If the approved replacement costs less, record the lower price in the order screen and leave any payment adjustment to Partner Support.
+
+[ ] 9. Label the approved item
+After packing an approved replacement, mark the preparation slip with the actual item and retain the approval in the order record.
+
+[ ] 10. Stop a cancelled order
+If the entire order is cancelled while an offer is pending, release the held unit and stop preparing that order.

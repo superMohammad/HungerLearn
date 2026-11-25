@@ -5,7 +5,7 @@ description: Use when a Hunger Learn change is finished and about to become a pu
 # Get a change PR-ready
 
 1. Make sure you are on a branch, not `main` (`git switch -c <type>/<slug>` if needed).
-2. Run `scripts/check` and keep the summary of its output. If it fails, fix the root cause first.
+2. Run `node scripts/check.mjs` and keep the summary of its output. If it fails, fix the root cause first.
 3. Collect evidence:
    - the new/changed tests and their output (before/after for bugs);
    - `.verify/<branch>/` results for every touched feature-map row (verify-app skill);

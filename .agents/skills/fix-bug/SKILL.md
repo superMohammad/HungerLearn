@@ -12,7 +12,7 @@ description: Use when fixing a reported bug or failing behaviour in Hunger Learn
    Run it and keep the failing output.
 3. Find the root cause. Don't patch the symptom. Don't add a timeout, retry, fallback or comment as the fix.
 4. Fix it. Keep the diff minimal and leave unrelated code untouched.
-5. Prove it: run the new test (now passing), then `scripts/check-fast`, then `scripts/check`.
+5. Prove it: run the new test (now passing), then `node scripts/check-fast.mjs`, then `node scripts/check.mjs`.
    UI bugs: also run the verify-app skill for the affected feature-map row.
 6. Search for the same pattern elsewhere (`rg`) and list any siblings in the PR; don't fix them here.
 7. If this bug class could come back, run the encode-mistake skill.
@@ -20,4 +20,4 @@ description: Use when fixing a reported bug or failing behaviour in Hunger Learn
 Report: failing output (before), passing output (after), root cause in two sentences, siblings found.
 
 Never delete or skip tests, loosen types, add `eslint-disable` / `# noqa` / `type: ignore`, or edit CI or
-hooks to get green (`scripts/guard-diff` fails on these).
+hooks to get green (`node scripts/guard-diff.mjs` fails on these).

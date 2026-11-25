@@ -1,16 +1,16 @@
 # High-risk paths and the rules that guard everything else need a code owner's review.
-# Add a second owner per line as the team grows; one owner cannot review their own PR.
-/.github/                       @superMohammad
-/.githooks/                     @superMohammad
-/.claude/                       @superMohammad
-/.codex/                        @superMohammad
-/scripts/                       @superMohammad
-/AGENTS.md                      @superMohammad
-/web/src/lib/session.ts         @superMohammad
-/web/src/lib/accounts.ts        @superMohammad
-/web/db/migrations/             @superMohammad
-/web/eslint.config.mjs          @superMohammad
-/web/tsconfig.json              @superMohammad
-/web/src/lib/sql-guard.ts       @superMohammad
-/web/src/lib/db.ts              @superMohammad
-/web/src/lib/readiness.ts       @superMohammad
+# Any one listed owner other than the PR author can approve.
+/.github/                       @superMohammad @altayariyasser @vGolden25
+/.githooks/                     @superMohammad @altayariyasser @vGolden25
+/.claude/                       @superMohammad @altayariyasser @vGolden25
+/.codex/                        @superMohammad @altayariyasser @vGolden25
+/scripts/                       @superMohammad @altayariyasser @vGolden25
+/AGENTS.md                      @superMohammad @altayariyasser @vGolden25
+/web/src/lib/session.ts         @superMohammad @altayariyasser @vGolden25
+/web/src/lib/accounts.ts        @superMohammad @altayariyasser @vGolden25
+/web/db/migrations/             @superMohammad @altayariyasser @vGolden25
+/web/eslint.config.mjs          @superMohammad @altayariyasser @vGolden25
+/web/tsconfig.json              @superMohammad @altayariyasser @vGolden25
+/web/src/lib/sql-guard.ts       @superMohammad @altayariyasser @vGolden25
+/web/src/lib/db.ts              @superMohammad @altayariyasser @vGolden25
+/web/src/lib/readiness.ts       @superMohammad @altayariyasser @vGolden25

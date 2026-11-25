@@ -6,7 +6,7 @@
 ## What changes for users
 
 ## Evidence
-<!-- Commands + output (scripts/check summary), failing-then-passing test for bugs,
+<!-- Commands + output (node scripts/check.mjs summary), failing-then-passing test for bugs,
      .verify/<branch>/ screenshots for each touched docs/feature-map.md row in AR and EN,
      eval / fixture delta on dev/ data for prompt, model or extraction changes. -->
 
@@ -18,7 +18,7 @@
 <!-- Required for Enhanced and High-risk: what could break, how to revert, data/migration impact. -->
 
 ## Checklist
-- [ ] `scripts/check` passes locally
+- [ ] `node scripts/check.mjs` passes locally
 - [ ] No skipped/deleted tests, suppressions, loosened types/lint, or CI/hook edits (or label `allow-weakening` + reason)
 - [ ] Diff limited to the issue; refactors separate from behaviour changes
 - [ ] UI strings only in `src/lib/i18n/{ar,en}.ts`; Arabic copy native Saudi Arabic

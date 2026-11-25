@@ -1,5 +1,5 @@
-# Required checks for every pull request. Each job runs the same scripts/check that agents, git hooks
-# and humans run locally, so "green" means the same thing everywhere.
+# Required checks for every pull request. Each job runs the same node scripts/check.mjs that agents,
+# git hooks and humans run locally, so "green" means the same thing everywhere.
 # media is checked on the GPU host only (CUDA-pinned torch); see AGENTS.md.
 name: ci
 on:
@@ -29,7 +29,94 @@ jobs:
         with: { node-version: 22, cache: pnpm, cache-dependency-path: web/pnpm-lock.yaml }
       - run: pnpm install --frozen-lockfile
         working-directory: web
-      - run: scripts/check web
+      - run: node scripts/check.mjs web
+
+  # The team works on Linux, macOS and Windows: the workflow scripts and hooks must behave the same on all three.
+  workflow-scripts:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: pnpm/action-setup@v4
+        with: { package_json_file: web/package.json }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm, cache-dependency-path: web/pnpm-lock.yaml }
+      - run: pnpm install --frozen-lockfile
+        working-directory: web
+      - run: node scripts/check.mjs scripts
+      - name: web unit tests (incl. the server-action session scan) on this OS
+        run: pnpm test
+        working-directory: web
+      - name: Git hooks run under the platform's sh (Git for Windows on Windows)
+        shell: bash
+        run: |
+          git config core.hooksPath .githooks
+          printf 'refs/heads/main a refs/heads/main b\n' | sh .githooks/pre-push && { echo "pre-push let main through" >&2; exit 1; }
+          printf 'refs/heads/feat a refs/heads/feat b\n' | sh .githooks/pre-push
+          echo '{}' | node scripts/agent-session-start-hook.mjs
+
+  # Runtime verification of the feature-map rows that need no GPU host (node scripts/verify-app.mjs).
+  web-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      db:
+        image: pgvector/pgvector:pg17
+        env: { POSTGRES_USER: hungerlearn, POSTGRES_PASSWORD: hungerlearn, POSTGRES_DB: hungerlearn }
+        ports: ["5442:5432"]
+        options: --health-cmd "pg_isready -U hungerlearn" --health-interval 2s --health-retries 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { package_json_file: web/package.json }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm, cache-dependency-path: web/pnpm-lock.yaml }
+      - name: Install, configure, migrate, seed, build
+        working-directory: web
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium
+          # LLM, docproc and media are not used by these rows; their settings only need to exist.
+          cat > .env.local <<EOF
+          DATABASE_URL=postgresql://hungerlearn:hungerlearn@127.0.0.1:5442/hungerlearn
+          READONLY_DATABASE_URL=postgresql://hl_readonly:hl_readonly@127.0.0.1:5442/hungerlearn
+          LLM_BASE_URL=http://127.0.0.1:9/v1
+          LLM_MODEL=none
+          LLM_API_KEY=none
+          LLM_REASONING_EFFORT=none
+          DOCPROC_DIR=$GITHUB_WORKSPACE/-/docproc
+          DOCPROC_BIN=/bin/false
+          MEDIA_DIR=$GITHUB_WORKSPACE/media
+          MEDIA_BIN=/bin/false
+          MEDIA_OUT_DIR=$RUNNER_TEMP/media-out
+          UPLOAD_DIR=$RUNNER_TEMP/uploads
+          TRAINING_PROMPT_PATH=$GITHUB_WORKSPACE/hunger-learn-training-generator-prompt.md
+          OLLAMA_URL=http://127.0.0.1:9
+          DEMO_PASSWORD=ci-demo-password
+          EOF
+          pnpm db:migrate
+          pnpm db:seed
+          pnpm build
+      - name: Start the app and verify feature-map rows
+        run: |
+          (cd web && pnpm start > "$RUNNER_TEMP/app.log" 2>&1 &)
+          for _ in $(seq 1 60); do curl -fsS -o /dev/null http://localhost:3000/signin && break; sleep 1; done
+          node scripts/verify-app.mjs
+      - name: Upload evidence (screenshots, traces, report)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verify-evidence
+          path: .verify/
+          retention-days: 14
+      - name: App log on failure
+        if: failure()
+        run: tail -n 100 "$RUNNER_TEMP/app.log"
 
   docproc:
     runs-on: ubuntu-latest
@@ -40,8 +127,8 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - name: Install docproc (offline test extras)
         working-directory: ./-/docproc
-        run: uv venv --python 3.12 .venv-linux && VIRTUAL_ENV=.venv-linux uv pip install -e ".[dev,pg]"
-      - run: scripts/check docproc
+        run: uv venv --python 3.12 .venv-linux && uv pip install --python .venv-linux -e ".[dev,pg]"
+      - run: node scripts/check.mjs docproc
 
   docproc-postgres:
     runs-on: ubuntu-latest
@@ -59,7 +146,7 @@ jobs:
         working-directory: ./-/docproc
         env: { DOCPROC_PG_DSN: "postgresql://docproc:docproc@localhost:5432/docproc" }
         run: |
-          uv venv --python 3.12 .venv-linux && VIRTUAL_ENV=.venv-linux uv pip install -e ".[dev,pg]"
+          uv venv --python 3.12 .venv-linux && uv pip install --python .venv-linux -e ".[dev,pg]"
           .venv-linux/bin/pytest -q -m postgres
 
   secrets:

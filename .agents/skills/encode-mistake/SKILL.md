@@ -13,7 +13,7 @@ Take the highest rung that works:
    `web/eslint.config.mjs`) or a ruff rule in the package's `pyproject.toml`. The message must say what
    to do instead.
 4. Make it a test: a regression, architecture or property-based test that fails on the old code.
-5. Make it a CI gate: wire the check into `scripts/check` (and so into CI and the agent hooks).
+5. Make it a CI gate: wire the check into `node scripts/check.mjs` (and so into CI and the agent hooks).
 6. Write it down: only for judgment calls, one line with the reason in the right AGENTS.md or Skill.
 
 Steps:

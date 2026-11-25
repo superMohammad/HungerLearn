@@ -12,12 +12,12 @@ description: Use after changing anything a user sees or a flow in the Hunger Lea
    `node scripts/verify-app.mjs F01 F02` from the repo root. It walks each row in `/ar/…` and `/en/…` with
    Playwright (`web/e2e/feature-map.spec.ts`) and saves screenshots, traces and an HTML report to
    `.verify/<branch>/`. If you change one of these flows, extend its spec in the same PR.
-4. Rows that need the GPU host (F03 upload, F04 generation and video, F05 learner flow with generated
-   items, F06 text-to-SQL, F07 v2): if Ollama is unreachable, say so and verify the non-LLM parts only;
+4. Rows that need the LLM (F03 upload, F04 generation and video, F05 learner flow with generated
+   items, F06 text-to-SQL, F07 v2): if the LLM endpoint is unreachable, say so and verify the non-LLM parts only;
    never add a fallback to get around it. Walk them with the Playwright browser tools (MCP in both tools),
    sign in with the seeded demo accounts (the user gives you `DEMO_PASSWORD`; never read `.env*` files),
-   and save one screenshot per row and language (`.verify/<branch>/F03-ar.png`). Video renders are verified
-   on the GPU host staging app: `BASE_URL=http://<GPU_HOST>:3000 node scripts/verify-app.mjs`.
+   and save one screenshot per row and language (`.verify/<branch>/F03-ar.png`). Video renders work only on
+   the project owner's GPU machine; elsewhere, say video was not verified.
 5. Look at the screenshots, not only the pass/fail: a green test whose screenshot shows a spinner or an
    error proves nothing. Check RTL/LTR direction and that no UI string is hard-coded in one language.
 6. Report per row: pass/fail, what you saw, evidence paths. If something fails, report it. Never edit the

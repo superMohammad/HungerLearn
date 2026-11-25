@@ -20,7 +20,7 @@ What exists today:
 | `docs/` | `design-identity.md` (mandatory UI identity), `feature-map.md` (user-visible features and their proof), `rules-log.md` (mistakes turned into checks), `plans/` (approved Enhanced/High-risk plans). |
 | `universal-ai-engineering-workflow.html` | The research and reasoning behind the Workflow section. Read it to understand why; this file is the rule. |
 | `.claude/`, `.codex/` | Thin per-tool adapters: hooks that call the shared `scripts/agent-*-hook.mjs`, the `reviewer` subagent, MCP servers (Playwright, Context7). |
-| `scripts/` | Plain Node, no dependencies, same on Linux, macOS and Windows: `check.mjs`, `check-fast.mjs`, `guard-diff.mjs`, `verify-app.mjs` (verification), `agent-*-hook.mjs` (tool hooks), `setup-teammate.mjs` (laptop without GPU). `setup-gpu-host.sh` (bash) is for the team's Ubuntu GPU machine only. |
+| `scripts/` | Plain Node, no dependencies, same on Linux, macOS and Windows: `check.mjs`, `check-fast.mjs`, `guard-diff.mjs`, `verify-app.mjs` (verification), `agent-*-hook.mjs` (tool hooks), `setup-teammate.mjs` (laptop without GPU). |
 | `.githooks/`, `.github/` | Git hooks (pre-commit runs `check-fast`, pre-push blocks `main`); CI, PR and issue templates, CODEOWNERS. |
 
 The top-level directory is literally named `-`. Always quote it or use `./-` / `--` in shell commands (`cd ./-/docproc`, `ls -- -`).
@@ -90,15 +90,14 @@ node scripts/check.mjs                                 # from the repo root, bef
 
 Web specifics (accounts, i18n, background jobs, publishing) are in `web/AGENTS.md`; docproc commands and invariants in `-/docproc/AGENTS.md`; media in `media/AGENTS.md`.
 
-## Team setup and the GPU host
+## Team setup and the LLM
 
-Only one team machine has a GPU (RTX 3090, 24 GB). Everything that needs CUDA runs there and nowhere else: LLM inference (Ollama `gemma4`), NAMAA TTS and lesson-video renders (`hlmedia`), and any future training. Never install CUDA torch or run `hlmedia` on a teammate laptop.
+Every machine is self-contained; no machine serves another. Only the project owner's own machine has a GPU (RTX 3090), and it is private: nobody else reaches it. Lesson videos (NAMAA TTS + `hlmedia`) render only there, by its owner. Never install CUDA torch or run `hlmedia` on a teammate laptop.
 
-- The GPU host and the laptops share a private Tailscale network. The GPU host runs `scripts/setup-gpu-host.sh` once: Ollama listens on the network with one model loaded at a time, and ports 11434 (Ollama) and 3000 (shared staging app) are reachable only over `tailscale0`.
-- A teammate on Linux, macOS or Windows (needs git, Node 22+, pnpm, uv, Docker) runs `GPU_HOST=<tailscale name or IP> DEMO_PASSWORD=<min 8 chars> node scripts/setup-teammate.mjs` (PowerShell: `$env:GPU_HOST="…"; $env:DEMO_PASSWORD="…"; node scripts/setup-teammate.mjs`): local Postgres, docproc with CPU torch (EmbeddingGemma on CPU, same 768-d vectors), web with `LLM_BASE_URL` on the GPU host, and the team git hooks. EmbeddingGemma is a gated Hugging Face model: accept its licence and run `hf auth login` first. Codex users trust the project once so `.codex/hooks.json` runs.
-- Lesson videos render only on the GPU host. Verify video features on the staging app at `http://<GPU_HOST>:3000`.
-- When the GPU host is off, LLM calls fail. That is expected; do not add fallbacks.
-- The Postgres container and the GPU queue are shared: parallel agents (one worktree and branch each) must not run migrations or renders at the same time. `.worktreeinclude` copies the `.env` files into Claude Code worktrees.
+- A teammate on Linux, macOS or Windows (needs git, Node 22+, pnpm, uv, Docker) picks any OpenAI-compatible LLM endpoint (e.g. OpenRouter with their own key, or Ollama on their own machine) and runs `LLM_BASE_URL=<…/v1> LLM_MODEL=<model> LLM_API_KEY=<key> DEMO_PASSWORD=<min 8 chars> node scripts/setup-teammate.mjs` (PowerShell: set each with `$env:NAME="…";` first): local Postgres, docproc with CPU torch (EmbeddingGemma on CPU, same 768-d vectors), web and docproc pointed at that endpoint, and the team git hooks. EmbeddingGemma is a gated Hugging Face model: accept its licence and run `hf auth login` first. Codex users trust the project once so `.codex/hooks.json` runs.
+- If the LLM endpoint is unreachable, LLM calls fail. That is expected; do not add fallbacks.
+- Video features are verified by the GPU machine's owner before a media PR merges.
+- Parallel agents on one machine (one worktree and branch each) share its Postgres container and GPU: they must not run migrations or renders at the same time. `.worktreeinclude` copies the `.env` files into Claude Code worktrees.
 
 ## Synthetic SOP dataset
 

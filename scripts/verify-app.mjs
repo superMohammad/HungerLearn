@@ -2,14 +2,14 @@
 /**
  * Runtime verification: walks docs/feature-map.md rows in a real browser (Arabic and English) against a
  * running app and saves screenshots, traces and an HTML report to .verify/<branch>/.
- * Covers the rows that need no GPU host (F01 landing + language, F02 auth + guards, F06 readiness page).
+ * Covers the rows that need no LLM (F01 landing + language, F02 auth + guards, F06 readiness page).
  *
  * Needs: the app running (cd web && pnpm dev), a migrated and seeded database (pnpm db:migrate &&
  * pnpm db:seed), and DEMO_PASSWORD in web/.env.local or the environment.
  *
  * Usage: node scripts/verify-app.mjs              # every row
  *        node scripts/verify-app.mjs F01 F02      # only these rows
- *        BASE_URL=http://<GPU_HOST>:3000 node scripts/verify-app.mjs   # against the staging app
+ *        BASE_URL=http://localhost:3001 node scripts/verify-app.mjs   # app on another port
  */
 import { mkdirSync, rmSync } from "node:fs";
 import path from "node:path";

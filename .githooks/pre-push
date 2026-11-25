@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Team pre-push hook: changes reach main only through a reviewed pull request.
+# A human who really must push main (e.g. bootstrapping the repo) runs: HL_ALLOW_MAIN_PUSH=1 git push ...
+set -euo pipefail
+while read -r _local_ref _local_sha remote_ref _remote_sha; do
+  if [ "$remote_ref" = refs/heads/main ] && [ -z "${HL_ALLOW_MAIN_PUSH:-}" ]; then
+    echo "pre-push: pushing to main is blocked. Push a branch and open a PR (see AGENTS.md, Workflow)." >&2
+    exit 1
+  fi
+done

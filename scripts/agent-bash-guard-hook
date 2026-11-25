@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# PreToolUse hook (shell tool) for Claude Code and Codex. Blocks commands that bypass the team's safety
+# rails: pushing to main, force-pushing, skipping git hooks, and changing git's hook path.
+# Each command segment (split on && || ; | and newlines) is checked on its own, so a normal
+# `git push -u origin feat && gh pr create --base main` passes. .githooks/pre-push is the backstop for
+# any push to main this misses. Exit 2 with the reason on stderr denies the call in both tools.
+set -euo pipefail
+
+deny() {
+  echo "Blocked by scripts/agent-bash-guard-hook: $1 Ask the human to do it if it is really needed." >&2
+  exit 2
+}
+
+command -v jq >/dev/null || deny "jq is missing, so shell commands cannot be checked; install jq."
+cmd="$(jq -r '.tool_input.command // ""')"
+
+segments="$(sed -E 's/(&&|\|\||;|\|)/\n/g' <<<"$cmd")"
+while IFS= read -r seg; do
+  # Only segments that run git itself (optionally with global options such as -C dir).
+  args="$(sed -nE 's/^[[:space:]]*(sudo[[:space:]]+)?git([[:space:]]+(-C|-c)[[:space:]]+[^[:space:]]+)*[[:space:]]+//p' <<<"$seg")"
+  [ -n "$args" ] || continue
+  sub="${args%%[[:space:]]*}"
+  rest=" ${args#"$sub"} "
+  case "$sub" in
+    push)
+      grep -Eq '[[:space:]](--force[^[:space:]]*|-[a-zA-Z]*f[a-zA-Z]*|\+[^[:space:]]+)[[:space:]]' <<<"$rest" &&
+        deny "agents never force-push."
+      grep -Eq '[[:space:]]([^[:space:]]*:)?(refs/heads/)?main[[:space:]]' <<<"$rest" &&
+        deny "agents never push to main; push a branch and open a PR."
+      ;&
+    commit | merge | rebase | cherry-pick | am | revert)
+      grep -Eq '[[:space:]]--no-verify[[:space:]]' <<<"$rest" &&
+        deny "agents never skip git hooks."
+      ;;
+    config)
+      grep -Eq 'core\.hooksPath' <<<"$rest" && ! grep -Eq '[[:space:]](--get|--list|-l)[[:space:]]' <<<"$rest" &&
+        deny "agents never change core.hooksPath."
+      ;;
+  esac
+done <<<"$segments"
+exit 0

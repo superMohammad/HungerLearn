@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# THE verification entrypoint. Agents, git hooks, CI and humans all run this; "done" means it passes.
+# Runs lint, types, unit tests and the web build for the named packages, then guard-diff.
+#
+# Usage: scripts/check                 # every package
+#        scripts/check web docproc     # only these packages (CI runs one package per job)
+set -euo pipefail
+source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
+
+if [ "$#" -eq 0 ]; then
+  set -- "${PACKAGES[@]}"
+fi
+
+for pkg in "$@"; do
+  check_package_fast "$pkg"
+  if [ "$pkg" = web ]; then
+    check_web_build
+  fi
+done
+check_guard
+echo "== scripts/check passed: $*"

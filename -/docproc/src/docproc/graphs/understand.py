@@ -13,8 +13,9 @@ from rapidfuzz import fuzz
 from docproc.loaders import detect_format
 from docproc.loaders.docx import load_docx
 from docproc.loaders.pdf import probe_pdf, render_page_png
+from docproc.loaders.text import load_text
 from docproc.loaders.text_blocks import text_to_blocks
-from docproc.llm.base import ClauseExtractor
+from docproc.llm.base import ClauseExtractor, merge_single_paragraph
 from docproc.matching import ID_NAMESPACE
 from docproc.models import (
     Audience, Block, ClauseDraft, ClauseRecord, ExtractionIssue, Section, SourceLocation, VersionInfo,
@@ -38,6 +39,9 @@ class UnderstandState(TypedDict, total=False):
     drafts: list[tuple[str, ClauseDraft]]    # (section_id, draft)
     records: list[ClauseRecord]
 
+
+# file_format -> SourceLocation.kind
+LOCATION_KIND: dict[str, str] = {"pdf": "pdf_page", "docx": "docx", "txt": "text", "image": "image"}
 
 @dataclass
 class UnderstandDeps:
@@ -67,6 +71,8 @@ def build_understand_graph(deps: UnderstandDeps):
         if fmt == "docx":
             blocks, _warnings = load_docx(path)
             page_blocks[0] = blocks
+        elif fmt == "txt":
+            page_blocks[0] = load_text(path)
         elif fmt == "pdf":
             pages = probe_pdf(path, deps.min_page_chars, deps.min_letter_ratio)
             page_count = len(pages)
@@ -145,7 +151,7 @@ def build_understand_graph(deps: UnderstandDeps):
         issues = list(state.get("issues", []))
         for sec in state["sections"]:
             try:
-                for d in deps.extractor.extract(sec):
+                for d in merge_single_paragraph(sec, deps.extractor.extract(sec)):
                     drafts.append((sec.section_id, d))
             except (ValidationError, ValueError, RuntimeError) as e:
                 issues.append(ExtractionIssue(kind="llm_error", section_id=sec.section_id,
@@ -186,7 +192,7 @@ def build_understand_graph(deps: UnderstandDeps):
                 else:
                     evidence = heading_hit
             loc = SourceLocation(
-                kind="docx" if state["file_format"] == "docx" else ("image" if state["file_format"] == "image" else "pdf_page"),
+                kind=LOCATION_KIND[state["file_format"]],
                 page=block.page, image_name=block.image_name, image_index=block.image_index,
                 block_index=block.index, heading_path=sec.heading_path, text_source=block.text_source,
             )

@@ -325,6 +325,7 @@
           "enum": [
             "pdf_page",
             "docx",
+            "text",
             "image"
           ],
           "title": "Kind",
@@ -384,6 +385,7 @@
           "enum": [
             "text_layer",
             "docx",
+            "text",
             "ocr"
           ],
           "title": "Text Source",
@@ -412,7 +414,7 @@
   },
   "properties": {
     "contract_version": {
-      "default": "1.0",
+      "default": "1.1",
       "title": "Contract Version",
       "type": "string"
     },

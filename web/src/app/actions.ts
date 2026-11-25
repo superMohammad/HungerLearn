@@ -20,7 +20,7 @@ import { endSession, getSession, requireAdmin, requireLearner, startSession } fr
 import { DEFAULT_LANGUAGE, isLanguage, LANG_COOKIE } from "@/lib/i18n";
 import { LANGUAGES, ROLES, type Language } from "@/lib/types";
 
-const ACCEPTED = new Set([".pdf", ".docx", ".png", ".jpg", ".jpeg"]);
+const ACCEPTED = new Set([".pdf", ".docx", ".txt", ".png", ".jpg", ".jpeg"]);
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
 
 // ---------------------------------------------------------------- accounts

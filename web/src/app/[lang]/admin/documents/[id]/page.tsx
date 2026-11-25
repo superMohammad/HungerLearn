@@ -97,7 +97,7 @@ async function DocumentDetail({ params }: { params: PageProps<"/[lang]/admin/doc
           <form action={upload} className="mt-5 border-t border-line pt-4">
             <label className="block text-sm font-medium">
               {d.newVersion(versions.length + 1)}
-              <input name="file" type="file" required accept=".pdf,.docx,.png,.jpg,.jpeg" className="mt-1 w-full text-sm file:me-3 file:rounded-lg file:border-0 file:bg-surface-2 file:px-3 file:py-1" />
+              <input name="file" type="file" required accept=".pdf,.docx,.txt,.png,.jpg,.jpeg" className="mt-1 w-full text-sm file:me-3 file:rounded-lg file:border-0 file:bg-surface-2 file:px-3 file:py-1" />
             </label>
             <button type="submit" disabled={running} className="mt-3 min-h-11 w-full cursor-pointer rounded-2xl border border-brand font-bold text-brand hover:bg-surface-2 disabled:opacity-50">
               {d.compare}

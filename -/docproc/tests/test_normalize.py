@@ -72,3 +72,10 @@ def test_leading_numbered_title_line_is_layout_not_content():
     # A numbered first line that is a full sentence is rule text and stays.
     rule = "1. Couriers must wait 10 minutes." + nl + "Then call dispatch."
     assert content_hash(rule, ["courier"], None) != content_hash("Then call dispatch.", ["courier"], None)
+
+
+def test_short_unnumbered_rule_lines_stay_in_the_hash():
+    nl = chr(10)
+    for rule_line in ("Do not leave", "Wait 5 minutes", "Staff must wear gloves"):
+        assert content_hash(rule_line + nl + "Then call dispatch.", ["courier"], None) != content_hash(
+            "Then call dispatch.", ["courier"], None)

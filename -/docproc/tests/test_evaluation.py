@@ -10,6 +10,7 @@ from docproc.evaluation import (
     GoldDiff,
     GoldDiffClause,
     GoldDocument,
+    GoldProcedure,
     best_coverage,
     coverage,
     run_eval,
@@ -40,7 +41,7 @@ def test_best_coverage_folds_arabic_indic_digits():
 
 
 def test_score_extraction_recall_and_precision():
-    gold = GoldDocument(document_id="d", clauses=[
+    gold = GoldDocument(document_id="d", procedures=[GoldProcedure(title="Open the case", clause_ids=["A", "B"])], clauses=[
         GoldClause(clause_id="A", quote="Record the order ID and the check-in time."),
         GoldClause(clause_id="B", quote="Report a delay after fifteen minutes of waiting."),
     ])
@@ -64,5 +65,9 @@ def test_run_eval_offline_scores_dev_and_never_reads_held_out(make_app, tmp_path
     scored = {e.document_id for e in report.extraction} | {s.document_id for s in report.skipped}
     assert scored and all("held_out" not in d and not d.startswith(("courier-damaged", "employee-complaint",
                                                                       "partner-counter")) for d in scored)
-    assert report.llm == "fixture" and len(report.diffs) == 1
+    assert report.llm == "fixture" and len(report.diffs) == 3
+    assert {"employee-delayed-order-v2", "partner-item-substitution-v1", "partner-packing-sealing-v2"} <= {
+        e.document_id for e in report.extraction}  # .txt uploads
+    assert all(s.document_id.endswith("-scan") for s in report.skipped)
     assert 0.0 <= report.macro_recall <= 1.0 and 0.0 <= report.diff_accuracy <= 1.0
+

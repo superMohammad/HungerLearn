@@ -166,7 +166,7 @@ It **never** drops words or numbers. Page, position, and clause number are kept 
 
 ```jsonc
 {
-  "contract_version": "1.0",
+  "contract_version": "1.1",
   "document_id": "policy-leave-expense-docx",
   "old_version_id": "v1", "new_version_id": "v2",
   "complete": true, "incomplete_reasons": [],

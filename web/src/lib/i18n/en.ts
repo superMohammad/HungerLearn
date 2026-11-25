@@ -238,7 +238,7 @@ export const en: Dict = {
       eyebrow: "Content management",
       title: "Procedure manuals",
       intro:
-        "Upload a procedure manual (PDF, Word, or a scanned image) in Arabic or English. Clauses are extracted word for word and grouped into procedures; you then generate a training package for each procedure and review it before publishing.",
+        "Upload a procedure manual (PDF, Word, plain text, or a scanned image) in Arabic or English. Clauses are extracted word for word and grouped into procedures; you then generate a training package for each procedure and review it before publishing.",
       empty: "No manuals yet. Upload your first procedure manual using the form.",
       processing: "Processing",
       procedures: "Procedures: ",
@@ -253,7 +253,7 @@ export const en: Dict = {
       language: "Language",
       partnerType: "Business type (partners only)",
       file: "File",
-      fileHint: "PDF · Word · image, up to 20 MB",
+      fileHint: "PDF · Word · text · image, up to 20 MB",
       submit: "Upload and start processing",
     },
     doc: {

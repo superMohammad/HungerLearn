@@ -15,7 +15,7 @@ from pydantic import BaseModel
 
 from docproc.loaders import detect_format
 from docproc.models import ClauseChange, ClauseRecord, ComparisonReport, Status
-from docproc.normalize import words
+from docproc.normalize import clause_body, words
 from docproc.pipeline import App
 
 DATASET_DIR = Path(__file__).resolve().parents[4] / "data" / "synthetic_sops"
@@ -44,9 +44,22 @@ class GoldClause(BaseModel):
     quote: str
 
 
+class GoldProcedure(BaseModel):
+    title: str
+    clause_ids: list[str]
+
+
 class GoldDocument(BaseModel):
     document_id: str
+    procedures: list[GoldProcedure]
     clauses: list[GoldClause]
+
+    def title_of(self, clause_id: str) -> str:
+        """Title of the procedure that holds the clause; every gold clause belongs to one."""
+        titles = [p.title for p in self.procedures if clause_id in p.clause_ids]
+        if len(titles) != 1:
+            raise ValueError(f"{self.document_id}: clause {clause_id} is in {len(titles)} procedures, expected 1")
+        return titles[0]
 
 
 class GoldDiffClause(BaseModel):
@@ -110,7 +123,9 @@ class EvalReport(BaseModel):
 
 
 def word_set(text: str) -> frozenset[str]:
-    return frozenset(words(text))
+    """Words of a quote without its leading clause number. Deliberately not docproc's title rules,
+    so the metric cannot hide what those rules get wrong."""
+    return frozenset(words(clause_body(text)))
 
 
 def coverage(target: frozenset[str], source: frozenset[str]) -> float:
@@ -131,13 +146,26 @@ def best_coverage(target: str, candidates: list[str]) -> tuple[int, float]:
     return best_index, best_value
 
 
+def supported_by(quote: str, gold: GoldDocument) -> bool:
+    """True if the quote, minus a gold procedure title's words, is a rule of that gold clause.
+
+    The title words are dropped (a PDF text layer keeps the title on the rule line); a quote that is
+    only a title has nothing left and is unsupported. Pure.
+    """
+    q = word_set(quote)
+    for clause in gold.clauses:
+        rule = q - word_set(gold.title_of(clause.clause_id))
+        if rule and coverage(rule, word_set(clause.quote)) >= COVERAGE_THRESHOLD:
+            return True
+    return False
+
+
 def score_extraction(gold: GoldDocument, records: list[ClauseRecord], issue_kinds: list[str],
                      blocking_issues: int) -> ExtractionScore:
-    """Recall: gold clauses covered by an extracted quote. Precision: extracted quotes covered by a gold one. Pure."""
+    """Recall: gold clauses covered by an extracted quote. Precision: extracted quotes that are a gold rule. Pure."""
     quotes = [r.quote for r in records]
-    gold_quotes = [g.quote for g in gold.clauses]
     missed = [g.clause_id for g in gold.clauses if best_coverage(g.quote, quotes)[1] < COVERAGE_THRESHOLD]
-    supported = sum(1 for q in quotes if best_coverage(q, gold_quotes)[1] >= COVERAGE_THRESHOLD)
+    supported = sum(1 for q in quotes if supported_by(q, gold))
     found = len(gold.clauses) - len(missed)
     return ExtractionScore(
         document_id=gold.document_id, gold_clauses=len(gold.clauses), extracted_clauses=len(records),

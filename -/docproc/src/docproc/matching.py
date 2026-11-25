@@ -20,7 +20,7 @@ from rapidfuzz import fuzz
 
 from docproc.config import Settings
 from docproc.models import Audience, ClauseRecord, Status
-from docproc.normalize import core_text, modalities, negations, normalize, numbers
+from docproc.normalize import clause_body, core_text, is_title_label, modalities, negations, normalize, numbers, title_of
 
 ID_NAMESPACE = uuid.UUID("6f1c2a52-9a43-4c1e-9d55-0d0c5e2b7a10")
 REMOVAL_DEFERRED = "removal_deferred_incomplete_extraction"
@@ -69,6 +69,25 @@ def _body(r: ClauseRecord) -> str:
     return core_text(r.quote, r.heading)
 
 
+def same_but_title(old: ClauseRecord, new: ClauseRecord) -> bool:
+    """True if one version's text is the other's plus a leading label that the other shows as its title.
+
+    PDF text layers put a procedure's title on the rule line ("1. Open the delay case When ..."), and
+    Word list numbering is not in the DOCX text ("عند الوصول" vs "١. عند الوصول"). The label counts as
+    layout only with evidence: it equals the other record's title line or heading. A bare leading
+    condition or role ("Before leaving ...", "Supervisors ...") has no such evidence and stays content.
+    """
+    a, b = _body(old), _body(new)
+    if a == b:
+        return False
+    (longer, short_rec), shorter = ((a, new), b) if len(a) > len(b) else ((b, old), a)
+    if not shorter or not longer.endswith(" " + shorter):
+        return False
+    label = longer[: -len(shorter)].strip()
+    evidence = {title_of(short_rec.quote), normalize(clause_body(short_rec.heading or "")).strip() or None}
+    return is_title_label(label) and label in evidence
+
+
 def status_for(reasons: list[str]) -> Status:
     """A verified pair is `changed` only if its content differs; otherwise layout moved it."""
     if any(r.startswith(CONTENT_REASONS) for r in reasons):
@@ -91,7 +110,7 @@ def change_reasons(old: ClauseRecord, new: ClauseRecord) -> list[str]:
     # audience is an extraction label, and label drift on identical text is not a policy change.
     if ao != an and old.audience_source == "explicit" and new.audience_source == "explicit":
         reasons.append(f"audience: {', '.join(ao)} -> {', '.join(an)}")
-    if _body(old) != _body(new) and not any(r.startswith(("numbers", "negation", "modality")) for r in reasons):
+    if _body(old) != _body(new) and not same_but_title(old, new) and not any(r.startswith(("numbers", "negation", "modality")) for r in reasons):
         reasons.append("wording changed")
     if old.location.position_key() != new.location.position_key():
         reasons.append("location changed")

@@ -7,7 +7,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-CONTRACT_VERSION = "1.0"
+CONTRACT_VERSION = "1.1"  # 1.1: location kind "text", text_source "text", file_format "txt"
 
 
 class Audience(str, Enum):
@@ -31,13 +31,13 @@ class Status(str, Enum):
 class SourceLocation(BaseModel):
     """Where a clause came from. Never part of the content hash."""
 
-    kind: Literal["pdf_page", "docx", "image"]
+    kind: Literal["pdf_page", "docx", "text", "image"]
     page: int | None = Field(None, description="1-based PDF page number")
     image_name: str | None = None
     image_index: int | None = None
     block_index: int = Field(..., description="Position of the first source block in the document")
     heading_path: list[str] = Field(default_factory=list)
-    text_source: Literal["text_layer", "docx", "ocr"] = "text_layer"
+    text_source: Literal["text_layer", "docx", "text", "ocr"] = "text_layer"
 
     def position_key(self) -> tuple:
         """Coarse position used for unchanged-vs-moved: page/image + section path."""
@@ -56,7 +56,7 @@ class Block(BaseModel):
     page: int | None = None
     image_name: str | None = None
     image_index: int | None = None
-    text_source: Literal["text_layer", "docx", "ocr"] = "text_layer"
+    text_source: Literal["text_layer", "docx", "text", "ocr"] = "text_layer"
 
 
 class Section(BaseModel):
@@ -141,7 +141,7 @@ class VersionInfo(BaseModel):
     document_id: str
     version_id: str
     source_file: str
-    file_format: Literal["pdf", "docx", "image"]
+    file_format: Literal["pdf", "docx", "txt", "image"]
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     page_count: int | None = None
     failed_pages: list[int] = Field(default_factory=list)

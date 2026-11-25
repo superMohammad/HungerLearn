@@ -9,6 +9,8 @@ def detect_format(path: str | Path) -> str:
         return "pdf"
     if ext == ".docx":
         return "docx"
+    if ext == ".txt":
+        return "txt"
     if ext in IMAGE_EXT:
         return "image"
-    raise ValueError(f"Unsupported file type: {ext} (expected .pdf, .docx or an image)")
+    raise ValueError(f"Unsupported file type: {ext} (expected .pdf, .docx, .txt or an image)")

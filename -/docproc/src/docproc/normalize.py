@@ -98,8 +98,10 @@ def repair_arabic_order(line: str) -> tuple[str, bool]:
     return _AR_RUN.sub(fix, line), repaired
 
 
+# A checklist box before the number ("[ ] ١.", "[x] 2.", "☐ 3.") is layout, like the number itself.
+CHECKBOX = r"(?:\[[ xX✓]?\]|[☐☑☒])\s*"
 CLAUSE_NO = re.compile(
-    r"^\s*(?P<no>(?:article|clause|المادة|البند)\s+[\w٠-٩]+|"
+    r"^\s*(?:" + CHECKBOX + r")?(?P<no>(?:article|clause|المادة|البند)\s+[\w٠-٩]+|"
     r"[\d٠-٩]+(?:[.\-][\d٠-٩]+)+|[\d٠-٩]+[.)])\s*[:.\-–)]?\s*",
     re.IGNORECASE,
 )
@@ -129,16 +131,37 @@ def strip_heading(text: str, heading: str | None) -> str:
 
 
 # A short numbered label on its own first line ("٤. قبل المغادرة" + newline), as table rows produce.
-_TITLE_LINE = re.compile(r"^\s*(?:[\d٠-٩]+(?:[.\-][\d٠-٩]+)*[.)])\s*[^\n.،:؛!?؟]{1,60}\n(?=\s*\S)")
-_TITLE_MAX_WORDS = 7
+_TITLE_LINE = re.compile(
+    r"^\s*(?:" + CHECKBOX + r")?(?:[\d٠-٩]+(?:[.\-][\d٠-٩]+)*[.)])\s*(?P<label>[^\n.,;،:؛!?؟]{1,60})\n(?=\s*\S)")
+TITLE_MAX_WORDS = 7
 
 
 def strip_title_line(text: str) -> str:
-    """Drops a leading numbered title line. It labels the clause (layout), it is not rule text."""
+    """Drops a leading numbered title line. It labels the clause (layout), it is not rule text.
+
+    The label must hold no number, negation or modal verb ("1. Wait 10 minutes" stays). An unnumbered
+    first line is never dropped here: only `matching.same_but_title` may ignore one, and only when the
+    other version shows it as a title.
+    """
     m = _TITLE_LINE.match(text)
-    if m is None or len(m.group(0).split()) > _TITLE_MAX_WORDS:
+    if m is None or not is_title_label(m.group("label")):
         return text
     return text[m.end():]
+
+
+def title_of(text: str) -> str | None:
+    """Normalized label of a leading title line (numbered or not, checklist box removed), if any. Pure."""
+    first, sep, rest = text.partition("\n")
+    if not sep or not rest.strip():
+        return None
+    label = normalize(clause_body(first)).strip()
+    return label if is_title_label(label) else None
+
+
+def is_title_label(text: str) -> bool:
+    """A short label with no number, negation or modal verb: it names a clause, it states no rule."""
+    n = len(text.split())
+    return 0 < n <= TITLE_MAX_WORDS and not (numbers(text) or negations(text) or modalities(text))
 
 
 def core_text(quote: str, heading: str | None) -> str:

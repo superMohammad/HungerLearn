@@ -95,7 +95,7 @@ export default async function AdminHome() {
             </label>
             <label className="block text-sm font-medium">
               {d.file}
-              <input name="file" type="file" required accept=".pdf,.docx,.png,.jpg,.jpeg" className={`${field} file:me-3 file:rounded-lg file:border-0 file:bg-surface-2 file:px-3 file:py-1`} />
+              <input name="file" type="file" required accept=".pdf,.docx,.txt,.png,.jpg,.jpeg" className={`${field} file:me-3 file:rounded-lg file:border-0 file:bg-surface-2 file:px-3 file:py-1`} />
               <span className="mt-1 block text-xs text-ink-soft">{d.fileHint}</span>
             </label>
             <button type="submit" className="min-h-12 cursor-pointer rounded-2xl bg-accent font-bold text-on-accent hover:bg-accent-strong">

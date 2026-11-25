@@ -37,6 +37,7 @@ The repository, not the prompt, carries the quality bar. Package rules live in `
 - `scripts/check [web|docproc|media …]`: everything, incl. `next build`. CI runs it per package. Must pass before a PR.
 - `scripts/guard-diff BASE`: fails on added test skips, `eslint-disable`, `@ts-ignore`, `# noqa`, `type: ignore`, loosened strictness, or deleted test files. Only a human may override (`HL_ALLOW_WEAKENING="<reason>"`, CI label `allow-weakening`).
 - The agent SessionStart hook sets `core.hooksPath=.githooks` on every clone and reports missing setup.
+- These scripts need Linux (bash ≥ 4.4, GNU coreutils) and `jq`. `check-fast` and `guard-diff` look at the whole working tree, including untracked files, so untracked scratch code with a suppression blocks commits: keep scratch files outside the repo.
 
 ### Risk tiers
 

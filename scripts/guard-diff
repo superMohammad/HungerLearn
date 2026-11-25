@@ -19,16 +19,16 @@ WEAKENING='(\b(it|test|describe)\.(skip|only|todo)\(|\{ *(skip|only|todo): *true
 violations="$(
   {
     # Added lines in tracked files, printed as "file:+line".
-    git diff --no-color --no-ext-diff -U0 "$BASE" -- . ':(exclude)scripts/guard-diff' |
+    git -c core.quotePath=false diff --no-color --no-ext-diff --src-prefix=a/ --dst-prefix=b/ -U0 "$BASE" -- . ':(exclude)scripts/guard-diff' |
       awk '/^\+\+\+ b\// { file = substr($0, 7); next } /^\+[^+]/ { print file ":" substr($0, 2) }'
     # Untracked files: every line is new.
-    git ls-files --others --exclude-standard | while read -r f; do
+    git -c core.quotePath=false ls-files --others --exclude-standard | while read -r f; do
       [ -f "$f" ] && awk -v f="$f" '{ print f ":" $0 }' "./$f"
     done
   } | awk -F: -v code="$CODE_FILES" '$1 ~ code' | grep -E "$WEAKENING" || true
 )"
 
-deleted="$(git diff --name-only --no-renames --diff-filter=D "$BASE" | grep -E "$TEST_FILES" || true)"
+deleted="$(git -c core.quotePath=false diff --name-only --no-renames --diff-filter=D "$BASE" | grep -E "$TEST_FILES" || true)"
 
 if [ -z "$violations" ] && [ -z "$deleted" ]; then
   echo "guard-diff: no weakened checks"

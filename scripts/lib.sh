@@ -33,8 +33,8 @@ changed_files() {
   local base
   base="$(base_rev)"
   {
-    git -C "$REPO" diff --name-only "$base"
-    git -C "$REPO" ls-files --others --exclude-standard
+    git -C "$REPO" -c core.quotePath=false diff --name-only "$base"
+    git -C "$REPO" -c core.quotePath=false ls-files --others --exclude-standard
   } | sort -u
 }
 

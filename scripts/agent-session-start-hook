@@ -7,9 +7,10 @@ set -euo pipefail
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO"
 
-if [ "$(git config --local --get core.hooksPath || true)" != ".githooks" ]; then
+previous="$(git config --local --get core.hooksPath || true)"
+if [ "$previous" != ".githooks" ]; then
   git config --local core.hooksPath .githooks
-  echo "Team workflow: set git core.hooksPath=.githooks for this clone (pre-commit runs scripts/check-fast)."
+  echo "Team workflow: set git core.hooksPath=.githooks for this clone (was: '${previous:-unset}'). pre-commit runs scripts/check-fast."
 fi
 
 missing=()

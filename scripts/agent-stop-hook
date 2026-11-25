@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 # Stop hook for Claude Code and Codex: an agent may not finish a turn with red checks.
-# Runs scripts/check-fast when the working tree changed since the last green run. On failure it exits 2
+# Runs scripts/check-fast when the working tree changed since the last run. On failure it exits 2
 # with the failing output on stderr, which sends the agent back to work (both tools document this).
-# If the agent was already sent back and changed nothing, it lets the turn end and hands over to the human.
+# It hands over to the human instead of looping when the tree is unchanged since the last red run
+# (the failure is already known) or after MAX_ATTEMPTS red runs in a row.
 set -euo pipefail
 
+MAX_ATTEMPTS=5
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO"
 
-input="$(cat)"
-already_continued="$(jq -r '.stop_hook_active // false' <<<"$input")"
+cat >/dev/null # the hook input is not needed
 
 state_dir="$(git rev-parse --git-path hl-agent-check)"
 mkdir -p "$state_dir"
@@ -21,12 +22,8 @@ tree_hash="$(
   } | sha256sum | cut -d' ' -f1
 )"
 
-if [ "$(cat "$state_dir/green" 2>/dev/null || true)" = "$tree_hash" ]; then
-  echo '{}'
-  exit 0
-fi
-if [ "$already_continued" = true ] && [ "$(cat "$state_dir/red" 2>/dev/null || true)" = "$tree_hash" ]; then
-  echo "scripts/check-fast is still failing and nothing changed since the last attempt. Stopping so a human can decide." >&2
+if [ "$(cat "$state_dir/green" 2>/dev/null || true)" = "$tree_hash" ] ||
+  [ "$(cat "$state_dir/red" 2>/dev/null || true)" = "$tree_hash" ]; then
   echo '{}'
   exit 0
 fi
@@ -34,13 +31,22 @@ fi
 log="$state_dir/last.log"
 if scripts/check-fast >"$log" 2>&1; then
   echo "$tree_hash" >"$state_dir/green"
+  rm -f "$state_dir/red" "$state_dir/attempts"
   echo '{}'
   exit 0
 fi
 
 echo "$tree_hash" >"$state_dir/red"
+attempts=$(($(cat "$state_dir/attempts" 2>/dev/null || echo 0) + 1))
+echo "$attempts" >"$state_dir/attempts"
+if [ "$attempts" -gt "$MAX_ATTEMPTS" ]; then
+  echo "scripts/check-fast is still failing after $MAX_ATTEMPTS attempts ($log). Stopping so a human can decide." >&2
+  rm -f "$state_dir/attempts"
+  echo '{}'
+  exit 0
+fi
 {
-  echo "scripts/check-fast failed, so the task is not done. Fix the root cause (never skip tests, add suppressions or edit CI/hooks), then finish."
+  echo "scripts/check-fast failed (attempt $attempts of $MAX_ATTEMPTS), so the task is not done. Fix the root cause (never skip tests, add suppressions or edit CI/hooks), then finish."
   echo "Last 60 lines of $log:"
   tail -n 60 "$log"
 } >&2

@@ -1,0 +1,1507 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Universal AI Engineering Workflow — Hunger Learn team handbook</title>
+<link rel="icon" href="data:,">
+<meta name="description" content="An evidence-based workflow for engineering with OpenAI Codex and Anthropic Claude Code: shared standards, verification, CI/CD, Skills, MCP, and a rollout plan for the Hunger Learn repository.">
+<style>
+:root{
+  --paper:#fbfaf6; --ink:#1e1e1e; --muted:#555; --line:#2b2b2b;
+  --blue:#1864ab; --blue-soft:#d0ebff; --amber-soft:#fff3bf; --violet-soft:#e5dbff;
+  --teal-soft:#c3fae8; --rose-soft:#ffe3e3; --grey-soft:#f1f3f5;
+  --hand:"Segoe Print","Bradley Hand","Chalkboard SE","Comic Neue","Comic Sans MS","Patrick Hand",cursive;
+  --body:system-ui,-apple-system,"Segoe UI","Noto Sans","Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SFMono-Regular","JetBrains Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.62 var(--body);
+  background-image:radial-gradient(#d9d6cc 1px,transparent 1px);background-size:22px 22px}
+a{color:var(--blue)}
+a:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.skip{position:absolute;left:-999px;top:0;background:#fff;padding:8px}
+.skip:focus{left:8px;z-index:10}
+.layout{display:grid;grid-template-columns:270px minmax(0,1fr);gap:32px;max-width:1320px;margin:0 auto;padding:24px}
+nav.toc{position:sticky;top:16px;align-self:start;max-height:calc(100vh - 32px);overflow:auto;
+  background:#fff;padding:16px 18px;font-size:14px}
+nav.toc h2{font:700 18px/1.2 var(--hand);margin:0 0 8px}
+nav.toc ol{margin:0;padding-left:22px}
+nav.toc li{margin:3px 0}
+nav.toc a{text-decoration:none;color:var(--ink)}
+nav.toc a:hover{color:var(--blue);text-decoration:underline}
+main{min-width:0}
+header.hero{padding:28px 30px;background:#fff;margin-bottom:28px}
+header.hero h1{font:700 clamp(28px,4vw,44px)/1.15 var(--hand);margin:0 0 8px}
+header.hero p{margin:6px 0;color:var(--muted)}
+.sketch{border:2px solid var(--line);border-radius:255px 14px 225px 14px/14px 225px 14px 255px}
+.sketch-2{border:2px solid var(--line);border-radius:14px 225px 14px 255px/255px 14px 225px 14px}
+section{background:#fff;padding:26px 30px;margin:0 0 26px}
+section h2{font:700 clamp(22px,2.6vw,30px)/1.2 var(--hand);margin:0 0 14px}
+section h2 .num{display:inline-block;min-width:1.6em;color:var(--blue)}
+h3{font:700 19px/1.3 var(--hand);margin:24px 0 8px}
+h4{margin:18px 0 6px;font-size:16px}
+p,li{max-width:78ch}
+code,kbd,pre{font-family:var(--mono);font-size:.9em}
+code{background:var(--grey-soft);padding:1px 5px;border-radius:4px}
+pre{background:#f8f9fa;border:1.5px dashed #868e96;border-radius:10px;padding:14px 16px;overflow:auto;line-height:1.45;max-width:100%}
+pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14.5px}
+th,td{border:1.5px solid #343a40;padding:7px 9px;text-align:left;vertical-align:top}
+th{background:var(--grey-soft);font-weight:650}
+.table-wrap{overflow-x:auto}
+figure{margin:18px 0 22px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{font:14px/1.4 var(--hand);color:var(--muted);margin-top:6px;text-align:center}
+.tag{display:inline-block;font:600 11.5px/1.6 var(--body);padding:0 7px;border:1.5px solid var(--line);border-radius:9px 3px 9px 3px;margin-right:4px;vertical-align:1px;white-space:nowrap}
+.t-talk{background:var(--amber-soft)}
+.t-docs{background:var(--blue-soft)}
+.t-research{background:var(--violet-soft)}
+.t-rec{background:var(--teal-soft)}
+.t-caveat{background:var(--rose-soft)}
+.callout{padding:14px 18px;margin:16px 0;background:var(--amber-soft)}
+.callout.blue{background:var(--blue-soft)}
+.callout.teal{background:var(--teal-soft)}
+.callout.violet{background:var(--violet-soft)}
+.callout.rose{background:var(--rose-soft)}
+.callout > :first-child{margin-top:0}
+.callout > :last-child{margin-bottom:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.card{padding:14px 16px;background:#fff}
+.card h4{margin-top:0}
+.ladder{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;margin:14px 0}
+.ladder .step{flex:1 1 150px;padding:10px 12px;background:#fff;font-size:14px}
+.ladder .step b{display:block;font-family:var(--hand);font-size:15px}
+.ladder .arrow{align-self:center;font:700 22px var(--hand)}
+details{border:1.5px dashed #868e96;border-radius:10px;padding:8px 14px;margin:12px 0;background:#fdfdfb}
+details[open]{background:#fff}
+summary{cursor:pointer;font-weight:650}
+.small{font-size:14px;color:var(--muted)}
+.check li{list-style:none;margin-left:-20px}
+.check li::before{content:"☐ ";font-family:var(--hand)}
+.answer{font-size:17px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.toolbar button{font:600 14px var(--body);background:#fff;padding:6px 12px;cursor:pointer}
+/* SVG diagram styling */
+.d-hand{font-family:var(--hand)}
+.d-body{font-family:var(--body)}
+svg .box{stroke:#1e1e1e;stroke-width:2;filter:url(#rough)}
+svg .thin{stroke:#1e1e1e;stroke-width:1.5;filter:url(#rough)}
+svg .dash{stroke-dasharray:7 6}
+svg .arrowline{stroke:#1e1e1e;stroke-width:2;fill:none;marker-end:url(#arrow);filter:url(#rough)}
+svg .arrowline.blue{stroke:#1864ab}
+svg text{fill:#1e1e1e}
+@media (max-width:980px){
+  .layout{grid-template-columns:1fr;padding:12px}
+  nav.toc{position:static;max-height:none}
+  section{padding:20px 18px}
+}
+@media print{
+  body{background:#fff;font-size:11pt}
+  .layout{display:block;padding:0}
+  nav.toc{position:static;max-height:none;page-break-after:always}
+  section,header.hero{break-inside:auto;border:none !important;padding:0;margin:0 0 18pt}
+  figure,table,pre,.callout,.card{break-inside:avoid}
+  .toolbar,.skip{display:none}
+  a{color:#000}
+  a[href^="http"]::after{content:" (" attr(href) ")";font-size:8pt;color:#444;word-break:break-all}
+  nav.toc a::after{content:none !important}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- Shared SVG definitions: hand-drawn wobble filter and arrowheads -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <!-- userSpaceOnUse keeps the filter region non-empty for perfectly straight lines -->
+    <filter id="rough" filterUnits="userSpaceOnUse" x="-50" y="-50" width="1200" height="700">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.6" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1e1e1e"/>
+    </marker>
+  </defs>
+</svg>
+
+<div class="layout">
+<nav class="toc sketch" aria-label="Table of contents">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#summary">Executive summary</a></li>
+    <li><a href="#method">Research methodology</a></li>
+    <li><a href="#talk">Lessons from Lauren Tan's talk</a></li>
+    <li><a href="#practices">Professional practices</a></li>
+    <li><a href="#tools">Codex vs Claude Code</a></li>
+    <li><a href="#workflow">Universal team workflow</a></li>
+    <li><a href="#repo">Instructions &amp; repo structure</a></li>
+    <li><a href="#skills">Skills strategy</a></li>
+    <li><a href="#mcp">MCP &amp; tool choices</a></li>
+    <li><a href="#prompts">Prompt templates</a></li>
+    <li><a href="#verify">Evaluation &amp; verification</a></li>
+    <li><a href="#cicd">CI/CD architecture</a></li>
+    <li><a href="#parallel">Parallel agents</a></li>
+    <li><a href="#security">Security &amp; permissions</a></li>
+    <li><a href="#project">Hunger Learn recommendations</a></li>
+    <li><a href="#roadmap">Adoption roadmap</a></li>
+    <li><a href="#standards">Standards &amp; checklists</a></li>
+    <li><a href="#refs">References</a></li>
+  </ol>
+  <p class="small" style="margin-top:12px">Tags:
+    <span class="tag t-talk">Talk</span> what the speaker said ·
+    <span class="tag t-docs">Docs</span> official documentation ·
+    <span class="tag t-research">Research</span> studies and reports ·
+    <span class="tag t-rec">Recommendation</span> our design ·
+    <span class="tag t-caveat">Caveat</span> weak or contested evidence</p>
+</nav>
+
+<main id="main">
+<header class="hero sketch">
+  <h1>Universal AI Engineering Workflow</h1>
+  <p><strong>A team handbook for building software with OpenAI Codex and Anthropic Claude Code, written for the Hunger Learn repository and usable in any other repo.</strong></p>
+  <p>Research cut-off: 25 November 2026. The tool facts come from the official Codex and Claude Code documentation as it read on that date, with Codex CLI 0.166.0 and Claude Code 2.1.332 installed locally. Both tools change monthly, so re-check anything marked <span class="tag t-docs">Docs</span> before you build on it.</p>
+  <div class="toolbar">
+    <button class="sketch-2" type="button" id="expandAll">Expand all details</button>
+    <button class="sketch-2" type="button" id="collapseAll">Collapse all</button>
+    <button class="sketch-2" type="button" onclick="window.print()">Print / save as PDF</button>
+  </div>
+</header>
+
+<!-- 1 -->
+<section id="summary" class="sketch-2" aria-labelledby="h-summary">
+  <h2 id="h-summary"><span class="num">1</span>Executive summary</h2>
+  <p class="answer"><strong>The question:</strong> if I were the Staff Engineer responsible for making this team excellent at AI-assisted development, what would I set up?</p>
+  <p><strong>The short answer:</strong> make the repository, not the prompt, carry the quality bar. Both tools read the same contract and run the same checks. Every engineer follows the same risk-tiered lifecycle. A mistake that happens twice becomes a deterministic rule.</p>
+
+  <div class="callout teal sketch">
+    <h3 style="margin-top:0">The ten decisions</h3>
+    <ol>
+      <li><strong>One shared contract: a short root <code>AGENTS.md</code> plus nested ones per package.</strong> Codex reads <code>AGENTS.md</code> natively. Claude Code reads it through a one-line <code>CLAUDE.md</code> that contains <code>@AGENTS.md</code>. Tool-specific files hold only tool-specific settings.</li>
+      <li><strong>One verification entrypoint, <code>scripts/check</code>.</strong> Agents, hooks, CI and humans all run the same command, so "done" means the same thing everywhere.</li>
+      <li><strong>Deterministic enforcement before prose.</strong> This follows Lauren Tan's trust pyramid. Architecture and APIs come first, then lint rules, types and tests, then runtime and formal verification. Written instructions come last.</li>
+      <li><strong>A correction ladder.</strong> Any review comment or agent mistake seen twice becomes a lint rule, type, test or architecture check. It becomes an instruction line only when it truly needs judgment.</li>
+      <li><strong>A risk-tiered lifecycle with four tiers:</strong> Minimal, Standard, Enhanced and High-risk. Each tier sets how much planning, review and verification a change gets.</li>
+      <li><strong>Test or reproduction first, then implementation.</strong> For bug fixes the agent must show a failing check before the fix, and the same check passing after it.</li>
+      <li><strong>Independent review in a fresh context, ideally from the other tool.</strong> Claude Code reviews Codex's diff and vice versa. AI review is advisory and never the approving reviewer.</li>
+      <li><strong>Evidence-carrying pull requests.</strong> Every PR carries the commands run, their output, and for UI changes screenshots or traces from a real run of the app. Reviewers review evidence as well as the diff.</li>
+      <li><strong>A small toolset.</strong> Use CLIs (<code>gh</code>, Playwright CLI, <code>psql</code> with a read-only role) and 6–9 shared Skills. No MCP server is mandatory. Each one must justify itself against an existing CLI.</li>
+      <li><strong>Humans own architecture, risk classification, merging and production.</strong> Agents never push to the default branch, bypass hooks, edit CI to get green, or auto-merge Enhanced or High-risk changes.</li>
+    </ol>
+  </div>
+
+  <h3>Why this shape</h3>
+  <ul>
+    <li><span class="tag t-talk">Talk</span> Tan's central claim is that automating a sloppy inner loop just produces more slop. Her team invested in code-level constraints and verification before scaling throughput.</li>
+    <li><span class="tag t-docs">Docs</span> Both vendors' guides say the same thing.
+      <ul>
+        <li>Claude Code's guide says to give the agent a way to verify its work, and that hooks are deterministic where <code>CLAUDE.md</code> is not.</li>
+        <li>Codex's guide says to define "done" up front, plan first for hard tasks, and turn repeated prompts into <code>AGENTS.md</code> or a skill.</li>
+      </ul>
+    </li>
+    <li><span class="tag t-research">Research</span> Outside evidence is mixed.
+      <ul>
+        <li>DORA associates AI adoption with higher throughput <em>and</em> higher delivery instability.</li>
+        <li>METR's February 2026 update says AI speed-ups are now likely, but hard to measure.</li>
+        <li>Several 2026 studies find code review is becoming the bottleneck.</li>
+      </ul>
+      Our takeaway: the gains are real but not automatic, and verification capacity is the constraint to invest in.</li>
+  </ul>
+  <div class="callout rose sketch-2"><strong>Caveat:</strong> nothing here guarantees the throughput or revert rates reported in the talk. Those are one team's self-reported numbers with no published baseline. Section 15 explains how we measure our own results.</div>
+</section>
+
+<!-- 2 -->
+<section id="method" class="sketch" aria-labelledby="h-method">
+  <h2 id="h-method"><span class="num">2</span>Research methodology and sources</h2>
+  <h3>How the research was done</h3>
+  <ul>
+    <li><strong>Primary talk material.</strong>
+      <ul>
+        <li>I pulled the video description and chapter timestamps directly from YouTube.</li>
+        <li>YouTube rate-limited the caption download (HTTP 429), so I read the full auto-caption transcript from a mirror page, tube.wave.co. Captions garble some names, for example "Gulp bot" for Grok Bot.</li>
+        <li>I cross-checked the transcript against the speaker page on ai.engineer, a written summary on shared.btbytes.com, and the <code>pstack</code> plugin README.</li>
+        <li><strong>I could not view the slides.</strong> Wherever a claim depends on a slide, this guide says so.</li>
+      </ul>
+    </li>
+    <li><strong>Tool capabilities.</strong> These come from the current official documentation.
+      <ul>
+        <li>Codex: the <code>developers.openai.com/codex/*</code> pages, which now redirect to <code>learn.chatgpt.com</code>.</li>
+        <li>Claude Code: <code>code.claude.com/docs</code>.</li>
+        <li>Neither site dates its pages, so they are cited as accessed on 25 Nov 2026. Some long pages, such as Claude Code hooks and MCP, were read only in part, and the related claims are kept conservative.</li>
+      </ul>
+    </li>
+    <li><strong>Practices and evidence.</strong> Sources include vendor engineering posts (OpenAI "Harness engineering", Feb 2026; Anthropic evals and property-based-testing work, Jan 2026), DORA 2026 material, the METR 2026 update, arXiv studies on code review and property-based testing (2026), and OWASP and Microsoft MCP security guidance (2026).</li>
+    <li><strong>The repository itself.</strong> I inspected the Hunger Learn repo directly: the layout, <code>package.json</code>, <code>pyproject.toml</code> files, tests, ESLint config, instruction files, <code>.claude/settings.json</code> and the local Codex config.</li>
+  </ul>
+  <h3>How to read the claims</h3>
+  <p>Every substantive claim carries a tag.</p>
+  <ul>
+    <li><span class="tag t-talk">Talk</span> means the speaker said it. It is not independent evidence.</li>
+    <li><span class="tag t-docs">Docs</span> means a vendor documents the feature. It is not a measurement of how well the feature works.</li>
+    <li><span class="tag t-research">Research</span> means a study or report. Vendor-funded reports are labelled as such.</li>
+    <li><span class="tag t-rec">Recommendation</span> is my synthesis.</li>
+  </ul>
+  <p>I preferred 2026 sources. A few older items appear only as background, and their dates are shown: the original METR trial (Jul 2025), the founding of the Agentic AI Foundation (Dec 2025), and a CodeRabbit report (Dec 2025).</p>
+</section>
+
+<!-- 3 -->
+<section id="talk" class="sketch-2" aria-labelledby="h-talk">
+  <h2 id="h-talk"><span class="num">3</span>Lessons from Lauren Tan's talk</h2>
+  <p class="small">The talk is <em>All Code Is Slop (Except Mine)</em> by Lauren Tan ("poteto"), Grok Bot team, SpaceXSI. It was given at AI Engineer CODE 2026 in San Francisco on about 11 Nov 2026 and runs 17:31. Chapters: 0:00 slop to gold · 2:03 trust pyramid · 5:00 Dune · 6:56 comments → lint rules · 9:40 runtime verification &amp; feature maps · 10:50 formal verification &amp; UI testing · 11:51 spending tokens on verification · 13:32 11,000 PRs / 0.5% reverts · 15:11 foundations before software factories.</p>
+
+  <h3>3.1 The trust pyramid (2:03)</h3>
+  <p><span class="tag t-talk">Talk</span> Tan calls it an <em>inverse</em> pyramid. It shows where to spend effort on an agent's environment. The widest layer, where most effort goes, sits at the top and lives in the code itself.</p>
+  <figure>
+    <svg viewBox="0 0 800 440" role="img" aria-labelledby="pyr-t pyr-d">
+      <title id="pyr-t">The trust pyramid</title>
+      <desc id="pyr-d">An inverted pyramid with four layers. Top and widest: codebase architecture, APIs and refactoring. Second: deterministic checks such as lint, types, compiler and tests. Third: verification, runtime and formal. Bottom and narrowest: written rules such as AGENTS.md, skills and judgment. An arrow on the left says most effort and most trust at the top.</desc>
+      <polygon class="box" points="70,20 700,20 640,104 130,104" fill="#d0ebff"/>
+      <text class="d-hand" x="385" y="55" text-anchor="middle" font-size="19" font-weight="700">1 · The codebase itself</text>
+      <text class="d-body" x="385" y="82" text-anchor="middle" font-size="14">architecture · API design · refactoring — make the wrong thing hard to write</text>
+      <polygon class="box" points="134,112 636,112 576,196 194,196" fill="#c3fae8"/>
+      <text class="d-hand" x="385" y="147" text-anchor="middle" font-size="18" font-weight="700">2 · Deterministic checks</text>
+      <text class="d-body" x="385" y="174" text-anchor="middle" font-size="14">lint rules · type system · compiler · tests</text>
+      <polygon class="box" points="198,204 572,204 512,288 258,288" fill="#fff3bf"/>
+      <text class="d-hand" x="385" y="239" text-anchor="middle" font-size="17" font-weight="700">3 · Verification</text>
+      <text class="d-body" x="385" y="265" text-anchor="middle" font-size="13.5">runtime (drive the real app) · formal</text>
+      <polygon class="box" points="262,296 508,296 450,380 320,380" fill="#e5dbff"/>
+      <text class="d-hand" x="385" y="330" text-anchor="middle" font-size="16" font-weight="700">4 · Written rules</text>
+      <text class="d-body" x="385" y="354" text-anchor="middle" font-size="12.5">AGENTS.md · Skills</text>
+      <path class="arrowline" d="M38,30 L38,370"/>
+      <text class="d-hand" x="20" y="200" font-size="14" transform="rotate(-90 20 200)" text-anchor="middle">most effort · most trust → least</text>
+      <text class="d-hand" x="718" y="70" font-size="13">in code:</text>
+      <text class="d-hand" x="718" y="88" font-size="13">reproducible</text>
+      <text class="d-hand" x="652" y="350" font-size="13">in prose: may be</text>
+      <text class="d-hand" x="652" y="368" font-size="13">ignored or forgotten</text>
+      <text class="d-hand" x="385" y="420" text-anchor="middle" font-size="15">Rule of thumb: when an agent repeats a mistake, move the fix one layer up.</text>
+    </svg>
+    <figcaption>Figure 1 — The trust pyramid, redrawn from the talk's description. The slide itself was not available.</figcaption>
+  </figure>
+  <p><span class="tag t-talk">Talk</span> Her reasoning: an agent's output is a function of its inputs, and the codebase is one of its largest inputs. Anti-patterns already in the code get copied, so "keep the garden clean". Her rule is that when you catch yourself correcting an agent, you should <em>make that a deterministic check instead of adding another line to your rules or your agents.md</em>. Code is far more reproducible, so you can trust it more.</p>
+  <p><span class="tag t-rec">Why this holds generally</span></p>
+  <ul>
+    <li>An instruction is a <em>probabilistic</em> input. It competes with everything else in the context window, it can be summarised away during compaction, and it is applied unevenly.</li>
+    <li>A lint rule, type or test is <em>evaluated</em> on every change, by every tool and every engineer, in CI. It fails loudly with a specific message.</li>
+    <li>Claude Code's best-practices page makes the same distinction. It calls hooks the deterministic option, unlike <code>CLAUDE.md</code>. <span class="tag t-docs">Docs</span></li>
+    <li>Prose is still the right tool for things that require judgment: product tone, Arabic copy quality, trade-offs.</li>
+  </ul>
+
+  <h3>3.2 Dune: architecture as a constraint (5:00)</h3>
+  <p><span class="tag t-talk">Talk</span> Dune is the Grok Bot team's client framework, "kind of like Next.js for Electron apps". Tan says it is not technically interesting. Its value is that it encodes lessons from building desktop apps as constraints. Her key line: <em>anything that requires nuance to use well often leads to slop.</em> Two examples:</p>
+  <ul>
+    <li><strong><code>useEffect</code> is banned in product code.</strong> It is allowed only inside certain Dune APIs. She says this "categorically" removed a whole class of problems from code review.</li>
+    <li><strong>The directory structure encodes the process boundary.</strong> There are top-level "Electron main" and "Electron renderer" directories. A dependency-graph analyzer and lint rules ban imports across the boundary. The speaker page adds that this stops main-process work that could freeze the UI.</li>
+  </ul>
+  <p><span class="tag t-caveat">Caveat</span> The phrase "make the correct implementation the easiest implementation" does not appear verbatim in any source I could read. Her wording is "categorically eliminate that problem" through API design and architecture. The principle is the same, so I use it below as an interpretation.</p>
+  <p><span class="tag t-rec">How we apply it</span> When a pattern needs nuance to use safely, wrap it in a narrow, well-named API, then ban the raw primitive outside that wrapper with a lint rule or import contract. Hunger Learn already does this in places, for example the read-only <code>hl_readonly</code> role behind <code>readiness_v</code> for text-to-SQL (see section 15).</p>
+
+  <h3>3.3 Replacing comments and workarounds with rules (6:56)</h3>
+  <p><span class="tag t-talk">Talk</span> In Cursor, also an Electron app, agents patched mismatches between VS Code's imperative style and React's declarative style with <code>setTimeout</code>, <code>requestAnimationFrame</code> and <code>requestIdleCallback</code>.</p>
+  <ul>
+    <li>These hacks caused garbage collection and jank.</li>
+    <li>The agents justified each hack in a code comment.</li>
+    <li>Other agents then read those comments as precedent and copied the hack.</li>
+  </ul>
+  <p>The Grok Bot team responded in two ways.</p>
+  <ul>
+    <li>They "decided to just ban 99% of comments", because comments go stale and spread workarounds.</li>
+    <li>They wrote lint rules whose error messages tell the agent to fix the root cause.</li>
+  </ul>
+  <p>The specific rule names are not given.</p>
+  <p><span class="tag t-rec">The correction ladder</span> When you see the same mistake twice, take the first rung that works:</p>
+  <div class="ladder" role="list">
+    <div class="step sketch" role="listitem"><b>1 · Make it impossible</b>Change the API or architecture so the wrong code can't be written (a wrapper, module boundary or DB role).</div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="step sketch-2" role="listitem"><b>2 · Make it a type</b>Branded or opaque types, exhaustive unions, a <code>zod</code> schema at the boundary.</div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="step sketch" role="listitem"><b>3 · Make it a lint rule</b>A built-in rule, <code>no-restricted-imports</code>, <code>no-restricted-syntax</code>, or a small custom rule whose message says <em>what to do instead</em>.</div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="step sketch-2" role="listitem"><b>4 · Make it a test</b>A regression, architecture (import contract) or property-based test that fails on the old code.</div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="step sketch" role="listitem"><b>5 · Make it a CI gate</b>Wire the check into <code>scripts/check</code> and required status checks.</div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="step sketch-2" role="listitem"><b>6 · Write it down</b>Only for judgment calls: one line in <code>AGENTS.md</code> or a Skill, saying <em>why</em>.</div>
+  </div>
+  <p class="small">An adapted article on torchtree.com (19 Nov 2026) states the same discipline more concretely: the new check must fail on the old code and pass on the new. That is an interpretation of the talk, not something Tan said.</p>
+
+  <h3>3.4 Runtime verification and Feature Maps (9:40)</h3>
+  <p><span class="tag t-talk">Talk</span> Tan made four points:</p>
+  <ul>
+    <li><strong>Agents run the real app themselves.</strong> She mentions the Chrome DevTools Protocol.</li>
+    <li><strong>The team keeps a feature map:</strong> a user-facing "site map of all of the features", so "agents don't need to guess when you say … the thingy in the left sidebar".</li>
+    <li><strong>Custom CLIs wrap the drivers,</strong> and skills reuse them. That "cuts down on token usage and is also testable".</li>
+    <li><strong>Review is shifting to evidence:</strong> videos, screenshots, diagrams, formal verification.</li>
+  </ul>
+  <p>Playwright is not named in the talk. Logs are not named explicitly either.</p>
+  <p><span class="tag t-rec">How we apply it</span></p>
+  <ul>
+    <li><strong>Feature map.</strong> Add <code>docs/feature-map.md</code>: one row per user-visible feature, giving its route, role, language, entry steps and the "proof" that it works. It doubles as the test plan for agents and humans.</li>
+    <li><strong>One driver, not ad-hoc clicking.</strong> Write a small <code>scripts/verify-app</code> wrapper around the <strong>Playwright CLI</strong> or <code>@playwright/test</code>. It logs in as a seeded user, walks a named feature from the map, and saves screenshots, a trace, console errors and server logs to <code>.verify/&lt;branch&gt;/</code>.</li>
+    <li><strong>Evidence in the PR.</strong> The PR template asks for the feature-map rows exercised and links to the artifacts.</li>
+    <li><strong>Prefer CLIs to browser MCP servers when the agent has a shell.</strong> Playwright's own docs list the CLI as having lower token cost than MCP. <span class="tag t-docs">Docs</span> Independent benchmarks disagree on how big the gap is. <span class="tag t-caveat">Caveat</span></li>
+  </ul>
+
+  <h3>3.5 Formal verification and property-based testing (10:50)</h3>
+  <p><span class="tag t-talk">Talk</span> The team uses three techniques:</p>
+  <ul>
+    <li><strong>TLA+</strong> model-checks major flows such as notifications across multiple devices and platforms.</li>
+    <li><strong>Lean</strong> proves properties of their custom virtualization library, catching "flickering or jittering problems". She says it has found "quite a few bugs" but is "not a silver bullet".</li>
+    <li><strong>Bombadil</strong> property-based UI testing has caught a few UI bugs.</li>
+  </ul>
+  <p>A <code>pstack</code> statechart skill also draws user-facing state machines so humans can review them.</p>
+  <div class="grid2">
+    <div class="card sketch"><h4>Use it when…</h4>
+      <ul>
+        <li><strong>Property-based testing (Hypothesis, fast-check):</strong> pure functions with clear invariants, such as normalisers, parsers, hashing, matching, serialisation round-trips and idempotency. Agent-written property tests have found real bugs. Anthropic's Jan 2026 work found bugs in NumPy, SciPy and Pandas. <span class="tag t-research">Research</span></li>
+        <li><strong>TLA+:</strong> concurrent or distributed protocols where interleavings matter, such as job queues, retries and multi-device sync, especially after a race bug has escaped.</li>
+        <li><strong>Lean or other proof assistants:</strong> small, critical algorithms with precise specs, when you have someone who can review the spec.</li>
+      </ul></div>
+    <div class="card sketch-2"><h4>Skip it when…</h4>
+      <ul>
+        <li>The feature is ordinary CRUD, UI layout, copy or glue code.</li>
+        <li>Nobody on the team can read or review the spec. An unreviewed model of the wrong system gives false confidence.</li>
+        <li>The behaviour is still changing weekly.</li>
+        <li>A good example-based test plus runtime verification already covers the risk.</li>
+      </ul></div>
+  </div>
+
+  <h3>3.6 Verification-heavy engineering (11:51)</h3>
+  <p><span class="tag t-talk">Talk</span> Tan says "most of my token usage goes to verification". She does not give a ratio for herself. She cites a colleague who couldn't trust agents six months earlier because subtle bugs were merging, and who now spends about <strong>70% of her daily tokens</strong> on verification. She calls this a "golden age of software testing and verification", because agents make verification cheap to write.</p>
+  <p><span class="tag t-rec">In Codex and Claude Code terms</span></p>
+  <ul>
+    <li>Write the acceptance criteria as executable checks first, and have the agent prove each one with a command and its output.</li>
+    <li>Use a <strong>separate session or subagent with fresh context</strong> to review and to try to break the change. Claude Code's guide recommends a reviewer that hasn't seen the code. <span class="tag t-docs">Docs</span></li>
+    <li>Use native review commands: Codex <code>/review</code>, and Claude Code <code>/code-review</code> and <code>/security-review</code>. <span class="tag t-docs">Docs</span></li>
+    <li>Run <code>scripts/check</code> from a hook so the agent cannot declare "done" with red checks. In Claude Code, a <code>Stop</code> hook that exits with code 2 sends the agent back to work. <span class="tag t-docs">Docs</span></li>
+    <li>Budget verification explicitly in the issue: what must be shown, and how.</li>
+  </ul>
+
+  <h3>3.7 Reported results (13:32)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Claim</th><th>Source</th><th>What it does <em>not</em> establish</th></tr></thead>
+    <tbody>
+      <tr><td>11,000 pull requests landed by the team "last month"</td><td><span class="tag t-talk">Talk</span> and the video description</td><td>Team size is not given. About 227 people landed at least one PR in October. The size and complexity of the PRs are unknown.</td></tr>
+      <tr><td>Revert rate steady at about 0.5%</td><td><span class="tag t-talk">Talk</span></td><td>No pre-AI baseline is shown. Reverts don't capture bugs fixed forward or never found.</td></tr>
+      <tr><td>Tan personally shipped about 3,000 PRs in a month, and it took six months to get there</td><td><span class="tag t-talk">Talk</span></td><td>This is one expert's workflow on a codebase built for it.</td></tr>
+      <tr><td>A stable client cut about once a day. Faster startup, typing and chat switching</td><td><span class="tag t-talk">Talk</span></td><td>Qualitative claims; she notes "there is a ceiling" because it's still Electron.</td></tr>
+      <tr><td>After each release a project fuzzes the app, opens fix PRs and auto-merges them ("as crazy as that sounds")</td><td><span class="tag t-talk">Talk</span></td><td>We do not adopt auto-merge for our risk profile. See section 12.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout rose sketch"><strong>How to read these numbers.</strong> They are a self-reported case study from a team that invested heavily in constraints and verification first. They are a reason to try the approach, not a forecast. Independent evidence (section 4) shows throughput gains often come with instability unless review and verification scale too.</div>
+
+  <h3>3.8 Foundations before software factories (15:11)</h3>
+  <p><span class="tag t-talk">Talk</span> "If your inner coding loop produces slop, then automating that loop just produces more slop." Her advice is to start with one lint rule, clean up old patterns, and make verification strong. Only then build "outer loop" automation, such as their routines that kick off cloud agents. This is exactly the order of our roadmap (section 16).</p>
+  <p class="small"><strong><code>pstack</code></strong> is Tan's plugin in the Cursor plugins repo, MIT-licensed, with ports for Claude Code and Codex in community forks. It bundles skills such as <code>/poteto-mode</code> (a router), <code>/how</code>, <code>/why</code>, <code>/architect</code>, <code>/interrogate</code>, <code>/tdd</code>, <code>/unslop</code>, <code>/no-comments</code> and <code>/correct</code>, plus verification playbooks. It spends extra tokens on subagents and review panels. It is a useful reference for writing our own Skills. I don't recommend adopting it wholesale, because its defaults encode one person's workflow.</p>
+</section>
+
+<!-- 4 -->
+<section id="practices" class="sketch" aria-labelledby="h-practices">
+  <h2 id="h-practices"><span class="num">4</span>Professional engineering practices</h2>
+  <h3>4.1 What serious teams converge on</h3>
+  <div class="grid2">
+    <div class="card sketch-2"><h4>The repo is the system of record</h4>
+      <p><span class="tag t-docs">OpenAI, Feb 2026</span> In "Harness engineering", a team that builds with Codex reports three habits:</p>
+      <ul>
+        <li>Architecture docs map domains and layering.</li>
+        <li>A quality document grades each domain over time.</li>
+        <li>Plans are first-class artifacts in the repo.</li>
+      </ul>
+      <p>The engineer's job shifts toward designing environments, stating intent and building feedback loops.</p></div>
+    <div class="card sketch"><h4>Verification is the bottleneck to scale</h4>
+      <p><span class="tag t-docs">Anthropic, 2026</span> Anthropic's Claude Code guidance centres on giving the agent a check to run and asking for evidence ("the command it ran and its output, or the screenshot").</p>
+      <p><span class="tag t-caveat">Caveat</span> Secondary coverage of a Nov 2026 Anthropic post says verification loops are what allow many agents to run in parallel. I could not read the primary post, so treat this as unconfirmed.</p></div>
+    <div class="card sketch"><h4>Define "done" before starting</h4>
+      <p><span class="tag t-docs">Codex best practices</span></p>
+      <ul>
+        <li>Define done up front: tests pass, behaviour changed, bug no longer reproduces.</li>
+        <li>Use Plan mode for hard tasks.</li>
+        <li>Review the diff.</li>
+        <li>Move repeated prompts into <code>AGENTS.md</code> or a skill.</li>
+        <li>Start with tight permissions.</li>
+      </ul></div>
+    <div class="card sketch-2"><h4>Review capacity, not generation, limits throughput</h4>
+      <p><span class="tag t-research">Research, 2026</span></p>
+      <ul>
+        <li>A study of 1.02 million PRs across 207 projects frames review and integration as the downstream bottleneck as AI raises change volume.</li>
+        <li>Another found that, once adopted, suggestions from AI review agents increased code complexity and size more than human suggestions did.</li>
+        <li>Vendor data says AI-authored PRs carry more issues. CodeRabbit (Dec 2025) found about 1.7× more. <span class="tag t-caveat">Vendor</span></li>
+      </ul></div>
+  </div>
+  <h3>4.2 What the outcome evidence says</h3>
+  <ul>
+    <li><span class="tag t-research">DORA</span> Higher AI adoption is associated with higher throughput <em>and</em> higher delivery instability. The 2026 ROI report argues that strong foundations decide whether AI pays off, and expects a temporary dip before gains (a "J-curve"). Some of its headline numbers are model inputs, not measurements. <span class="tag t-caveat">Caveat</span></li>
+    <li><span class="tag t-research">METR</span>
+      <ul>
+        <li>The Jul 2025 randomised trial found experienced open-source developers were 19% <em>slower</em> with early-2025 tools, while believing they were faster.</li>
+        <li>The Feb 2026 update says developers are now likely sped up, but selection effects make clean measurement hard. Its own estimate is called a likely lower bound.</li>
+      </ul></li>
+    <li><span class="tag t-rec">Implication</span> Measure our own baseline before and after rollout (section 15.10). Perception is not evidence, and METR's original finding showed the gap can be large.</li>
+  </ul>
+  <h3>4.3 Who does what across the lifecycle</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Stage</th><th>Engineer</th><th>Coding agent</th><th>Automation</th><th>Independent reviewer</th></tr></thead>
+    <tbody>
+      <tr><td>Issue, acceptance criteria, risk tier</td><td><strong>Owns</strong>; decides the tier</td><td>Drafts criteria and edge cases, asks questions</td><td>Issue template enforces fields</td><td>—</td></tr>
+      <tr><td>Repository exploration</td><td>Points at the right area</td><td><strong>Does it</strong>, read-only (explorer subagent)</td><td>—</td><td>—</td></tr>
+      <tr><td>Plan</td><td>Approves for Enhanced and High-risk</td><td><strong>Writes it</strong>, including a verification plan</td><td>—</td><td>Optional critique by a second model</td></tr>
+      <tr><td>Failing test or reproduction</td><td>Checks that it encodes the requirement</td><td><strong>Writes it first</strong></td><td>—</td><td>—</td></tr>
+      <tr><td>Implementation</td><td>Steers</td><td><strong>Does it</strong> in a branch or worktree</td><td>Hooks run fast checks</td><td>—</td></tr>
+      <tr><td>Local verification</td><td>Spot-checks the evidence</td><td><strong>Runs</strong> <code>scripts/check</code> and <code>verify-app</code></td><td><code>Stop</code> hook enforces it</td><td>—</td></tr>
+      <tr><td>Code review</td><td><strong>Final reviewer and approver</strong></td><td>Fixes findings</td><td>—</td><td><strong>Fresh-context agent</strong>, other tool preferred</td></tr>
+      <tr><td>CI</td><td>Owns the pipeline config</td><td>Never edits CI to get green</td><td><strong>Required checks</strong></td><td>Advisory AI review comment</td></tr>
+      <tr><td>Merge and deploy</td><td><strong>Merges</strong>; owns release</td><td>Prepares the PR description</td><td>Deploy pipeline</td><td>—</td></tr>
+      <tr><td>Monitoring and learning</td><td><strong>Triage</strong>; picks the ladder rung</td><td>Writes the new rule or test</td><td>Alerts, error tracking</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 5 -->
+<section id="tools" class="sketch-2" aria-labelledby="h-tools">
+  <h2 id="h-tools"><span class="num">5</span>Codex and Claude Code capabilities</h2>
+  <p>Both tools now cover the same concepts, but their file formats and semantics differ. <strong>Don't assume one config works in both.</strong> All rows are <span class="tag t-docs">Docs</span>, read 25 Nov 2026.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Concept</th><th>OpenAI Codex</th><th>Anthropic Claude Code</th><th>Team standard</th></tr></thead>
+    <tbody>
+      <tr><td>Project instructions</td>
+        <td><code>AGENTS.md</code> from the Git root down to the current directory, at most one per directory. <code>AGENTS.override.md</code> takes precedence over it. Files nearer the working directory win. Global file: <code>~/.codex/AGENTS.md</code>. Combined size capped by <code>project_doc_max_bytes</code> (default <strong>32 KiB</strong>). <code>/init</code> scaffolds one.</td>
+        <td><code>CLAUDE.md</code> (project, <code>.claude/CLAUDE.md</code>, <code>CLAUDE.local.md</code>, <code>~/.claude/CLAUDE.md</code>, managed). <code>@path</code> imports up to 4 hops. <code>.claude/rules/*.md</code> with <code>paths:</code> scoping. Reads <code>AGENTS.md</code> natively only when no <code>CLAUDE.md</code> exists. The documented bridge is a <code>CLAUDE.md</code> containing <code>@AGENTS.md</code>.</td>
+        <td><strong>Shared:</strong> <code>AGENTS.md</code>. <code>CLAUDE.md</code> = <code>@AGENTS.md</code> plus Claude-only notes.</td></tr>
+      <tr><td>Skills</td>
+        <td><code>.agents/skills/&lt;name&gt;/SKILL.md</code> (repo, scanned from the working directory up to the root), <code>~/.agents/skills</code>, <code>/etc/codex/skills</code>. Required frontmatter: <code>name</code>, <code>description</code>. Optional <code>agents/openai.yaml</code> (e.g. <code>allow_implicit_invocation</code>). Called explicitly with <code>$skill</code> or <code>/skills</code>, or implicitly when the description matches. Symlinked folders are followed.</td>
+        <td><code>.claude/skills/&lt;name&gt;/SKILL.md</code>, <code>~/.claude/skills</code>, plugins. Optional frontmatter such as <code>description</code>, <code>disable-model-invocation</code>, <code>allowed-tools</code>, <code>context: fork</code>, <code>paths</code>. Called with <code>/name</code> or automatically.</td>
+        <td><strong>Shared:</strong> one copy in <code>.agents/skills</code>, linked into <code>.claude/skills</code>. Both follow the open Agent Skills format (agentskills.io).</td></tr>
+      <tr><td>Hooks</td>
+        <td><code>.codex/hooks.json</code> (trusted projects only), <code>~/.codex/hooks.json</code>, or <code>[hooks]</code> in <code>config.toml</code>. Events include <code>PreToolUse</code>, <code>PostToolUse</code>, <code>PermissionRequest</code>, <code>Stop</code>, <code>SessionStart</code>. <strong>Repo hooks must be reviewed and trusted</strong> and are pinned by hash, so a changed hook is skipped until re-trusted.</td>
+        <td><code>.claude/settings.json</code> (shared), <code>.claude/settings.local.json</code>, user, managed, plugin, or skill/agent frontmatter. Many events, including <code>PreToolUse</code>, <code>PostToolUse</code>, <code>Stop</code>, <code>SubagentStop</code>. <strong>Exit code 2 blocks</strong>, and on <code>Stop</code> that keeps the agent working.</td>
+        <td><strong>Tool-specific config</strong> calling <strong>shared scripts</strong> (<code>scripts/check</code>, <code>scripts/guard</code>).</td></tr>
+      <tr><td>Subagents</td>
+        <td>On by default. Built-ins <code>default</code>, <code>worker</code>, <code>explorer</code>. Custom agents are TOML files in <code>.codex/agents/</code> with <code>name</code>, <code>description</code>, <code>developer_instructions</code>. They cannot override sandbox or approval settings.</td>
+        <td>Markdown files in <code>.claude/agents/</code>. Built-ins Explore and Plan (read-only) and general-purpose. Frontmatter includes <code>tools</code>, <code>model</code>, <code>permissionMode</code>, <code>isolation: worktree</code>, <code>background</code>.</td>
+        <td><strong>Tool-specific.</strong> Define a read-only "reviewer" in each.</td></tr>
+      <tr><td>Parallel work and worktrees</td>
+        <td>Codex app worktrees and cloud tasks. The docs list running live tasks on the same files without worktrees as a mistake. (Worktree details were not verified in depth.)</td>
+        <td><code>claude --worktree &lt;name&gt;</code>, subagent <code>isolation: worktree</code>, <code>/batch</code>. Gitignored files need <code>.worktreeinclude</code>.</td>
+        <td>Git worktrees, one task per worktree (section 13).</td></tr>
+      <tr><td>Permissions and sandbox</td>
+        <td>Sandbox modes <code>read-only</code>, <code>workspace-write</code>, <code>danger-full-access</code>. <strong>Network off by default.</strong> <code>.git</code>, <code>.agents</code> and <code>.codex</code> are protected in workspace-write. Approval policies <code>on-request</code>, <code>never</code> (CI), <code>granular</code>. Linux uses bubblewrap and seccomp.</td>
+        <td>Modes <code>default</code>, <code>acceptEdits</code>, <code>plan</code>, <code>auto</code>, <code>dontAsk</code>, <code>bypassPermissions</code>. Allow, ask and deny rules (deny wins, even in bypass). Optional OS sandbox (<code>/sandbox</code>; Linux needs <code>bubblewrap</code> + <code>socat</code>).</td>
+        <td>Shared <em>policy</em> (section 14); tool-specific config.</td></tr>
+      <tr><td>MCP</td>
+        <td><code>[mcp_servers.&lt;name&gt;]</code> in <code>~/.codex/config.toml</code>, or <code>.codex/config.toml</code> for trusted projects. Per-server <code>enabled_tools</code> and <code>disabled_tools</code>.</td>
+        <td>Local, project (<code>.mcp.json</code>, approved per user) and user scopes. <code>claude mcp add</code>.</td>
+        <td>None mandatory (section 9).</td></tr>
+      <tr><td>Code review</td>
+        <td><code>/review</code> in the CLI (base branch, uncommitted changes, a commit, or custom). On GitHub, <code>@codex review</code> or automatic review, flagging <strong>only P0 and P1</strong> issues and honouring "Code Review Rules" in <code>AGENTS.md</code>. <code>@codex security review</code> is a research preview.</td>
+        <td><code>/code-review</code>, <code>/security-review</code>. <code>anthropics/claude-code-action@v1</code> (<code>@claude</code>). Managed Code Review on Team and Enterprise plans (check run, <code>REVIEW.md</code>; never approves or blocks by itself).</td>
+        <td>Cross-tool review, advisory only.</td></tr>
+      <tr><td>CI / headless</td>
+        <td><code>codex exec</code>. <code>openai/codex-action@v1</code> (default <code>drop-sudo</code> safety strategy; only users with write access trigger it).</td>
+        <td><code>claude -p</code>. <code>anthropics/claude-code-action@v1</code> (write access required; bots rejected unless allowed).</td>
+        <td>Optional; never a required approver.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout blue sketch"><strong>Standardise vs keep tool-specific</strong>
+    <ul>
+      <li><strong>Standardise:</strong>
+        <ul>
+          <li>Instructions: <code>AGENTS.md</code>.</li>
+          <li>Skills content: <code>.agents/skills</code>.</li>
+          <li>Verification commands: <code>scripts/*</code>.</li>
+          <li>The issue and PR templates, CI, branch protection, the risk tiers, the correction ladder, and the review rubric.</li>
+        </ul></li>
+      <li><strong>Keep tool-specific</strong> (thin adapters that call shared scripts): hook and permission config, subagent definitions, MCP config, model and effort choices, sandbox settings.</li>
+      <li><strong>Keep personal</strong> (never required by the team): <code>CLAUDE.local.md</code>, <code>~/.codex/AGENTS.md</code>, personal skills, editor and UI preferences.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 6 -->
+<section id="workflow" class="sketch" aria-labelledby="h-workflow">
+  <h2 id="h-workflow"><span class="num">6</span>Universal team workflow</h2>
+  <h3>6.1 Critique of the proposed 12-step workflow</h3>
+  <p>The proposed flow was: issue → explore → plan → review plan → implement → tests → local verification → independent review → CI → human review → merge → learn. It has the right shape. It has eight gaps:</p>
+  <ol>
+    <li><strong>No risk classification.</strong> A typo fix and an auth change get the same process, which makes the process both too heavy and too light.</li>
+    <li><strong>Tests come after implementation.</strong> That invites tests fitted to the code. A bug fix should start with a failing reproduction, and a feature should start with acceptance checks.</li>
+    <li><strong>"Review the plan when necessary" is undefined.</strong> The tier decides when.</li>
+    <li><strong>No verification plan in the issue.</strong> "How will we know it works?" must be answered before coding, including which feature-map rows to exercise.</li>
+    <li><strong>No protection against weakened checks.</strong> Agents can delete or skip tests, loosen types, add <code>eslint-disable</code>, or edit CI. These need deterministic guards.</li>
+    <li><strong>Humans review the whole diff without evidence.</strong> That is the bottleneck the research warns about. Reviewers should see evidence, and attention should go to risky paths.</li>
+    <li><strong>"Learn" is vague.</strong> It needs a concrete mechanism: the correction ladder, with an owner.</li>
+    <li><strong>Deployment safety is missing:</strong> rollback, feature flags, post-deploy checks.</li>
+  </ol>
+
+  <h3>6.2 The improved lifecycle</h3>
+  <figure>
+    <svg viewBox="0 0 1000 440" role="img" aria-labelledby="lc-t lc-d">
+      <title id="lc-t">Universal AI engineering lifecycle</title>
+      <desc id="lc-d">Three swimlanes: human, agent and automation. Steps in order: 0 triage and risk tier (human); 1 issue with acceptance criteria and a verification plan (human); 2 explore, read-only (agent); 3 plan (agent) with plan approval by the human for higher tiers; 4 failing test first (agent); 5 implement in a branch or worktree (agent); 6 local gate with check and evidence (agent), enforced by hooks (automation); 7 fresh-context review (agent, other tool); 8 CI required checks (automation); 9 human review of diff and evidence, then merge (human); 10 deploy, monitor and roll back (automation). A feedback arrow returns from the end to the issue step: mistakes and incidents go through the correction ladder into lint rules, tests and skills.</desc>
+      <rect class="thin" x="5" y="8" width="990" height="112" fill="#fff3bf" opacity=".55"/>
+      <rect class="thin" x="5" y="128" width="990" height="112" fill="#d0ebff" opacity=".55"/>
+      <rect class="thin" x="5" y="248" width="990" height="112" fill="#e5dbff" opacity=".55"/>
+      <text class="d-hand" x="14" y="26" font-size="13" font-weight="700">HUMAN</text>
+      <text class="d-hand" x="14" y="146" font-size="13" font-weight="700">AGENT</text>
+      <text class="d-hand" x="14" y="266" font-size="13" font-weight="700">AUTOMATION</text>
+      <g class="d-body" font-size="12" text-anchor="middle">
+        <rect class="box" x="15" y="34" width="80" height="76" fill="#fff"/>
+        <text x="55" y="62">0 Triage</text><text x="55" y="78">+ risk tier</text>
+        <rect class="box" x="104" y="34" width="80" height="76" fill="#fff"/>
+        <text x="144" y="56">1 Issue</text><text x="144" y="72">+ criteria</text><text x="144" y="88">+ verify plan</text>
+        <rect class="box" x="193" y="154" width="80" height="76" fill="#fff"/>
+        <text x="233" y="184">2 Explore</text><text x="233" y="200">(read-only)</text>
+        <rect class="box" x="282" y="154" width="80" height="76" fill="#fff"/>
+        <text x="322" y="184">3 Plan</text><text x="322" y="200">+ checks</text>
+        <rect class="box dash" x="282" y="34" width="80" height="76" fill="#fff"/>
+        <text x="322" y="62">Approve</text><text x="322" y="78">plan (Std+)</text>
+        <rect class="box" x="371" y="154" width="80" height="76" fill="#fff"/>
+        <text x="411" y="184">4 Failing</text><text x="411" y="200">test first</text>
+        <rect class="box" x="460" y="154" width="80" height="76" fill="#fff"/>
+        <text x="500" y="176">5 Implement</text><text x="500" y="192">branch /</text><text x="500" y="208">worktree</text>
+        <rect class="box" x="549" y="154" width="80" height="76" fill="#fff"/>
+        <text x="589" y="176">6 Local gate</text><text x="589" y="192">check +</text><text x="589" y="208">evidence</text>
+        <rect class="box" x="549" y="274" width="80" height="76" fill="#fff"/>
+        <text x="589" y="304">hooks run</text><text x="589" y="320">check</text>
+        <rect class="box" x="638" y="154" width="80" height="76" fill="#fff"/>
+        <text x="678" y="176">7 Fresh</text><text x="678" y="192">review</text><text x="678" y="208">(other tool)</text>
+        <rect class="box" x="727" y="274" width="80" height="76" fill="#fff"/>
+        <text x="767" y="304">8 CI</text><text x="767" y="320">required</text>
+        <rect class="box" x="816" y="34" width="80" height="76" fill="#fff"/>
+        <text x="856" y="56">9 Review</text><text x="856" y="72">evidence</text><text x="856" y="88">+ merge</text>
+        <rect class="box" x="905" y="274" width="80" height="76" fill="#fff"/>
+        <text x="945" y="296">10 Deploy</text><text x="945" y="312">monitor</text><text x="945" y="328">rollback</text>
+      </g>
+      <path class="arrowline" d="M95,72 L102,72"/>
+      <path class="arrowline" d="M184,90 C200,120 210,130 225,152"/>
+      <path class="arrowline" d="M273,192 L280,192"/>
+      <path class="arrowline" d="M322,154 L322,112"/>
+      <path class="arrowline" d="M362,192 L369,192"/>
+      <path class="arrowline" d="M451,192 L458,192"/>
+      <path class="arrowline" d="M540,192 L547,192"/>
+      <path class="arrowline" d="M589,272 L589,232"/>
+      <path class="arrowline" d="M629,192 L636,192"/>
+      <path class="arrowline" d="M718,212 C735,240 745,250 760,272"/>
+      <path class="arrowline" d="M790,272 C810,200 830,150 850,112"/>
+      <path class="arrowline" d="M896,90 C930,150 945,220 945,272"/>
+      <path class="arrowline blue" d="M945,352 C940,410 600,415 200,410 C172,409 170,200 168,112"/>
+      <text class="d-hand" x="560" y="400" font-size="14" fill="#1864ab" text-anchor="middle">11 Learn: mistakes &amp; incidents → correction ladder → lint / tests / skills</text>
+    </svg>
+    <figcaption>Figure 2 — The lifecycle. Dashed box: required only for the Standard tier and above. The blue loop is what makes the system improve over time.</figcaption>
+  </figure>
+
+  <h3>6.3 Four workflow tiers</h3>
+  <p>The engineer picks the tier at triage. If in doubt, go up one tier. Some paths force a minimum tier, and CODEOWNERS enforces it (section 15).</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Tier</th><th>Typical changes</th><th>Process</th><th>Agents</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Minimal</strong></td><td>Typos, copy, comments, dependency patch bumps, config with no behaviour change. Small diff.</td><td>Issue optional (a clear one-liner is enough) → implement → <code>scripts/check</code> → PR → CI → human review.</td><td>1</td></tr>
+      <tr><td><strong>Standard</strong></td><td>A bug fix or a self-contained feature in one package.</td><td>Issue with acceptance criteria → explore → short plan in chat → failing test → implement → check plus runtime evidence when there's UI → self-review (<code>/review</code> or <code>/code-review</code>) → PR with evidence → CI → human review.</td><td>1, plus an optional reviewer</td></tr>
+      <tr><td><strong>Enhanced</strong></td><td>Multi-package features, schema changes, new pipelines, prompt or generation changes, or a diff over about 400 lines.</td><td>Written plan in the PR or <code>docs/plans/</code>, approved by an engineer → split into stacked PRs → failing tests first → implement → full runtime verification via the feature map → <strong>independent fresh-context review from the other tool</strong> → CI → human review.</td><td>2 (writer + reviewer); parallel only for disjoint parts</td></tr>
+      <tr><td><strong>High-risk</strong></td><td>Auth and sessions, permissions, DB roles, migrations on real data, deletion, the text-to-SQL surface, secrets, payment-like flows, anything irreversible.</td><td>Human writes or approves a design note with a threat model → tests (and properties where invariants exist) first → implement → security review (<code>/security-review</code> or <code>@codex security review</code>) plus independent review → <strong>two humans or a code owner</strong> approve → staged rollout with a rollback plan. <strong>No auto-merge, ever.</strong></td><td>2–3, with a human in every loop</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>6.4 One agent, two agents, or many?</h3>
+  <ul>
+    <li><strong>One agent:</strong> the default. Minimal and Standard tasks, and any task where the spec is still forming.</li>
+    <li><strong>Two agents (writer + reviewer):</strong> Enhanced and High-risk tasks, or any time you would want a second pair of eyes. The reviewer must start from a fresh context with only the diff, the issue and the evidence. Use the <em>other</em> tool when you can, because its blind spots are different.</li>
+    <li><strong>Several parallel agents:</strong> only when the work splits into pieces with <em>disjoint file ownership</em> and a clear interface, such as independent docproc and web tasks, a test backfill per module, or docs. See section 13 for when parallelism stops paying.</li>
+  </ul>
+
+  <figure>
+    <svg viewBox="0 0 900 300" role="img" aria-labelledby="wr-t wr-d">
+      <title id="wr-t">Agent implementation and independent review</title>
+      <desc id="wr-d">A writer agent in a branch or worktree plans, writes a failing test, implements and runs check. It produces a diff plus an evidence bundle: test output, screenshots, logs, plan and criteria. A reviewer agent with fresh context, ideally the other tool, read-only, reads the bundle and returns findings by severity. Must-fix findings go back to the writer, who fixes them and re-runs check. The review summary goes to the engineer, who decides.</desc>
+      <rect class="box" x="20" y="60" width="220" height="140" fill="#d0ebff"/>
+      <text class="d-hand" x="130" y="88" text-anchor="middle" font-size="17" font-weight="700">Writer agent</text>
+      <g class="d-body" font-size="13" text-anchor="middle"><text x="130" y="112">Codex or Claude Code</text><text x="130" y="132">branch / worktree</text><text x="130" y="152">plan → failing test →</text><text x="130" y="170">code → scripts/check</text></g>
+      <path class="arrowline" d="M242,130 L296,130"/>
+      <path class="box" d="M300,60 L470,60 L480,72 L480,200 L300,200 Z" fill="#fff3bf"/>
+      <text class="d-hand" x="390" y="88" text-anchor="middle" font-size="16" font-weight="700">Diff + evidence</text>
+      <g class="d-body" font-size="13" text-anchor="middle"><text x="390" y="112">issue + criteria</text><text x="390" y="130">commands + output</text><text x="390" y="148">screenshots · trace</text><text x="390" y="166">logs · feature rows</text></g>
+      <path class="arrowline" d="M482,130 L536,130"/>
+      <rect class="box" x="540" y="60" width="200" height="140" fill="#e5dbff"/>
+      <text class="d-hand" x="640" y="88" text-anchor="middle" font-size="17" font-weight="700">Reviewer agent</text>
+      <g class="d-body" font-size="13" text-anchor="middle"><text x="640" y="112">fresh context</text><text x="640" y="130">other tool if possible</text><text x="640" y="148">read-only tools</text><text x="640" y="166">findings by severity</text></g>
+      <path class="arrowline" d="M640,202 C640,268 130,268 130,204"/>
+      <text class="d-hand" x="385" y="288" text-anchor="middle" font-size="14">must-fix findings → fix → re-run check (max 2–3 rounds, then a human)</text>
+      <path class="arrowline" d="M742,130 L776,130"/>
+      <rect class="box" x="780" y="85" width="105" height="90" fill="#c3fae8"/>
+      <text class="d-hand" x="832" y="118" text-anchor="middle" font-size="16" font-weight="700">Engineer</text>
+      <text class="d-body" x="832" y="140" text-anchor="middle" font-size="13">decides,</text>
+      <text class="d-body" x="832" y="158" text-anchor="middle" font-size="13">merges</text>
+    </svg>
+    <figcaption>Figure 3 — Implementation and independent review. The reviewer never sees the writer's reasoning, only its output.</figcaption>
+  </figure>
+  <p class="small">The round limit follows the same reasoning as Claude Code's built-in <code>Stop</code>-hook block cap (8 consecutive blocks by default). Loops that don't converge mean the spec or the design is wrong, and a human should step in.</p>
+</section>
+
+<!-- 7 -->
+<section id="repo" class="sketch-2" aria-labelledby="h-repo">
+  <h2 id="h-repo"><span class="num">7</span>Shared instructions and repository structure</h2>
+  <figure>
+    <svg viewBox="0 0 960 400" role="img" aria-labelledby="sh-t sh-d">
+      <title id="sh-t">Shared team workflow across Codex and Claude Code</title>
+      <desc id="sh-d">In the centre is the shared repository contract: AGENTS.md and nested AGENTS.md files, docs for architecture and the feature map, .agents/skills, scripts/check, CI with branch protection, and issue and PR templates. On the left, a Codex adapter reads AGENTS.md natively and has .codex/config.toml, .codex/hooks.json calling scripts/check, and .codex/agents. On the right, a Claude Code adapter has CLAUDE.md importing AGENTS.md, .claude/settings.json hooks and permissions, .claude/skills linked to .agents/skills, and .claude/agents. Engineers using either tool reach the same contract.</desc>
+      <text class="d-hand" x="140" y="34" text-anchor="middle" font-size="15">Engineer using Codex</text>
+      <text class="d-hand" x="820" y="34" text-anchor="middle" font-size="15">Engineer using Claude Code</text>
+      <path class="arrowline" d="M140,42 L140,76"/>
+      <path class="arrowline" d="M820,42 L820,76"/>
+      <rect class="box" x="20" y="80" width="250" height="240" fill="#d0ebff"/>
+      <text class="d-hand" x="145" y="108" text-anchor="middle" font-size="17" font-weight="700">Codex adapter</text>
+      <g class="d-body" font-size="12.5"><text x="34" y="136">• reads AGENTS.md natively</text><text x="34" y="162">• .codex/config.toml</text><text x="46" y="180">sandbox · approvals · MCP</text><text x="34" y="206">• .codex/hooks.json</text><text x="46" y="224">→ scripts/check (trusted)</text><text x="34" y="250">• .codex/agents/reviewer.toml</text><text x="34" y="276">• skills: .agents/skills</text><text x="46" y="294">(+ agents/openai.yaml)</text></g>
+      <rect class="box" x="330" y="60" width="300" height="300" fill="#fff3bf"/>
+      <text class="d-hand" x="480" y="90" text-anchor="middle" font-size="18" font-weight="700">Repository contract</text>
+      <text class="d-hand" x="480" y="110" text-anchor="middle" font-size="13">(shared, reviewed like code)</text>
+      <g class="d-body" font-size="13"><text x="346" y="142">• AGENTS.md (+ nested per package)</text><text x="346" y="170">• docs/architecture.md</text><text x="346" y="194">• docs/feature-map.md</text><text x="346" y="222">• .agents/skills/*/SKILL.md</text><text x="346" y="250">• scripts/check · scripts/verify-app</text><text x="346" y="278">• CI + branch protection + CODEOWNERS</text><text x="346" y="306">• issue &amp; PR templates</text><text x="346" y="334">• lint rules · types · tests</text></g>
+      <rect class="box" x="690" y="80" width="250" height="240" fill="#e5dbff"/>
+      <text class="d-hand" x="815" y="108" text-anchor="middle" font-size="17" font-weight="700">Claude Code adapter</text>
+      <g class="d-body" font-size="12.5"><text x="704" y="136">• CLAUDE.md = @AGENTS.md</text><text x="716" y="154">+ Claude-only notes</text><text x="704" y="180">• .claude/settings.json</text><text x="716" y="198">hooks → scripts/check · perms</text><text x="704" y="224">• .claude/skills → .agents/skills</text><text x="704" y="250">• .claude/agents/reviewer.md</text><text x="704" y="276">• .mcp.json (only if needed)</text></g>
+      <path class="arrowline" d="M272,200 L326,200"/>
+      <path class="arrowline" d="M688,200 L634,200"/>
+      <text class="d-hand" x="480" y="390" text-anchor="middle" font-size="14">Adapters are thin: they point to shared files and call shared scripts. Rules live in the middle.</text>
+    </svg>
+    <figcaption>Figure 4 — One contract, two thin adapters.</figcaption>
+  </figure>
+
+  <h3>7.1 Recommended layout</h3>
+<pre><code>AGENTS.md                    # shared contract, 80–150 lines (see 7.2)
+CLAUDE.md                    # "@AGENTS.md" + only Claude-specific notes
+web/AGENTS.md                # package rules (Next 16 notes, i18n, server actions)
+-/docproc/AGENTS.md          # package rules (invariants, backend parity)
+media/AGENTS.md              # package rules (GPU queue, licences)
+docs/
+  architecture.md            # domains, layers, data flow, invariants
+  feature-map.md             # user-visible features → route, role, proof
+  decisions/NNNN-title.md    # ADRs for choices agents must not undo
+  plans/                     # Enhanced/High-risk plans, kept with the PR
+.agents/skills/&lt;name&gt;/SKILL.md   # shared Skills (Codex reads natively)
+.claude/skills -&gt; ../.agents/skills   # link so Claude Code sees the same Skills
+.claude/settings.json        # shared Claude hooks + permission rules
+.claude/agents/reviewer.md   # read-only reviewer subagent
+.codex/config.toml           # project Codex settings (trusted projects)
+.codex/hooks.json            # shared Codex hooks (trusted, hash-pinned)
+.codex/agents/reviewer.toml  # read-only reviewer custom agent
+scripts/check                # THE verification entrypoint (fast + full modes as two scripts)
+scripts/check-fast           # what hooks run: changed-package lint + types + unit tests
+scripts/verify-app           # Playwright driver over the feature map → .verify/
+.github/workflows/ci.yml
+.github/pull_request_template.md
+.github/ISSUE_TEMPLATE/task.yml
+.github/CODEOWNERS</code></pre>
+  <p class="small">The <code>.claude/skills</code> symlink matches how this repo already links <code>skills/</code> and <code>.agents/skills</code>. Codex documents that it follows symlinked skill folders. Claude Code's docs don't say either way, so after linking, confirm both tools list the same Skills (<code>/skills</code> in Codex, <code>/</code> menu in Claude Code). If one doesn't, copy the folder in a pre-commit step instead. <span class="tag t-caveat">Verify</span></p>
+
+  <h3>7.2 What goes where</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Location</th><th>Put here</th><th>Keep out</th></tr></thead>
+    <tbody>
+      <tr><td>Root <code>AGENTS.md</code></td><td>What the repo is (5 lines). Package map. <strong>Exact commands</strong> (setup, check, test one thing, run the app). Definition of done. Non-negotiable invariants, each with a one-line <em>why</em>. Risk tiers and which paths are High-risk. Pointers to docs and Skills. "Code Review Rules" (read by Codex review).</td><td>Long procedures (→ Skills). Style the linter enforces (→ lint). History and changelogs. Personal preferences. Anything over about 150 lines.</td></tr>
+      <tr><td>Nested <code>AGENTS.md</code></td><td>Package-specific commands, invariants and gotchas. Codex loads files from the root down to the working directory. Claude Code loads subdirectory files on demand.</td><td>Repeating the root file.</td></tr>
+      <tr><td><code>CLAUDE.md</code></td><td><code>@AGENTS.md</code>, plus genuinely Claude-only notes (e.g. which subagent to use for review).</td><td>A second copy of the rules.</td></tr>
+      <tr><td><code>docs/architecture.md</code></td><td>Domains, boundaries, data flow, invariants. Link to the checks that enforce each one.</td><td>Task instructions.</td></tr>
+      <tr><td><code>docs/feature-map.md</code></td><td>One row per feature: name, route, role, language, how to reach it, expected proof.</td><td>Implementation detail.</td></tr>
+      <tr><td>Skills</td><td>Repeatable procedures: how to plan, fix a bug, verify, review, migrate.</td><td>Facts the agent needs on every task (→ <code>AGENTS.md</code>).</td></tr>
+      <tr><td>Tool config</td><td>Hooks, permissions, sandbox, MCP, subagents.</td><td>Rules written as prose.</td></tr>
+      <tr><td>Lint, types, tests</td><td>Everything that can be checked mechanically (section 3.3).</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+  <details>
+    <summary>Example root <code>AGENTS.md</code> skeleton (about 60 lines)</summary>
+<pre><code># AGENTS.md — Hunger Learn
+Hunger Learn turns SOP documents into role-specific training (upload → clauses →
+training package → approval → learner flow → readiness → v2 carry-over).
+
+## Packages
+- web/ — Next.js 16 app (TypeScript strict). See web/AGENTS.md.
+- -/docproc/ — Python + LangGraph clause extraction & comparison. See its AGENTS.md.
+- media/ — lesson video CLI (hlmedia). See media/AGENTS.md.
+The top-level dir is literally "-": quote it (cd ./-/docproc).
+
+## Commands (run from repo root)
+- Setup: see docs/setup.md
+- Verify everything: scripts/check        # must pass before you say "done"
+- Fast loop:         scripts/check-fast   # lint + types + unit tests of changed packages
+- Run the app & prove a feature: scripts/verify-app &lt;feature-id&gt;  (ids in docs/feature-map.md)
+
+## Definition of done
+1. Acceptance criteria from the issue each have a check that passed (paste command + output).
+2. scripts/check passes. No skipped/deleted tests, no new eslint-disable / type: ignore
+   without a linked issue.
+3. UI changes: verify-app evidence for every touched feature-map row, in AR and EN.
+
+## Invariants (enforced where noted)
+- Server actions re-check the session (test: web/src/lib/…).        why: no implicit auth
+- UI strings only in src/lib/i18n/{ar,en}.ts (lint: react/jsx-no-literals). why: bilingual
+- docproc matching rules live only in matching.py (import-linter).   why: backend parity
+- Text-to-SQL reads only readiness_v via hl_readonly.                why: least privilege
+
+## Risk tiers
+High-risk paths (two approvals, no auto-merge): web/src/lib/session.ts, web/src/lib/accounts.ts,
+web/db/migrations/**, anything touching hl_readonly / readiness_v, .github/**.
+
+## Code Review Rules
+- Report correctness and security first; skip style the linter covers.
+- Flag weakened tests, broadened permissions, new dependencies.</code></pre>
+    <p class="small">The test and lint references are written as targets to create, not as files that exist today (section 15).</p>
+  </details>
+</section>
+
+<!-- 8 -->
+<section id="skills" class="sketch" aria-labelledby="h-skills">
+  <h2 id="h-skills"><span class="num">8</span>Skills strategy</h2>
+  <p><span class="tag t-docs">Docs</span> Both tools follow the open <strong>Agent Skills</strong> format: a folder with a <code>SKILL.md</code> (YAML frontmatter plus Markdown), and optional <code>scripts/</code>, <code>references/</code> and <code>assets/</code>. Loading is progressive: only the name and description sit in context until the skill is used. The spec advises keeping <code>SKILL.md</code> under about 500 lines and 5,000 tokens.</p>
+  <h3>8.1 Portable skill rules</h3>
+  <ul>
+    <li>Use only the <code>name</code> and <code>description</code> frontmatter in shared Skills. Those are the fields both tools document. Put Codex extras in <code>agents/openai.yaml</code>. Add Claude-only frontmatter only where it's needed, and confirm Codex still loads the skill.</li>
+    <li>Write the <code>description</code> as <em>when to use it and when not to</em>. Both tools use it to decide implicit invocation.</li>
+    <li>Put deterministic steps in <code>scripts/</code> and have the Skill call them. A script is testable, cheaper, and identical in both tools.</li>
+    <li>Refer to commands, not tool names. Write "run <code>scripts/check</code>", not "use the Bash tool".</li>
+    <li>Skills are code: reviewed in PRs, owned, versioned, and evaluated (section 11.4).</li>
+  </ul>
+  <h3>8.2 The recommended team set</h3>
+  <p>Start with six, and add one only when a procedure has been repeated by hand three or more times. Use native features first.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Skill</th><th>When it's invoked</th><th>What it does</th><th>Native alternative</th></tr></thead>
+    <tbody>
+      <tr><td><code>plan-change</code></td><td>Standard tier and above, before editing</td><td>Restates the acceptance criteria, lists the files to touch, sets the risk tier, writes a <strong>verification plan</strong> (which checks and feature-map rows), and flags open questions. Stops for approval at Enhanced and above.</td><td>Plan mode in both tools. The skill adds our template.</td></tr>
+      <tr><td><code>fix-bug</code></td><td>Any bug report</td><td>Reproduce → write a failing test → find the root cause → fix → show the test failing before and passing after → search for siblings of the bug.</td><td>—</td></tr>
+      <tr><td><code>verify-app</code></td><td>UI or flow changes, before the PR</td><td>Starts the app, runs <code>scripts/verify-app</code> for the touched feature-map rows in both languages, and collects screenshots, traces, console errors and server logs.</td><td>Claude <code>/verify</code> and <code>/run</code> exist; the skill makes it repo-specific</td></tr>
+      <tr><td><code>review-change</code></td><td>Fresh-context reviewer, Standard tier and above</td><td>Reads the issue, diff and evidence only. Ranks findings: correctness, security, weakened checks, design, then tests. Skips style. Outputs must-fix vs consider.</td><td>Codex <code>/review</code>, Claude <code>/code-review</code>. The skill carries our rubric.</td></tr>
+      <tr><td><code>pr-ready</code></td><td>Before opening a PR</td><td>Runs <code>scripts/check</code>, assembles the evidence bundle, fills the PR template, and lists risks and rollback.</td><td>—</td></tr>
+      <tr><td><code>encode-mistake</code></td><td>After a repeated review comment or an incident</td><td>Walks the correction ladder. Proposes the highest rung that works, writes the rule or test, and proves it fails on the bad pattern.</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Project-specific Skills for Hunger Learn</strong> (add in Phase 3):</p>
+  <ul>
+    <li><code>db-migration</code>: covers <code>web/db/migrations</code> conventions, the <code>hl_readonly</code> grants, and the forward-only and rollback notes.</li>
+    <li><code>docproc-change</code>: covers the hash, matching and parity invariants, which tests to run, and the held-out data rules.</li>
+    <li><code>training-copy</code>: covers the Arabic and English copy-quality rubric. This one is genuinely judgment work, so a Skill is the right layer for it.</li>
+  </ul>
+  <p>Already covered without a new Skill:</p>
+  <ul>
+    <li><strong>Security review:</strong> use the native <code>/security-review</code> or <code>@codex security review</code>.</li>
+    <li><strong>Repository exploration:</strong> use the built-in explorer subagents.</li>
+    <li><strong>Postgres:</strong> the vendored Postgres skill is already in <code>.agents/skills</code>.</li>
+  </ul>
+  <details>
+    <summary>Example: <code>.agents/skills/fix-bug/SKILL.md</code></summary>
+<pre><code>---
+name: fix-bug
+description: Use when fixing a reported bug or failing behaviour. Reproduces it with a failing
+  test before changing code, then proves the fix. Not for new features or refactors.
+---
+# Fix a bug
+
+1. Restate the bug as expected vs actual, with the exact input. If you can't, ask.
+2. Reproduce it. Write the smallest automated test that fails for the reported reason.
+   Run it and keep the failing output.
+3. Find the root cause. Don't patch the symptom. Don't add a timeout, retry or comment as the fix.
+4. Fix it. Keep the diff minimal and unrelated code untouched.
+5. Prove it: run the new test (now passing), then `scripts/check-fast`, then `scripts/check`.
+6. Search for the same pattern elsewhere (rg) and list any siblings in the PR.
+7. If this bug class could recur, run the `encode-mistake` skill.
+
+Report: failing output (before), passing output (after), root cause in two sentences.
+Never: delete or skip tests, loosen types, add eslint-disable, or edit CI to get green.</code></pre>
+  </details>
+  <details>
+    <summary>Example: read-only reviewer definitions (one per tool)</summary>
+<pre><code># .claude/agents/reviewer.md
+---
+name: reviewer
+description: Fresh-context code reviewer. Use after implementation, before opening a PR.
+tools: Read, Grep, Glob
+---
+Use the review-change skill. You have not seen how this code was written; judge only
+the issue, the diff (git diff origin/main...HEAD) and the evidence in .verify/.
+
+# .codex/agents/reviewer.toml
+name = "reviewer"
+description = "Fresh-context code reviewer. Use after implementation, before opening a PR."
+developer_instructions = """
+Use the review-change skill. Judge only the issue, the diff against origin/main and the
+evidence in .verify/. Do not edit files.
+"""</code></pre>
+    <p class="small">The Claude Code reviewer's <code>Bash</code> access is removed, so it can't run <code>git diff</code> itself. Either pass the diff in the prompt or allow <code>Bash(git diff *)</code> only. Codex custom agents can't override the sandbox, so run the review session in <code>read-only</code> sandbox mode.</p>
+  </details>
+</section>
+
+<!-- 9 -->
+<section id="mcp" class="sketch-2" aria-labelledby="h-mcp">
+  <h2 id="h-mcp"><span class="num">9</span>MCP and tool recommendations</h2>
+  <p><span class="tag t-rec">Principle</span> A CLI the agent can already run beats an MCP server. CLIs cost no context until used, are scriptable from Skills and CI, and are the same in both tools. Add an MCP server only when no good CLI or API exists, or when the agent has no shell.</p>
+  <figure>
+    <svg viewBox="0 0 900 380" role="img" aria-labelledby="sk-t sk-d">
+      <title id="sk-t">Skills and MCP integration architecture</title>
+      <desc id="sk-d">The agent, Codex or Claude Code, sits at the top. Below it are three layers. Always-loaded instructions (AGENTS.md). On-demand Skills (procedures). Native tools (shell, edit, subagents, review). Skills call deterministic scripts and CLIs: scripts/check, verify-app over Playwright, the docproc and hlmedia CLIs, gh, and psql with a read-only role. At the bottom, in a dashed box, is MCP: optional, only for systems with no good CLI or for no-shell contexts.</desc>
+      <rect class="box" x="300" y="14" width="300" height="56" fill="#fff"/>
+      <text class="d-hand" x="450" y="48" text-anchor="middle" font-size="18" font-weight="700">Agent: Codex · Claude Code</text>
+      <path class="arrowline" d="M380,72 L170,108"/><path class="arrowline" d="M450,72 L450,108"/><path class="arrowline" d="M520,72 L730,108"/>
+      <rect class="box" x="40" y="112" width="260" height="80" fill="#fff3bf"/>
+      <text class="d-hand" x="170" y="140" text-anchor="middle" font-size="16" font-weight="700">AGENTS.md</text>
+      <text class="d-body" x="170" y="162" text-anchor="middle" font-size="13">always loaded · short · facts</text>
+      <text class="d-body" x="170" y="180" text-anchor="middle" font-size="13">commands · invariants · tiers</text>
+      <rect class="box" x="320" y="112" width="260" height="80" fill="#c3fae8"/>
+      <text class="d-hand" x="450" y="140" text-anchor="middle" font-size="16" font-weight="700">Skills</text>
+      <text class="d-body" x="450" y="162" text-anchor="middle" font-size="13">loaded on demand · procedures</text>
+      <text class="d-body" x="450" y="180" text-anchor="middle" font-size="13">plan · fix-bug · verify · review</text>
+      <rect class="box" x="600" y="112" width="260" height="80" fill="#d0ebff"/>
+      <text class="d-hand" x="730" y="140" text-anchor="middle" font-size="16" font-weight="700">Native tools</text>
+      <text class="d-body" x="730" y="162" text-anchor="middle" font-size="13">shell · edit · subagents</text>
+      <text class="d-body" x="730" y="180" text-anchor="middle" font-size="13">plan mode · /review · worktrees</text>
+      <path class="arrowline" d="M450,194 L450,228"/><path class="arrowline" d="M730,194 L600,230"/>
+      <rect class="box" x="140" y="232" width="620" height="66" fill="#e5dbff"/>
+      <text class="d-hand" x="450" y="258" text-anchor="middle" font-size="16" font-weight="700">Deterministic scripts &amp; CLIs (same in both tools, CI too)</text>
+      <text class="d-body" x="450" y="282" text-anchor="middle" font-size="13">scripts/check · scripts/verify-app (Playwright) · docproc · hlmedia · gh · psql (read-only role)</text>
+      <rect class="box dash" x="220" y="320" width="460" height="48" fill="#fff"/>
+      <text class="d-body" x="450" y="349" text-anchor="middle" font-size="13">MCP (optional): only when no good CLI exists, or the agent has no shell</text>
+      <path class="arrowline" d="M450,300 L450,318"/>
+    </svg>
+    <figcaption>Figure 5 — Skills and integrations. Most capability comes from the middle row, not from MCP.</figcaption>
+  </figure>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Integration</th><th>Problem it solves / workflow</th><th>Native or CLI alternative</th><th>Security</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr><td><strong>GitHub</strong></td><td>Reading issues and PRs, posting reviews, CI status. Used in Steps 1, 8 and 9.</td><td><code>gh</code> CLI covers this and is already installed. Both tools have GitHub review integrations.</td><td>A token with repo scope. Issue and PR text is untrusted input (prompt injection).</td><td><strong>Use <code>gh</code>, no MCP.</strong></td></tr>
+      <tr><td><strong>Browser / Playwright</strong></td><td>Runtime verification (section 3.4).</td><td>Playwright CLI or <code>@playwright/test</code> scripts. Playwright's docs say the CLI costs fewer tokens.</td><td>Use test accounts only, never real credentials. Keep the browser on localhost.</td><td><strong>CLI is mandatory for UI work. MCP is optional</strong> for ad-hoc exploration (already enabled as a Claude plugin here).</td></tr>
+      <tr><td><strong>Docs search</strong> (e.g. Context7)</td><td>Fast-moving libraries. Next 16 has breaking changes.</td><td>Next.js ships its docs in <code>node_modules/next/dist/docs</code>, so read those first. Both tools have web search.</td><td>Third-party content enters the context.</td><td><strong>Optional.</strong></td></tr>
+      <tr><td><strong>Database</strong></td><td>Inspecting schema and data while debugging.</td><td><code>psql</code> with a <strong>read-only role</strong> and a local DSN.</td><td>Never give an agent write or production credentials.</td><td><strong>CLI with a read-only role. No MCP.</strong></td></tr>
+      <tr><td><strong>Issue tracker</strong> (if not GitHub)</td><td>Pulling issue text and criteria.</td><td>The tracker's CLI or API, or paste the issue.</td><td>Untrusted input.</td><td>Only if your tracker has no CLI.</td></tr>
+      <tr><td><strong>Supabase MCP</strong></td><td>Managing a hosted Supabase project.</td><td>The repo runs local Postgres via Docker today. Supabase is the <em>target</em> architecture.</td><td>Broad management rights over a cloud project.</td><td><strong>Disable until a Supabase project exists.</strong> Then use it read-only and project-scoped.</td></tr>
+      <tr><td>Design tools (Figma etc.)</td><td>Design handoff.</td><td>—</td><td>Read scope only.</td><td>Personal and optional, not a team standard.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout rose sketch"><strong>MCP risk is real.</strong> OWASP's MCP cheat sheet and Microsoft's 2026 write-up identify tool poisoning, meaning instructions hidden in tool descriptions or schemas, as a top risk. A March 2026 study found significant validation gaps in most of the clients it tested, including Claude Code. Every server you add widens the attack surface and the context cost. Approve project servers explicitly, restrict tools (<code>enabled_tools</code> in Codex; permission rules on <code>mcp__server__*</code> in Claude Code), and re-review after updates.</div>
+  <h3>Tools to install</h3>
+  <ul>
+    <li><strong>Everyone:</strong> <code>gh</code>, <code>uv</code>, <code>pnpm</code>, Docker, Playwright with browsers. On Linux, add <code>bubblewrap</code> and <code>socat</code>: Codex's Linux sandbox uses bubblewrap, and Claude Code's sandbox needs both. Claude's sandbox was unavailable on this machine because <code>socat</code> is missing.</li>
+    <li><strong>Python:</strong> <code>ruff</code> (lint and format), <code>pyright</code> or <code>mypy</code> (strict), <code>import-linter</code> (architecture contracts), <code>hypothesis</code> (properties), <code>pip-audit</code>.</li>
+    <li><strong>TypeScript:</strong> ESLint (already present) with stricter rules, <code>fast-check</code> where properties exist.</li>
+    <li><strong>Repo-wide:</strong> <code>gitleaks</code> (secrets), and a git hook runner (<code>lefthook</code> or <code>pre-commit</code>) to run <code>scripts/check-fast</code> on commit.</li>
+  </ul>
+</section>
+
+<!-- 10 -->
+<section id="prompts" class="sketch" aria-labelledby="h-prompts">
+  <h2 id="h-prompts"><span class="num">10</span>Prompt templates</h2>
+  <p><span class="tag t-rec">Position</span> Prompts set intent and scope. Quality comes from the checks the prompt points at. Each template names its verification and its limits explicitly.</p>
+  <details open>
+    <summary>Issue template (<code>.github/ISSUE_TEMPLATE/task.yml</code> fields)</summary>
+<pre><code>Title: &lt;user-visible outcome&gt;
+Risk tier: Minimal | Standard | Enhanced | High-risk   (if unsure, go one higher)
+Context: why this matters; links to feature-map rows / ADRs
+Acceptance criteria (each must be checkable):
+  - [ ] Given … when … then …
+Verification plan: which tests, which feature-map rows (AR + EN), what evidence
+Out of scope: …
+Open questions: …</code></pre>
+  </details>
+  <details>
+    <summary>Task kickoff (Standard tier and above)</summary>
+<pre><code>Work on issue #&lt;n&gt; (pasted below). Tier: &lt;tier&gt;.
+1. Explore read-only first; list the files you expect to touch and why.
+2. Use the plan-change skill. If anything in the acceptance criteria is ambiguous,
+   ask me before writing code — do not guess.
+3. Write the failing test(s) for the criteria first and show me the failure.
+4. Implement the smallest change that passes. Don't touch unrelated code, don't add
+   dependencies, don't change public APIs unless the plan says so.
+5. Finish only when scripts/check passes; paste the commands and their output.
+Never delete/skip tests, loosen types, add lint/type suppressions, or edit CI or
+hooks to get green. If a check seems wrong, stop and tell me why.</code></pre>
+  </details>
+  <details>
+    <summary>Bug fix</summary>
+<pre><code>Use the fix-bug skill on: &lt;expected vs actual, input, logs&gt;.
+Show the failing test before the fix and the passing run after. Root cause in two
+sentences. List other places with the same pattern; don't fix them in this PR.</code></pre>
+  </details>
+  <details>
+    <summary>Fresh-context review (run in the other tool, new session)</summary>
+<pre><code>You are reviewing a change you did not write. Use the review-change skill.
+Inputs: issue #&lt;n&gt;, `git diff origin/main...HEAD`, evidence in .verify/&lt;branch&gt;/.
+Report only: (1) must-fix — correctness, security, data loss, weakened checks,
+missing criteria; (2) consider — design, tests, naming. Skip anything a linter catches.
+For each: file:line → problem → why it matters → concrete fix. Don't edit files.</code></pre>
+  </details>
+  <details>
+    <summary>Runtime verification</summary>
+<pre><code>Use the verify-app skill. Start the app with the documented command, then run
+scripts/verify-app for feature-map rows &lt;ids&gt; in Arabic and English.
+Attach: screenshots, trace, console errors, server log excerpt. If something fails,
+report it — do not change the feature-map's expected result to match.</code></pre>
+  </details>
+  <details>
+    <summary>Turn a repeated mistake into a rule</summary>
+<pre><code>Use the encode-mistake skill. The mistake: &lt;pattern, two examples with file:line&gt;.
+Pick the highest rung of the ladder that works (API/architecture → type → lint → test →
+CI → prose). Implement it, prove it fails on the bad example and passes on clean code,
+and make the error message tell the next agent what to do instead.</code></pre>
+  </details>
+  <p class="small">Ambiguity rule: an agent that hits an ambiguous requirement must ask, or write down its assumption in the plan for the engineer to confirm. It must never silently pick one. Small diffs are a standing constraint: separate refactors from behaviour changes.</p>
+</section>
+
+<!-- 11 -->
+<section id="verify" class="sketch-2" aria-labelledby="h-verify">
+  <h2 id="h-verify"><span class="num">11</span>Evaluation and verification</h2>
+  <h3>11.1 Four different questions</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Question</th><th>What answers it</th><th>Who owns it</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Software correctness:</strong> does this code do what the spec says?</td><td>Tests, types, lint, runtime verification, properties, formal methods, review</td><td>Engineer, via CI</td></tr>
+      <tr><td><strong>Agent task success:</strong> did the agent finish the task as asked, without collateral changes?</td><td>Acceptance checks passed, diff scope, review findings, rounds needed</td><td>Engineer reviewing the PR</td></tr>
+      <tr><td><strong>Model / LLM-feature evaluation:</strong> does an AI <em>feature</em> of our product behave well?</td><td>Eval datasets with gold labels, held-out splits, LLM judges calibrated against humans</td><td>Feature owner</td></tr>
+      <tr><td><strong>Production reliability:</strong> does it keep working for users?</td><td>Monitoring, error rates, reverts, incident reviews</td><td>Team on call</td></tr>
+    </tbody>
+  </table></div>
+  <h3>11.2 Verification by risk tier</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Check</th><th>Minimal</th><th>Standard</th><th>Enhanced</th><th>High-risk</th></tr></thead>
+    <tbody>
+      <tr><td>Lint, format, types, build (<code>scripts/check</code>)</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td></tr>
+      <tr><td>Unit tests (new or updated)</td><td>if behaviour changed</td><td>✔ test-first</td><td>✔ test-first</td><td>✔ test-first</td></tr>
+      <tr><td>Integration tests (real Postgres)</td><td>—</td><td>if DB touched</td><td>✔</td><td>✔</td></tr>
+      <tr><td>Runtime verification and evidence</td><td>—</td><td>if UI or flow touched</td><td>✔ all touched rows</td><td>✔ plus negative paths</td></tr>
+      <tr><td>Property-based tests</td><td>—</td><td>—</td><td>where invariants exist</td><td>✔ where invariants exist</td></tr>
+      <tr><td>Security scan, secret scan</td><td>✔ (CI)</td><td>✔ (CI)</td><td>✔ (CI)</td><td>✔ plus agent security review</td></tr>
+      <tr><td>Independent review</td><td>human</td><td>human (+ optional agent)</td><td>agent (other tool) + human</td><td>agent + security review + code owner</td></tr>
+      <tr><td>Formal model (TLA+ etc.)</td><td>—</td><td>—</td><td>—</td><td>only for concurrency or protocol risk</td></tr>
+      <tr><td>LLM-feature eval run</td><td>—</td><td>if a prompt or model changed</td><td>✔ if AI behaviour changed</td><td>✔ with a held-out set</td></tr>
+    </tbody>
+  </table></div>
+  <h3>11.3 Guarding the guards</h3>
+  <p>Agents optimise for green checks, so protect the checks themselves:</p>
+  <ul>
+    <li><strong><code>scripts/guard-diff</code> in CI</strong> fails when the diff does any of the following, unless a human adds the <code>allow-weakening</code> label with a reason:
+      <ul>
+        <li>adds <code>.skip</code>, <code>.only</code>, <code>@pytest.mark.skip</code> or <code>xfail</code>;</li>
+        <li>adds <code>eslint-disable</code>, <code>@ts-ignore</code> or <code>@ts-expect-error</code>;</li>
+        <li>adds <code>type: ignore</code> or <code># noqa</code>;</li>
+        <li>deletes test files;</li>
+        <li>lowers coverage thresholds.</li>
+      </ul></li>
+    <li><strong>CODEOWNERS on <code>.github/</code>, <code>scripts/</code>, hook configs and lint configs,</strong> so agents can't quietly relax the rules.</li>
+    <li><strong>Sandbox protection.</strong> Codex's <code>workspace-write</code> mode already protects <code>.git</code> and <code>.codex</code>. <span class="tag t-docs">Docs</span> In Claude Code, add deny rules for editing hook and CI files during agent sessions.</li>
+  </ul>
+  <h3>11.4 Evaluating AI features and our own Skills</h3>
+  <ul>
+    <li><strong>Product AI (Hunger Learn):</strong> the repo already has the right bones.
+      <ul>
+        <li>A 15-document synthetic SOP corpus with gold labels, split into <code>dev/</code> and <code>held_out/</code>.</li>
+        <li>Quote validation.</li>
+        <li>An LLM judge for generated training.</li>
+      </ul>
+      Turn these into a repeatable <code>eval</code> command with stored baselines. Any prompt or model change must show its delta on <code>dev</code>. Only frozen configurations run on <code>held_out</code>.</li>
+    <li><strong>Skills and agent workflows:</strong> evaluate the shared Skills the way a product feature is evaluated.
+      <ul>
+        <li>Write a few graded cases per Skill.</li>
+        <li>Compare with and without the Skill. Claude Code's <code>claude plugin eval</code> runs such suites. The earlier run on the API-design case showed a 96% vs 93% score, and showed the Skill's reference file was never opened. That kind of finding is exactly why to run them.</li>
+        <li>Run 3–5 trials per arm. Effects of a few points are noise at that size.</li>
+      </ul></li>
+    <li><span class="tag t-research">Anthropic, Jan 2026</span> Evals for agents should start narrow and grow with real failure cases. Combine them with production monitoring. Infrastructure noise alone can move agentic coding benchmarks by several points.</li>
+  </ul>
+</section>
+
+<!-- 12 -->
+<section id="cicd" class="sketch" aria-labelledby="h-cicd">
+  <h2 id="h-cicd"><span class="num">12</span>CI/CD architecture</h2>
+  <figure>
+    <svg viewBox="0 0 1000 360" role="img" aria-labelledby="ci-t ci-d">
+      <title id="ci-t">CI/CD verification pipeline</title>
+      <desc id="ci-d">A pull request from an agent branch fans out to parallel required checks: lint and format, typecheck, unit tests, integration tests with Postgres, build, guard-diff, and secret plus dependency scan. These converge on a gate requiring all checks to pass. An advisory AI review, drawn dashed, comments on the PR. Human approval, with code owners for risky paths, comes next, then a squash merge, then deploy, then monitoring of errors, latency and reverts. A dashed rollback arrow returns from monitoring to merge.</desc>
+      <rect class="box" x="10" y="150" width="96" height="64" fill="#d0ebff"/>
+      <text class="d-hand" x="58" y="178" text-anchor="middle" font-size="15" font-weight="700">PR</text>
+      <text class="d-body" x="58" y="198" text-anchor="middle" font-size="11.5">agent branch</text>
+      <g class="d-body" font-size="12.5">
+        <rect class="box" x="150" y="14" width="200" height="34" fill="#fff"/><text x="162" y="36">lint · format</text>
+        <rect class="box" x="150" y="56" width="200" height="34" fill="#fff"/><text x="162" y="78">typecheck (tsc · pyright)</text>
+        <rect class="box" x="150" y="98" width="200" height="34" fill="#fff"/><text x="162" y="120">unit tests (tsx · pytest)</text>
+        <rect class="box" x="150" y="140" width="200" height="34" fill="#fff"/><text x="162" y="162">integration (Postgres)</text>
+        <rect class="box" x="150" y="182" width="200" height="34" fill="#fff"/><text x="162" y="204">build (next build)</text>
+        <rect class="box" x="150" y="224" width="200" height="34" fill="#fff"/><text x="162" y="246">guard-diff (weakening)</text>
+        <rect class="box" x="150" y="266" width="200" height="34" fill="#fff"/><text x="162" y="288">secrets · dep audit</text>
+      </g>
+      <path class="arrowline" d="M108,182 L146,31"/><path class="arrowline" d="M108,182 L146,73"/><path class="arrowline" d="M108,182 L146,115"/><path class="arrowline" d="M108,182 L146,157"/><path class="arrowline" d="M108,182 L146,199"/><path class="arrowline" d="M108,182 L146,241"/><path class="arrowline" d="M108,182 L146,283"/>
+      <path class="arrowline" d="M352,31 L396,170"/><path class="arrowline" d="M352,157 L396,176"/><path class="arrowline" d="M352,283 L396,190"/>
+      <rect class="box" x="400" y="146" width="120" height="70" fill="#c3fae8"/>
+      <text class="d-hand" x="460" y="176" text-anchor="middle" font-size="14" font-weight="700">all required</text>
+      <text class="d-hand" x="460" y="196" text-anchor="middle" font-size="14" font-weight="700">checks pass</text>
+      <rect class="box dash" x="400" y="262" width="150" height="56" fill="#fff"/>
+      <text class="d-body" x="475" y="286" text-anchor="middle" font-size="12.5">AI review comment</text>
+      <text class="d-body" x="475" y="304" text-anchor="middle" font-size="12.5">(advisory)</text>
+      <path class="arrowline" d="M522,181 L566,181"/>
+      <path class="arrowline" d="M552,288 C600,280 610,240 616,218"/>
+      <rect class="box" x="570" y="146" width="130" height="70" fill="#fff3bf"/>
+      <text class="d-hand" x="635" y="172" text-anchor="middle" font-size="14" font-weight="700">Human approval</text>
+      <text class="d-body" x="635" y="194" text-anchor="middle" font-size="12">CODEOWNERS on</text>
+      <text class="d-body" x="635" y="208" text-anchor="middle" font-size="12">risky paths</text>
+      <path class="arrowline" d="M702,181 L736,181"/>
+      <rect class="box" x="740" y="152" width="100" height="58" fill="#fff"/>
+      <text class="d-hand" x="790" y="186" text-anchor="middle" font-size="14" font-weight="700">Merge</text>
+      <path class="arrowline" d="M842,181 L866,181"/>
+      <rect class="box" x="870" y="152" width="120" height="58" fill="#d0ebff"/>
+      <text class="d-hand" x="930" y="186" text-anchor="middle" font-size="14" font-weight="700">Deploy</text>
+      <path class="arrowline" d="M930,212 L930,256"/>
+      <rect class="box" x="850" y="260" width="140" height="62" fill="#e5dbff"/>
+      <text class="d-hand" x="920" y="284" text-anchor="middle" font-size="14" font-weight="700">Monitor</text>
+      <text class="d-body" x="920" y="306" text-anchor="middle" font-size="12">errors · latency · reverts</text>
+      <path class="arrowline dash" d="M848,300 C800,320 790,260 790,214"/>
+      <text class="d-hand" x="700" y="340" font-size="13">rollback / revert (pre-written for High-risk)</text>
+    </svg>
+    <figcaption>Figure 6 — Pipeline. Solid boxes are required and block the merge. Dashed boxes are advisory.</figcaption>
+  </figure>
+  <div class="grid2">
+    <div class="card sketch-2"><h4>Mandatory</h4><ul>
+      <li>Branch protection on <code>main</code>: PR required, no force-push, no direct pushes, required status checks, and at least one human approval.</li>
+      <li>Required checks: lint and format, typecheck, unit tests, integration tests, build, guard-diff, secret scan.</li>
+      <li>Code-owner review on High-risk paths.</li>
+      <li>Agents work only on branches or worktrees and open PRs. Hooks are never bypassed (<code>--no-verify</code> is denied in the agents' permission rules).</li>
+      <li>Rollback path known before merging Enhanced and High-risk changes.</li></ul></div>
+    <div class="card sketch"><h4>Optional, adopt when useful</h4><ul>
+      <li>An AI review bot (<code>@codex review</code>, <code>claude-code-action</code>, or managed Code Review). Its comments are advisory, and it never approves.</li>
+      <li>SAST (CodeQL or Semgrep). CodeQL on private repos needs GitHub Advanced Security.</li>
+      <li>Dependency audit as blocking (start as a warning).</li>
+      <li>Preview deployments with <code>verify-app</code> against them.</li>
+      <li>Auto-merge <strong>only</strong> for Minimal-tier dependency patch bumps with green checks, never for Enhanced or High-risk.</li></ul></div>
+  </div>
+  <details>
+    <summary>Sketch of <code>.github/workflows/ci.yml</code> for this repo</summary>
+<pre><code>name: ci
+on: [pull_request]
+permissions: { contents: read }
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: web } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm, cache-dependency-path: web/pnpm-lock.yaml }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+  docproc:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: "./-/docproc" } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv venv && uv pip install -e ".[dev]"
+      - run: uv run ruff check . && uv run ruff format --check .   # after adding ruff
+      - run: uv run pytest -q                                       # offline fixtures
+  docproc-postgres:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: pgvector/pgvector:pg17
+        env: { POSTGRES_PASSWORD: postgres }
+        ports: ["5432:5432"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: cd ./-/docproc && uv venv && uv pip install -e ".[dev,pg]" && uv run pytest -q -m postgres
+        env: { DOCPROC_PG_DSN: "postgresql://postgres:postgres@localhost:5432/postgres" }
+  guards:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - run: scripts/guard-diff origin/${{ github.base_ref }}
+      - uses: gitleaks/gitleaks-action@v2   # organisation-owned repos need a (free) licence key
+        env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }</code></pre>
+    <p class="small">This is a starting sketch, not tested against this repo. Action versions, the DSN format and the database name must be checked against <code>docker-compose.yml</code> and <code>.env.example</code>. Media tests are left out because they pull CUDA-pinned torch. Run them locally until a CPU-only path exists.</p>
+  </details>
+</section>
+
+<!-- 13 -->
+<section id="parallel" class="sketch-2" aria-labelledby="h-parallel">
+  <h2 id="h-parallel"><span class="num">13</span>Parallel agent workflows</h2>
+  <div class="grid2">
+    <div class="card sketch"><h4>Parallelism helps when…</h4><ul>
+      <li>Tasks have <strong>disjoint file ownership</strong>, e.g. a docproc fix and a web copy change.</li>
+      <li>There is a fixed interface between parts (a schema, an API contract, a types file) written and merged first.</li>
+      <li>The work is "embarrassingly parallel": test backfill per module, lint-rule migrations per directory, docs, or investigating several hypotheses read-only.</li>
+      <li>Verification is automated enough that you can trust results without watching each agent.</li></ul></div>
+    <div class="card sketch-2"><h4>…and hurts when</h4><ul>
+      <li>Two agents touch the same files, the same migration sequence, or shared config such as i18n dictionaries or lockfiles.</li>
+      <li>The spec is still being discovered. Parallel agents multiply the wrong guess.</li>
+      <li><strong>Human review capacity is already the bottleneck.</strong> More PRs make it worse (section 4.1).</li>
+      <li>Every agent reloads the same large context, which costs tokens and time. Claude Code's guidance recommends restraint.</li></ul></div>
+  </div>
+  <h3>Collaboration model across engineers and tools</h3>
+  <ol>
+    <li><strong>The issue is the unit of ownership.</strong> One issue gets one branch and one owner (an engineer). Any number of agents can help, but the engineer is accountable.</li>
+    <li><strong>Each parallel agent works in its own worktree and branch</strong> (<code>claude --worktree &lt;name&gt;</code>, subagent <code>isolation: worktree</code>, or Codex app worktrees). Gitignored files the app needs, such as <code>.env.local</code>, are listed in <code>.worktreeinclude</code> for Claude Code.</li>
+    <li><strong>Claim files in the plan.</strong> The plan lists the paths each sub-task will touch. Overlapping claims mean the tasks must be serialised.</li>
+    <li><strong>Interface first.</strong> Shared types and contracts land in their own small PR before dependent work starts.</li>
+    <li><strong>Shared context lives in the repo,</strong> in <code>AGENTS.md</code>, plans and the feature map, not in someone's chat. Any engineer, using either tool, can pick up any branch.</li>
+    <li><strong>Separate implementation and review.</strong> The reviewer is a different session, preferably the other tool, preferably not the engineer who prompted the writer.</li>
+    <li><strong>Avoid duplicate work.</strong> Assign issues on GitHub before starting, and link draft PRs early.</li>
+  </ol>
+  <p class="small">Local resources need extra care here. The Postgres container is shared (<code>127.0.0.1:5442</code>), and the GPU render queue is serialised. Parallel agents running migrations or renders will collide. Give each worktree its own database name, or serialise DB-touching tasks.</p>
+</section>
+
+<!-- 14 -->
+<section id="security" class="sketch" aria-labelledby="h-security">
+  <h2 id="h-security"><span class="num">14</span>Security and permissions</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Area</th><th>Team policy</th><th>Codex config</th><th>Claude Code config</th></tr></thead>
+    <tbody>
+      <tr><td>Default sandbox</td><td>Agents write only inside the workspace. Network is off unless the task needs it.</td><td><code>sandbox_mode = "workspace-write"</code>, <code>approval_policy = "on-request"</code>, network off (the default)</td><td>Enable <code>/sandbox</code> (install <code>bubblewrap</code> + <code>socat</code>). Default or <code>acceptEdits</code> mode for trusted repos.</td></tr>
+      <tr><td>Dangerous modes</td><td><code>danger-full-access</code> and <code>bypassPermissions</code> only inside disposable containers or VMs.</td><td>Don't set <code>danger-full-access</code> on host machines</td><td><code>disableBypassPermissionsMode</code> in shared or managed settings</td></tr>
+      <tr><td>Secrets</td><td>Agents never read <code>.env*</code> files or credentials. Secrets live outside the repo. Gitleaks runs in CI.</td><td>Keep secrets out of the workspace. Use <code>env_vars</code> allowlists for MCP.</td><td>Deny rules such as <code>Read(./.env*)</code>, <code>Read(**/.env.local)</code></td></tr>
+      <tr><td>Git safety</td><td>No push to <code>main</code>, no force-push, no <code>--no-verify</code>, no history rewrites on shared branches.</td><td><code>.git</code> protected in workspace-write. Branch protection.</td><td>Deny <code>Bash(git push --force*)</code>, <code>Bash(git push * main*)</code>, <code>Bash(* --no-verify*)</code>. Branch protection.</td></tr>
+      <tr><td>Untrusted input</td><td>Issue text, PR comments, web pages, tool output and MCP descriptions are data, not instructions.</td><td colspan="2">CI agents run only on triggers from users with write access (both actions default to this). Review agent output that came from external content before acting on it.</td></tr>
+      <tr><td>Hooks and project config</td><td>Shared hooks are reviewed like code (CODEOWNERS).</td><td>Repo hooks need trust and are hash-pinned, so changes need re-trust.</td><td>Project allow rules and <code>.mcp.json</code> servers need workspace trust or approval.</td></tr>
+      <tr><td>Data access</td><td>Agents get read-only roles, against local or disposable databases only, never production.</td><td colspan="2">Mirror the <code>hl_readonly</code> pattern: a role with SELECT on exactly what's needed.</td></tr>
+      <tr><td>CI agents</td><td>Least-privilege tokens, read-only by default, no deploy credentials.</td><td><code>openai/codex-action</code>: keep <code>safety-strategy: drop-sudo</code>; <code>sandbox: read-only</code> for review jobs</td><td><code>claude-code-action</code>: minimal <code>permissions:</code>; <code>--max-turns</code> via <code>claude_args</code></td></tr>
+    </tbody>
+  </table></div>
+  <p class="small">Codex settings are from Codex's approvals and security docs. Claude settings are from Claude Code's permissions and sandboxing docs (both read 25 Nov 2026). Rule syntax changes between versions, so test each deny rule once with a harmless command.</p>
+</section>
+
+<!-- 15 -->
+<section id="project" class="sketch-2" aria-labelledby="h-project">
+  <h2 id="h-project"><span class="num">15</span>Project-specific recommendations: Hunger Learn</h2>
+  <h3>15.1 What I found in the repository (25 Nov 2026)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Area</th><th>Observed</th><th>Implication</th></tr></thead>
+    <tbody>
+      <tr><td>Languages and frameworks</td><td>TypeScript (Next.js 16.4, React 19.3, Vercel AI SDK, zod, <code>postgres</code>). Python (docproc on LangGraph; media on torch 2.8/CUDA 12.8). Postgres 17 + pgvector via Docker.</td><td>Two toolchains, so <code>scripts/check</code> must orchestrate both.</td></tr>
+      <tr><td>CI/CD</td><td><strong>No <code>.github/</code> directory: no CI, no branch protection config, no templates.</strong> Git history is a single "Initial commit" with most work untracked.</td><td>Biggest gap. Checks run only when someone remembers. Commit a baseline first.</td></tr>
+      <tr><td>Tests</td><td>docproc has a solid offline pytest suite (idempotency, backend parity, matching, normalize, OCR failure) with <code>postgres</code> and <code>real_models</code> markers. <code>web/</code> has <strong>one</strong> test file (<code>src/lib/logic.test.ts</code>, via <code>tsx --test</code>). media has a pytest suite.</td><td>The web app, which owns auth, server actions and learner flows, is thinly tested.</td></tr>
+      <tr><td>Static checks</td><td>TS <code>strict: true</code>. ESLint uses the default <code>eslint-config-next</code> presets only. <strong>No Python linter or type checker is configured</strong> (no ruff or mypy sections in <code>pyproject.toml</code>).</td><td>Cheap wins: add ruff + pyright and stricter ESLint rules.</td></tr>
+      <tr><td>Agent instructions</td><td>A thorough root <code>CLAUDE.md</code> (about 11 KB). <strong>No root <code>AGENTS.md</code></strong>, so Codex gets no project context apart from <code>web/AGENTS.md</code>, which is a block auto-written by <code>next dev</code>. Design rules live in <code>/home/super/AGENTS.md</code>, outside the repo, so teammates and CI never get them.</td><td>Move the shared rules into <code>AGENTS.md</code> in the repo.</td></tr>
+      <tr><td>Skills</td><td>Vendored skills live in <code>.agents/skills</code> (the location Codex reads). Nothing links them into <code>.claude/skills</code>, so Claude Code sessions don't see them as project skills.</td><td>Add the <code>.claude/skills</code> link (section 7).</td></tr>
+      <tr><td>MCP and plugins</td><td><code>.claude/settings.json</code> enables the supabase, playwright, context7 and remotion plugins. Local Codex config has several personal MCP servers.</td><td>Supabase isn't used yet, so disable it. Keep the rest optional.</td></tr>
+      <tr><td>Existing good constraints</td><td>Text-to-SQL can read only <code>readiness_v</code> through the <code>hl_readonly</code> role. There is an i18n dictionary-shape test. docproc keeps matching rules in one module, with parity and idempotency tests and a held-out eval split.</td><td>These are trust-pyramid layers 1–2 already. Extend the pattern.</td></tr>
+      <tr><td>Security-sensitive surfaces</td><td>Accounts and sessions (scrypt hashes, httpOnly token cookie, SHA-256 stored), server actions re-checking sessions, text-to-SQL, uploads, LLM-generated training content.</td><td>These paths are High-risk tier.</td></tr>
+      <tr><td>Team</td><td><em>Unknown.</em> The git history shows one committer so far.</td><td>Assumption: a small team. Code-owner rules need at least two people to be meaningful.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>15.2 Rules to enforce automatically (trust-pyramid layers 1–2)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Invariant (from <code>CLAUDE.md</code>)</th><th>Enforcement</th><th>Effort</th></tr></thead>
+    <tbody>
+      <tr><td>UI strings live only in <code>src/lib/i18n/{ar,en}.ts</code></td><td>ESLint <code>react/jsx-no-literals</code> on <code>src/app/**</code> and <code>src/components/**</code>, with an allowlist for punctuation</td><td>Low</td></tr>
+      <tr><td>Every server action re-checks the session</td><td>A test that scans <code>"use server"</code> modules and asserts each exported action calls the session helper from <code>src/lib/session.ts</code>. Better still (layer 1): a wrapper such as <code>authedAction(fn)</code> that is the only allowed way to export an action, enforced with <code>no-restricted-syntax</code>.</td><td>Medium</td></tr>
+      <tr><td>Matching rules live only in <code>matching.py</code>. Both storage backends share SQL from <code>storage/base.py</code></td><td><code>import-linter</code> contracts plus the existing parity test in CI</td><td>Low</td></tr>
+      <tr><td><code>normalize.py</code> must never drop words or numbers</td><td>Hypothesis property: every digit sequence and word in the input survives normalisation, modulo the documented foldings</td><td>Low, and high value</td></tr>
+      <tr><td>Content hash ignores page, position, clause number and heading</td><td>Hypothesis property: varying those fields never changes the hash. Varying quote text does.</td><td>Low</td></tr>
+      <tr><td>Re-processing a version yields the same stable IDs</td><td>Existing <code>test_idempotency.py</code>, made a required CI check</td><td>Done; wire it in</td></tr>
+      <tr><td>Text-to-SQL only via <code>hl_readonly</code> on <code>readiness_v</code></td><td>An integration test asserting the role can't read other tables or write, plus CODEOWNERS on the migration that defines it</td><td>Low</td></tr>
+      <tr><td>Python code quality</td><td><code>ruff</code> (with a curated rule set) + <code>pyright</code> strict on <code>src/</code>, ratcheted per directory</td><td>Medium</td></tr>
+      <tr><td>Next 16 API drift</td><td>Keep the auto-generated <code>web/AGENTS.md</code> block. Add <code>next typegen</code> + <code>tsc</code> (already in <code>typecheck</code>) to CI.</td><td>Low</td></tr>
+      <tr><td>Weakened checks, leaked secrets</td><td><code>scripts/guard-diff</code> + gitleaks in CI</td><td>Low</td></tr>
+    </tbody>
+  </table></div>
+  <p class="small">Judgment-based rules stay as prose or Skills (layer 4): native Saudi Arabic copy quality, procedure titles that name the concrete situation, and the design identity. These can't be linted, so give them a <code>training-copy</code> Skill and a review-rubric item.</p>
+
+  <h3>15.3 Runtime verification and the feature map for this app</h3>
+  <p>The CLAUDE.md flow is already a feature map in prose. Turn it into <code>docs/feature-map.md</code> rows, for example:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>ID</th><th>Feature</th><th>Role</th><th>Route (AR / EN)</th><th>Proof</th></tr></thead>
+    <tbody>
+      <tr><td>F01</td><td>Landing page and language toggle</td><td>anonymous</td><td><code>/</code>, <code>/en/…</code></td><td>Both languages render RTL/LTR correctly; the cookie switches</td></tr>
+      <tr><td>F02</td><td>Sign-up (learner picks role and branch), sign-in, sign-out</td><td>learner</td><td>auth pages</td><td>Session cookie set; protected page reachable; sign-out invalidates</td></tr>
+      <tr><td>F03</td><td>Upload a document → docproc job → procedures</td><td>admin</td><td>upload page</td><td><code>pipeline_jobs</code> reaches done; procedures listed with titles</td></tr>
+      <tr><td>F04</td><td>Generate, review, approve and publish a training package</td><td>admin</td><td>review page</td><td>Verified package; publish retires the previous one (<code>outdated</code>)</td></tr>
+      <tr><td>F05</td><td>Learner lesson → practice → exam with a confidence tap</td><td>learner</td><td>learner flow</td><td>Each format renders; the score is recorded</td></tr>
+      <tr><td>F06</td><td>Readiness, including confident-and-wrong, plus Arabic text-to-SQL</td><td>admin</td><td>readiness page</td><td>The query answers; a forbidden query is refused</td></tr>
+      <tr><td>F07</td><td>v2 upload → carry-over per procedure</td><td>admin</td><td>upload page</td><td>Unchanged clauses carried; changed ones flagged</td></tr>
+    </tbody>
+  </table></div>
+  <p class="small">The route column is written in general terms on purpose. Fill in exact paths from <code>src/app/[lang]/</code> when creating the file. Existing CLI drivers (<code>docproc demo</code>, <code>docproc report</code>, <code>hlmedia</code>) are already reusable verification tools for the non-UI stages. Seeded demo accounts (<code>pnpm db:seed</code>) give <code>verify-app</code> stable logins.</p>
+
+  <h3>15.4 Prioritised recommendations</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Recommendation</th><th>Impact</th><th>Effort</th><th>Risk</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Commit the current baseline. Add GitHub CI with lint, typecheck, tests and build for web and docproc. Turn on branch protection.</td><td>Very high</td><td>Low</td><td>Low</td><td>Now</td></tr>
+      <tr><td>2</td><td>Create a root <code>AGENTS.md</code> (from <code>CLAUDE.md</code>, trimmed), make <code>CLAUDE.md</code> = <code>@AGENTS.md</code>, add nested package files, and move the design rules into the repo.</td><td>High</td><td>Low</td><td>Low</td><td>Now</td></tr>
+      <tr><td>3</td><td>Write <code>scripts/check</code> and <code>scripts/check-fast</code>, and wire a <code>Stop</code> hook in both tools.</td><td>High</td><td>Low</td><td>Low</td><td>Now</td></tr>
+      <tr><td>4</td><td>Add ruff + pyright for Python and stricter ESLint (incl. <code>jsx-no-literals</code>), ratcheting.</td><td>High</td><td>Medium</td><td>Low</td><td>Now → Phase 2</td></tr>
+      <tr><td>5</td><td>Add issue and PR templates with risk tier and evidence fields, plus CODEOWNERS for High-risk paths.</td><td>High</td><td>Low</td><td>Low</td><td>Phase 2</td></tr>
+      <tr><td>6</td><td>Add the six shared Skills and the <code>.claude/skills</code> link.</td><td>Medium-high</td><td>Medium</td><td>Low</td><td>Phase 3</td></tr>
+      <tr><td>7</td><td>Add web tests for auth, sessions and server actions, plus the server-action session test.</td><td>High</td><td>Medium</td><td>Low</td><td>Phase 2</td></tr>
+      <tr><td>8</td><td>Write the feature map and <code>scripts/verify-app</code> (Playwright), with evidence in PRs.</td><td>High</td><td>Medium</td><td>Low</td><td>Phase 3–4</td></tr>
+      <tr><td>9</td><td>Add Hypothesis properties for normalize and the content hash.</td><td>Medium</td><td>Low</td><td>Low</td><td>Phase 3</td></tr>
+      <tr><td>10</td><td>Add an <code>eval</code> command for docproc extraction and training generation, with stored baselines.</td><td>High for AI quality</td><td>Medium</td><td>Low</td><td>Phase 4</td></tr>
+      <tr><td>11</td><td>Run cross-tool review on Enhanced and High-risk changes.</td><td>Medium</td><td>Low</td><td>Low</td><td>Phase 2</td></tr>
+      <tr><td>12</td><td>Use a TLA+ model of <code>pipeline_jobs</code> and the GPU queue only <em>if</em> race bugs appear.</td><td>Situational</td><td>High</td><td>—</td><td>Only if needed</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>15.5 Avoid</h3>
+  <ul>
+    <li>Building a custom orchestrator or harness. Both tools already ship subagents, worktrees, hooks, review and headless modes.</li>
+    <li>Growing <code>AGENTS.md</code> past about 150 lines, or duplicating rules across <code>CLAUDE.md</code>, <code>AGENTS.md</code> and Skills.</li>
+    <li>Installing MCP servers "just in case", especially ones with write access to cloud resources.</li>
+    <li>Auto-merging agent PRs beyond Minimal-tier dependency bumps.</li>
+    <li>Making an AI reviewer a required approver, or treating "the agent said tests pass" as evidence without the output.</li>
+    <li>Running parallel agents against the shared Postgres or GPU queue without isolation.</li>
+    <li>Using formal methods on CRUD and UI, or vendor productivity numbers as targets.</li>
+    <li>Using held-out SOP data during prompt development. The repo's rule is correct, so enforce it by keeping <code>held_out/</code> out of agent-readable paths during dev work.</li>
+  </ul>
+
+  <h3>15.6 Human-controlled, always</h3>
+  <ul>
+    <li>Risk tier and acceptance criteria.</li>
+    <li>Architecture decisions (ADRs), new dependencies, and changes to DB roles and grants.</li>
+    <li>Merging to <code>main</code>, deploying, rollback calls, incident triage.</li>
+    <li>Publishing training content to learners. The product already requires human approval here; keep it.</li>
+    <li>Changes to CI, hooks, lint configs and CODEOWNERS.</li>
+    <li>Anything touching <code>held_out/</code> evaluation.</li>
+  </ul>
+
+  <h3>15.7 How to measure whether it works</h3>
+  <p>Take a baseline <strong>before</strong> Phase 2 (2–4 weeks of data, or the last N PRs), then compare by tier.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Metric</th><th>Signal</th><th>Source</th></tr></thead>
+    <tbody>
+      <tr><td>Change failure rate (reverts and hotfixes per merged PR)</td><td>Quality, the DORA-style stability metric</td><td><code>gh</code> + labels</td></tr>
+      <tr><td>Escaped defects (bugs found after merge, by tier)</td><td>Verification strength</td><td>Issues labelled <code>bug</code> + <code>escaped</code></td></tr>
+      <tr><td>Lead time (issue opened → merged), PR size distribution</td><td>Flow; small PRs keep review healthy</td><td><code>gh pr list --json</code></td></tr>
+      <tr><td>Review rounds and time-to-first-review</td><td>Review bottleneck</td><td>GitHub</td></tr>
+      <tr><td>% of PRs with complete evidence</td><td>Process adoption</td><td>PR template checkboxes</td></tr>
+      <tr><td>Repeated review comments → rules created</td><td>Is the system learning? Target: every repeat becomes a rule</td><td>A <code>docs/rules-log.md</code> table or labels</td></tr>
+      <tr><td>Flaky test rate; CI time</td><td>Trust in checks</td><td>CI history</td></tr>
+      <tr><td>Agent cost per merged PR (tokens or $)</td><td>Efficiency; expect it to rise with verification, and that's fine</td><td>Tool usage dashboards</td></tr>
+      <tr><td>Eval scores on <code>dev</code> (and periodic <code>held_out</code>)</td><td>AI feature quality</td><td><code>eval</code> command</td></tr>
+    </tbody>
+  </table></div>
+  <p class="small">Don't track lines of code or PR count as goals. Volume without stability is exactly what DORA warns about.</p>
+</section>
+
+<!-- 16 -->
+<section id="roadmap" class="sketch" aria-labelledby="h-roadmap">
+  <h2 id="h-roadmap"><span class="num">16</span>Adoption roadmap</h2>
+  <p>There are no calendar deadlines. Each phase ends when its completion criteria are met. For a small team, Phase 1 is a few days of work. Later phases depend on how fast the checks become trusted.</p>
+  <figure>
+    <svg viewBox="0 0 960 330" role="img" aria-labelledby="rm-t rm-d">
+      <title id="rm-t">Recommended adoption roadmap</title>
+      <desc id="rm-d">A staircase of four phases rising left to right. Phase 1 Foundation: AGENTS.md, scripts/check, CI and branch protection; done when every PR runs required checks. Phase 2 Standard workflow: issue and PR templates, risk tiers, test-first, cross-tool review; done when most PRs carry evidence. Phase 3 Automation: Skills, hooks in both tools, guard-diff, stricter lint, properties; done when repeated mistakes become rules. Phase 4 Advanced: feature map, verify-app, eval command, parallel worktrees, architecture contracts; done when UI PRs ship runtime evidence and AI changes ship eval deltas.</desc>
+      <rect class="box" x="20" y="214" width="210" height="100" fill="#fff3bf"/>
+      <text class="d-hand" x="32" y="238" font-size="16" font-weight="700">1 · Foundation</text>
+      <g class="d-body" font-size="12"><text x="32" y="258">AGENTS.md · scripts/check</text><text x="32" y="276">CI · branch protection</text><text x="32" y="300" font-style="italic">done: every PR runs checks</text></g>
+      <rect class="box" x="250" y="160" width="210" height="154" fill="#d0ebff"/>
+      <text class="d-hand" x="262" y="184" font-size="16" font-weight="700">2 · Standard workflow</text>
+      <g class="d-body" font-size="12"><text x="262" y="204">issue/PR templates · tiers</text><text x="262" y="222">test-first · cross-tool review</text><text x="262" y="240">web auth tests · ruff/pyright</text><text x="262" y="264" font-style="italic">done: most PRs carry</text><text x="262" y="280" font-style="italic">evidence + tier</text></g>
+      <rect class="box" x="480" y="106" width="210" height="208" fill="#c3fae8"/>
+      <text class="d-hand" x="492" y="130" font-size="16" font-weight="700">3 · Automation</text>
+      <g class="d-body" font-size="12"><text x="492" y="150">6 shared Skills · Stop hooks</text><text x="492" y="168">guard-diff · gitleaks</text><text x="492" y="186">stricter lint · properties</text><text x="492" y="204">optional AI review bot</text><text x="492" y="228" font-style="italic">done: repeated mistakes</text><text x="492" y="244" font-style="italic">become rules within a week</text></g>
+      <rect class="box" x="710" y="52" width="230" height="262" fill="#e5dbff"/>
+      <text class="d-hand" x="722" y="76" font-size="16" font-weight="700">4 · Advanced</text>
+      <g class="d-body" font-size="12"><text x="722" y="96">feature map · verify-app</text><text x="722" y="114">eval command + baselines</text><text x="722" y="132">parallel worktrees</text><text x="722" y="150">architecture contracts</text><text x="722" y="168">formal methods if justified</text><text x="722" y="192" font-style="italic">done: UI PRs ship runtime</text><text x="722" y="208" font-style="italic">evidence; AI changes ship</text><text x="722" y="224" font-style="italic">eval deltas</text></g>
+      <path class="arrowline blue" d="M40,200 C200,150 500,80 900,30"/>
+    </svg>
+    <figcaption>Figure 7 — Foundations before factories. Each step builds on the trust established by the one below.</figcaption>
+  </figure>
+
+  <details open><summary><strong>Phase 1: Foundation</strong></summary>
+    <ul>
+      <li><strong>Goals:</strong> one source of instructions, one verification command, checks that always run.</li>
+      <li><strong>Tools:</strong> GitHub Actions, <code>gh</code>, ruff (format and lint, start lenient), existing ESLint and tsc, pytest.</li>
+      <li><strong>Steps:</strong>
+        <ol>
+          <li>Commit the baseline.</li>
+          <li>Write <code>AGENTS.md</code> (root and nested), and make <code>CLAUDE.md</code> → <code>@AGENTS.md</code>.</li>
+          <li>Add <code>scripts/check</code> and <code>scripts/check-fast</code>.</li>
+          <li>Add <code>ci.yml</code> (section 12).</li>
+          <li>Add branch protection with required checks.</li>
+          <li>Add the <code>.claude/skills</code> link.</li>
+          <li>Install <code>bubblewrap</code> + <code>socat</code> and enable sandboxes.</li>
+        </ol></li>
+      <li><strong>Benefits:</strong> both tools see the same rules, "done" is objective, and regressions get caught.</li>
+      <li><strong>Risks:</strong> a slow or flaky CI erodes trust. Keep it under about 10 minutes and quarantine flaky tests.</li>
+      <li><strong>Done when:</strong> every PR runs the required checks. Both tools load the same instructions (verify with <code>/memory</code> or <code>/context</code> in Claude Code and the Codex session log). <code>scripts/check</code> passes on <code>main</code>.</li>
+    </ul></details>
+  <details><summary><strong>Phase 2: Standard workflow</strong></summary>
+    <ul>
+      <li><strong>Goals:</strong> every change follows the tiered lifecycle.</li>
+      <li><strong>Tools:</strong> issue and PR templates, CODEOWNERS, plan mode in both tools, native review commands.</li>
+      <li><strong>Steps:</strong>
+        <ol>
+          <li>Publish the tiers and High-risk path list.</li>
+          <li>Make test-first the default for bugs.</li>
+          <li>Run cross-tool fresh-context review on Enhanced and High-risk changes.</li>
+          <li>Backfill web tests for auth, sessions and server actions.</li>
+          <li>Ratchet in ruff, pyright and stricter ESLint per directory.</li>
+          <li>Start the metrics baseline.</li>
+        </ol></li>
+      <li><strong>Benefits:</strong> predictable quality, and faster review because evidence arrives with the PR.</li>
+      <li><strong>Risks:</strong> process feeling heavy. Keep the Minimal tier genuinely light.</li>
+      <li><strong>Done when:</strong> most PRs carry a tier and evidence, and High-risk PRs have code-owner approval.</li>
+    </ul></details>
+  <details><summary><strong>Phase 3: Automation</strong></summary>
+    <ul>
+      <li><strong>Goals:</strong> procedures become Skills, and mistakes become rules.</li>
+      <li><strong>Tools:</strong> shared Skills, hooks in both tools, <code>guard-diff</code>, gitleaks, import-linter, Hypothesis, and optionally an AI review bot.</li>
+      <li><strong>Steps:</strong>
+        <ol>
+          <li>Write the six Skills and the reviewer subagents.</li>
+          <li>Add <code>Stop</code> hooks → <code>check-fast</code>.</li>
+          <li>Add guard-diff and gitleaks as required checks.</li>
+          <li>Encode the invariants from section 15.2.</li>
+          <li>Add a small graded eval per Skill.</li>
+          <li>Disable unused MCP servers and plugins.</li>
+        </ol></li>
+      <li><strong>Benefits:</strong> less re-prompting, and fewer repeat review comments.</li>
+      <li><strong>Risks:</strong> Skills that drift from reality. Give each Skill an owner and an eval case.</li>
+      <li><strong>Done when:</strong> a mistake seen twice becomes a rule within a week, and both tools list and use the same Skills.</li>
+    </ul></details>
+  <details><summary><strong>Phase 4: Advanced engineering</strong></summary>
+    <ul>
+      <li><strong>Goals:</strong> runtime evidence, AI-feature evals, and safe parallelism.</li>
+      <li><strong>Tools:</strong> Playwright, <code>docs/feature-map.md</code>, <code>scripts/verify-app</code>, the <code>eval</code> command, worktrees, per-worktree databases, and optionally TLA+.</li>
+      <li><strong>Steps:</strong>
+        <ol>
+          <li>Build verify-app over the F01–F07 rows in both languages.</li>
+          <li>Add evidence upload to PRs.</li>
+          <li>Build the eval command over the synthetic corpus and generator.</li>
+          <li>Run parallel worktree tasks with file claims.</li>
+          <li>Add architecture contracts.</li>
+          <li>Consider formal models only for proven concurrency risk.</li>
+        </ol></li>
+      <li><strong>Benefits:</strong> agents can prove UI and AI behaviour, and humans review outcomes.</li>
+      <li><strong>Risks:</strong> brittle end-to-end tests. Test user-visible contracts, not DOM details.</li>
+      <li><strong>Done when:</strong> UI PRs ship runtime evidence, prompt and model changes ship eval deltas, and parallel work causes no merge collisions.</li>
+    </ul></details>
+  <p><strong>Rolling it out to the team:</strong></p>
+  <ol>
+    <li>One owner, the Staff Engineer, writes Phase 1 in a single PR that everyone reviews.</li>
+    <li>Pair-run the workflow on two real issues, one with each tool.</li>
+    <li>Hold a short demo of the correction ladder using a real repeated mistake.</li>
+    <li>Run a fortnightly 30-minute retro: which comments repeated, which rules were added, which Skills misfired.</li>
+    <li>Change the standard only through PRs to <code>AGENTS.md</code> and Skills.</li>
+  </ol>
+</section>
+
+<!-- 17 -->
+<section id="standards" class="sketch-2" aria-labelledby="h-standards">
+  <h2 id="h-standards"><span class="num">17</span>Team standards and checklists</h2>
+  <div class="grid2">
+    <div class="card sketch"><h4>Before starting a task</h4><ul class="check">
+      <li>Issue has acceptance criteria and a verification plan</li>
+      <li>Risk tier chosen (go higher if unsure)</li>
+      <li>Branch or worktree created; issue assigned to me</li>
+      <li>For parallel work: file claims don't overlap</li></ul></div>
+    <div class="card sketch-2"><h4>Agent session done means</h4><ul class="check">
+      <li>Failing test shown before the fix (bugs and features)</li>
+      <li><code>scripts/check</code> passed (output pasted)</li>
+      <li>UI: verify-app evidence for touched rows, AR and EN</li>
+      <li>No skipped or deleted tests, suppressions or CI edits</li>
+      <li>Diff limited to the issue's scope</li></ul></div>
+    <div class="card sketch-2"><h4>PR author</h4><ul class="check">
+      <li>Tier, issue link, summary of behaviour change</li>
+      <li>Evidence: commands + output, screenshots, eval deltas</li>
+      <li>Risks and rollback plan (Enhanced and High-risk)</li>
+      <li>Fresh-context review done; must-fix items resolved</li>
+      <li>Small enough to review in one sitting</li></ul></div>
+    <div class="card sketch"><h4>Human reviewer</h4><ul class="check">
+      <li>Evidence matches every acceptance criterion</li>
+      <li>Tests would fail without the change</li>
+      <li>High-risk paths read line by line</li>
+      <li>No new dependency, permission or role without an ADR</li>
+      <li>Anything I'd comment on twice → <code>encode-mistake</code></li></ul></div>
+    <div class="card sketch"><h4>After an incident or repeated mistake</h4><ul class="check">
+      <li>Root cause written in two sentences</li>
+      <li>Highest workable ladder rung chosen and implemented</li>
+      <li>New check proven to fail on the bad pattern</li>
+      <li>Logged in <code>docs/rules-log.md</code></li></ul></div>
+    <div class="card sketch-2"><h4>New repository onboarding</h4><ul class="check">
+      <li><code>AGENTS.md</code> + <code>CLAUDE.md</code> bridge</li>
+      <li><code>scripts/check</code> + CI + branch protection</li>
+      <li><code>.agents/skills</code> (+ <code>.claude/skills</code> link)</li>
+      <li>Hooks in both tools calling <code>check-fast</code></li>
+      <li>Templates + CODEOWNERS + feature map if there's a UI</li></ul></div>
+  </div>
+</section>
+
+<!-- 18 -->
+<section id="refs" class="sketch" aria-labelledby="h-refs">
+  <h2 id="h-refs"><span class="num">18</span>References and source links</h2>
+  <p class="small">Dates are publication dates where the source gives one. Otherwise, "accessed 25 Nov 2026". Vendor and secondary sources are labelled.</p>
+  <h3>Primary talk material</h3>
+  <ul>
+    <li>Lauren Tan, <a href="https://youtu.be/O_zcc6Xl12g">All Code Is Slop (Except Mine)</a>, AI Engineer CODE 2026, SpaceXSI (video, Nov 2026; description and chapters).</li>
+    <li><a href="https://tube.wave.co/all-code-is-slop-except-mine-lauren-tan-spacexsi-O_zcc6Xl12g">Auto-caption transcript mirror (tube.wave.co)</a>. Used for quotes; captions contain transcription errors.</li>
+    <li><a href="https://ai.engineer/speakers/lauren-tan">AI Engineer speaker page: Lauren Tan</a> (accessed 25 Nov 2026).</li>
+    <li><a href="https://shared.btbytes.com/p/all-code-is-slop-except-mine">Written summary, shared.btbytes.com</a> (secondary).</li>
+    <li><a href="https://torchtree.com/post/poteto-ai-coding-verification">"Writing corrections into the system", torchtree.com</a> (19 Nov 2026; adapted interpretation, Chinese).</li>
+    <li><a href="https://github.com/cursor/plugins/tree/main/pstack">pstack plugin (cursor/plugins)</a> and its <a href="https://github.com/cursor/plugins/blob/main/pstack/docs/guide/README.md">guide</a>.</li>
+  </ul>
+  <h3>OpenAI Codex (official, accessed 25 Nov 2026)</h3>
+  <ul>
+    <li><a href="https://learn.chatgpt.com/guides/best-practices">Codex best practices</a></li>
+    <li><a href="https://learn.chatgpt.com/docs/agent-configuration/agents-md">AGENTS.md discovery</a> · <a href="https://learn.chatgpt.com/docs/customization/overview">Customization overview</a></li>
+    <li><a href="https://learn.chatgpt.com/docs/build-skills">Skills</a> · <a href="https://learn.chatgpt.com/docs/hooks">Hooks</a> · <a href="https://learn.chatgpt.com/docs/agent-configuration/subagents">Subagents</a></li>
+    <li><a href="https://learn.chatgpt.com/docs/agent-approvals-security">Approvals &amp; security (sandbox)</a> · <a href="https://learn.chatgpt.com/docs/extend/mcp?surface=cli">MCP</a></li>
+    <li><a href="https://learn.chatgpt.com/docs/third-party/github">Codex code review in GitHub</a> · <a href="https://learn.chatgpt.com/docs/github-action">Codex GitHub Action</a> · <a href="https://github.com/openai/codex-action">openai/codex-action</a></li>
+    <li>Ryan Lopopolo, <a href="https://openai.com/index/harness-engineering/">Harness engineering: leveraging Codex in an agent-first world</a>, OpenAI (11 Feb 2026).</li>
+  </ul>
+  <h3>Anthropic Claude Code (official, accessed 25 Nov 2026)</h3>
+  <ul>
+    <li><a href="https://code.claude.com/docs/en/best-practices">Best practices</a> · <a href="https://code.claude.com/docs/en/memory">Memory (CLAUDE.md, AGENTS.md)</a> · <a href="https://code.claude.com/docs/en/skills">Skills</a></li>
+    <li><a href="https://code.claude.com/docs/en/hooks">Hooks</a> · <a href="https://code.claude.com/docs/en/sub-agents">Subagents</a> · <a href="https://code.claude.com/docs/en/common-workflows">Common workflows (worktrees)</a></li>
+    <li><a href="https://code.claude.com/docs/en/permissions">Permissions</a> · <a href="https://code.claude.com/docs/en/sandboxing">Sandboxing</a> · <a href="https://code.claude.com/docs/en/mcp">MCP</a></li>
+    <li><a href="https://code.claude.com/docs/en/github-actions">GitHub Actions</a> · <a href="https://code.claude.com/docs/en/code-review">Code Review</a></li>
+    <li><a href="https://claude.com/blog/building-verification-loops-in-claude-code-with-skills">Building verification loops in Claude Code with skills</a>, Claude blog (Jul 2026).</li>
+    <li><a href="https://anthropic.com/engineering/demystifying-evals-for-ai-agents">Demystifying evals for AI agents</a>, Anthropic Engineering (Jan 2026).</li>
+  </ul>
+  <h3>Standards</h3>
+  <ul>
+    <li><a href="https://agentskills.io/">Agent Skills open format</a> (spec at agentskills.io/specification).</li>
+    <li><a href="https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation">Linux Foundation: Agentic AI Foundation</a>, home of MCP and AGENTS.md (9 Dec 2025; background).</li>
+    <li><a href="https://playwright.dev/agent-cli/introduction">Playwright CLI for agents</a> (official docs; CLI vs MCP token comparison).</li>
+  </ul>
+  <h3>Research and evidence</h3>
+  <ul>
+    <li>DORA, <a href="https://dora.dev/insights/balancing-ai-tensions/">Balancing AI tensions</a>, and InfoQ coverage of the <a href="https://www.infoq.com/news/2026/05/dora-roi-ai-assisted-dev-report/">2026 DORA ROI of AI-assisted development report</a> (May 2026).</li>
+    <li>METR, <a href="https://metr.org/blog/2026-02-24-uplift-update/">Uplift update</a> (24 Feb 2026), and the <a href="https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/">original RCT</a> (Jul 2025; background).</li>
+    <li>Anthropic Frontier Red Team, <a href="https://red.anthropic.com/2026/property-based-testing">Agentic property-based testing</a> (Jan 2026), and <a href="https://arxiv.org/abs/2510.09907">arXiv 2510.09907</a>.</li>
+    <li><a href="https://arxiv.org/abs/2605.15229">PBT-Bench, arXiv 2605.15229</a> (May 2026; preprint).</li>
+    <li>Code review in the AI era: <a href="https://arxiv.org/html/2601.00753v2">arXiv 2601.00753</a> (1.02M PRs) and <a href="https://arxiv.org/html/2603.15911v1">arXiv 2603.15911</a> (2026; preprints).</li>
+    <li>CodeRabbit AI vs human PR analysis, via <a href="https://www.theregister.com/2025/12/17/ai_code_bugs/">The Register</a> (17 Dec 2025; vendor data).</li>
+  </ul>
+  <h3>Security</h3>
+  <ul>
+    <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/MCP_Security_Cheat_Sheet.html">OWASP MCP Security Cheat Sheet</a></li>
+    <li>Microsoft Security, <a href="https://techcommunity.microsoft.com/blog/microsoft-security-blog/the-state-of-mcp-security-in-2026/4531327">The state of MCP security in 2026</a> (Jun 2026).</li>
+    <li><a href="https://arxiv.org/abs/2603.22489">Tool poisoning across MCP clients, arXiv 2603.22489</a> (Mar 2026; preprint).</li>
+  </ul>
+  <h3>Known gaps in this research</h3>
+  <ul>
+    <li>The talk's slides weren't available. Quotes come from auto-captions.</li>
+    <li>Some long documentation pages (Claude Code hooks and MCP) were read only in part. Codex worktree and cloud-task pages weren't read in depth.</li>
+    <li>No independent study measures revert rates for agent-authored code specifically.</li>
+    <li>The project's team size, deployment target and production monitoring setup weren't found in the repo.</li>
+  </ul>
+</section>
+
+<footer class="small" style="padding:8px 4px 40px">Universal AI Engineering Workflow · written for the Hunger Learn repository · research cut-off 25 Nov 2026. Re-verify tool facts each quarter.</footer>
+</main>
+</div>
+
+<script>
+(function () {
+  var all = function () { return document.querySelectorAll("details"); };
+  document.getElementById("expandAll").addEventListener("click", function () { all().forEach(function (d) { d.open = true; }); });
+  document.getElementById("collapseAll").addEventListener("click", function () { all().forEach(function (d) { d.open = false; }); });
+  // Print every collapsible section, then restore the reader's state.
+  var saved = [];
+  window.addEventListener("beforeprint", function () {
+    saved = Array.prototype.map.call(all(), function (d) { return d.open; });
+    all().forEach(function (d) { d.open = true; });
+  });
+  window.addEventListener("afterprint", function () {
+    all().forEach(function (d, i) { d.open = saved[i]; });
+  });
+})();
+</script>
+</body>
+</html>

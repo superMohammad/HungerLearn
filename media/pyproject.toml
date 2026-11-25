@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hlmedia"
+version = "0.1.0"
+description = "HungerLearn explainer videos: clip-library footage + NAMAA-Saudi-TTS-V2 Najdi narration + overlays, ffmpeg MP4"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "pydantic>=2.6",
+    "pillow>=11",
+    "soundfile>=0.12",
+    "numpy>=1.26",
+    # habibi-tts (NAMAA-Saudi-TTS-V2 inference) requires torch<2.9: keep the CUDA 12.8 trio aligned.
+    "torch==2.8.0",
+    "torchvision==0.23.0",
+    "torchaudio==2.8.0",
+    "torchcodec==0.7.0",
+    "transformers>=4.57",
+    "accelerate>=1.0",
+    "imageio>=2.34",
+    "imageio-ffmpeg>=0.5",
+    "f5-tts>=1.1.22",
+    "habibi-tts>=0.1.1",
+    "catt-tashkeel>=1.0.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+hlmedia = "hlmedia.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.uv]
+extra-index-url = ["https://download.pytorch.org/whl/cu128"]
+index-strategy = "unsafe-best-match"

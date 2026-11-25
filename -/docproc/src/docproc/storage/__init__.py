@@ -6,7 +6,7 @@ def make_repository(settings: Settings, init: bool = True) -> SqlRepository:
     if settings.backend == "postgres":
         from docproc.storage.postgres import PostgresRepository
 
-        repo: SqlRepository = PostgresRepository(settings.pg_dsn)
+        repo: SqlRepository = PostgresRepository(settings.pg_dsn, settings.embedding_dim)
     else:
         from docproc.storage.sqlite import SqliteRepository
 

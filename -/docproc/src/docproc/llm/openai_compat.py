@@ -10,12 +10,14 @@ from docproc.models import ClauseDraft, ClauseDraftList, Section
 class OpenAICompatExtractor:
     name = "openai_compat"
 
-    def __init__(self, base_url: str, model: str, api_key: str = "", timeout: float = 120.0, max_retries: int = 2):
+    def __init__(self, base_url: str, model: str, api_key: str = "", timeout: float = 120.0, max_retries: int = 2,
+                 reasoning_effort: str = ""):
         self.url = base_url.rstrip("/") + "/chat/completions"
         self.model = model
         self.headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
         self.timeout = timeout
         self.max_retries = max_retries
+        self.reasoning_effort = reasoning_effort  # e.g. "none" turns off thinking on Ollama reasoning models
 
     def extract(self, section: Section) -> list[ClauseDraft]:
         body = {
@@ -30,6 +32,8 @@ class OpenAICompatExtractor:
                 "json_schema": {"name": "clauses", "schema": ClauseDraftList.model_json_schema()},
             },
         }
+        if self.reasoning_effort:
+            body["reasoning_effort"] = self.reasoning_effort
         last: Exception | None = None
         for _ in range(self.max_retries + 1):
             try:

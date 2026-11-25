@@ -12,6 +12,7 @@ CONTRACT_VERSION = "1.0"
 
 class Audience(str, Enum):
     owner = "owner"
+    courier = "courier"
     employee = "employee"
     partner = "partner"
     unspecified = "unspecified"

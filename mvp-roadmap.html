@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hunger Learn MVP Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Kalam:wght@300;400;700&family=Noto+Naskh+Arabic:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/roughjs@4.6.6/bundled/rough.js"></script>
+<style>
+  :root {
+    --paper: #fdfcf8;
+    --grid: rgba(30, 30, 30, 0.05);
+    --ink: #1e1e1e;
+    --ink-soft: #5a5a5a;
+    --blue: #a5d8ff;
+    --green: #b2f2bb;
+    --yellow: #ffec99;
+    --red: #ffc9c9;
+    --violet: #d0bfff;
+    --orange: #ffd8a8;
+    --gray: #e9ecef;
+    --accent: #1971c2;
+    --warn: #c92a2a;
+    --ok: #2f9e44;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #121212;
+      --grid: rgba(255, 255, 255, 0.04);
+      --ink: #e6e6e6;
+      --ink-soft: #a6a6a6;
+      --blue: #1d3b57;
+      --green: #1f3d27;
+      --yellow: #4a4318;
+      --red: #4d2424;
+      --violet: #33284f;
+      --orange: #4d3219;
+      --gray: #2a2a2a;
+      --accent: #74c0fc;
+      --warn: #ff8787;
+      --ok: #8ce99a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #121212;
+    --grid: rgba(255, 255, 255, 0.04);
+    --ink: #e6e6e6;
+    --ink-soft: #a6a6a6;
+    --blue: #1d3b57;
+    --green: #1f3d27;
+    --yellow: #4a4318;
+    --red: #4d2424;
+    --violet: #33284f;
+    --orange: #4d3219;
+    --gray: #2a2a2a;
+    --accent: #74c0fc;
+    --warn: #ff8787;
+    --ok: #8ce99a;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 22px 22px;
+    color: var(--ink);
+    font-family: "Kalam", "Noto Naskh Arabic", cursive;
+    font-weight: 300;
+    font-size: 17px;
+    line-height: 1.45;
+  }
+  .ar { font-family: "Noto Naskh Arabic", serif; direction: rtl; unicode-bidi: isolate; }
+  code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.82em; }
+  main { max-width: 1240px; margin: 0 auto; padding: 28px 16px 64px; }
+
+  h1, h2, h3 { font-family: "Caveat", cursive; font-weight: 700; margin: 0; line-height: 1.1; }
+  h1 { font-size: clamp(42px, 7vw, 68px); }
+  h2 { font-size: clamp(32px, 4.5vw, 42px); margin: 48px 0 6px; }
+  h2 + .lede { margin-top: 0; }
+  h3 { font-size: 28px; }
+  .lede { color: var(--ink-soft); max-width: 760px; margin: 6px 0 18px; }
+  .underline { text-decoration: underline wavy var(--accent); text-underline-offset: 8px; text-decoration-thickness: 2px; }
+
+  header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; align-items: flex-start; }
+  .stamp {
+    font-family: "Caveat", cursive; font-size: 24px; font-weight: 700; color: var(--warn);
+    border: 2.5px solid var(--warn); padding: 4px 14px; transform: rotate(-4deg);
+    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; white-space: nowrap;
+  }
+  .theme-btn {
+    font: inherit; font-weight: 400; color: var(--ink); background: transparent; cursor: pointer;
+    border: 2px solid var(--ink); padding: 2px 12px; margin-left: 10px;
+    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  }
+
+  /* Cards: rough.js draws their border and fill into an svg behind the content */
+  [data-sk] { position: relative; isolation: isolate; padding: 18px 20px; }
+  [data-sk] > svg.sk-bg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; overflow: visible; }
+
+  .badges { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px; margin-top: 22px; }
+  .badge h3 { font-size: 26px; }
+  .badge .tag { font-family: "Caveat", cursive; font-weight: 700; font-size: 20px; letter-spacing: 1px; color: var(--accent); }
+  .badge p { margin: 4px 0 0; }
+
+  .diagram-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 8px -4px 0; padding: 4px; }
+  .diagram-wrap svg { display: block; width: 100%; min-width: 960px; height: auto; }
+  .swipe { display: none; color: var(--ink-soft); font-size: 15px; }
+  @media (max-width: 960px) { .swipe { display: block; } }
+  svg text { fill: var(--ink); }
+  .t-title { font-family: "Caveat", cursive; font-weight: 700; font-size: 27px; }
+  .t-body { font-family: "Kalam", cursive; font-weight: 300; font-size: 15px; }
+  .t-note { font-family: "Kalam", cursive; font-weight: 400; font-size: 15px; fill: var(--ink-soft); }
+  .t-ok { font-family: "Kalam", cursive; font-weight: 700; font-size: 14px; fill: var(--ok); }
+  .t-warn { font-family: "Kalam", cursive; font-weight: 700; font-size: 14px; fill: var(--warn); }
+  .t-todo { font-family: "Kalam", cursive; font-weight: 700; font-size: 14px; fill: var(--accent); }
+
+  .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 22px; }
+  .sticky { transform: rotate(-0.8deg); }
+  .sticky:nth-child(2n) { transform: rotate(0.9deg); }
+  .sticky h3 { margin-bottom: 6px; }
+  .sticky ul, .phase ul, .sticky ol { margin: 6px 0 0; padding-left: 22px; }
+  .sticky li, .phase li { margin: 3px 0; }
+  .bad { color: var(--warn); font-weight: 700; }
+  .good { color: var(--ok); font-weight: 700; }
+
+  .order { font-family: "Caveat", cursive; font-size: 27px; font-weight: 700; margin: 8px 0 18px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+  .order span.n {
+    display: inline-block; min-width: 40px; text-align: center; padding: 0 8px;
+    border: 2px solid var(--ink); border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  }
+  .order span.arr { color: var(--ink-soft); }
+
+  .phases { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 24px; }
+  .phase .head { display: flex; align-items: baseline; gap: 12px; }
+  .phase .num {
+    font-family: "Caveat", cursive; font-weight: 700; font-size: 34px; line-height: 1; min-width: 44px; text-align: center;
+    border: 2.5px solid var(--ink); border-radius: 50% 45% 55% 48% / 52% 50% 48% 50%; padding: 2px 6px 4px;
+  }
+  .phase .why { color: var(--ink-soft); margin: 8px 0 0; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .chip {
+    font-size: 13.5px; font-weight: 400; padding: 0 9px; border: 1.6px solid var(--ink-soft); color: var(--ink-soft);
+    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  }
+  .files { margin-top: 8px; color: var(--ink-soft); word-break: break-word; }
+  .done {
+    margin-top: 12px; padding: 8px 12px; border: 2px dashed var(--ok);
+    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  }
+  .done b { color: var(--ok); font-weight: 700; }
+
+  .demo ol { counter-reset: step; list-style: none; padding: 0; margin: 8px 0 0; }
+  .demo li { counter-increment: step; position: relative; padding: 6px 0 6px 52px; }
+  .demo li::before {
+    content: counter(step); position: absolute; left: 0; top: 4px; width: 36px; height: 36px;
+    font-family: "Caveat", cursive; font-size: 26px; font-weight: 700; text-align: center; line-height: 34px;
+    border: 2.5px solid var(--accent); color: var(--accent); border-radius: 50% 45% 55% 48% / 52% 50% 48% 50%;
+  }
+  .demo .wow { font-family: "Caveat", cursive; font-size: 23px; font-weight: 700; color: var(--accent); }
+
+  .practices { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+  .practices p { margin: 4px 0 0; }
+  footer { margin-top: 56px; color: var(--ink-soft); font-size: 15px; }
+</style>
+</head>
+<body>
+<main>
+
+<header>
+  <div>
+    <h1>Hunger Learn <span class="underline">MVP plan</span></h1>
+    <p class="lede">How we take the architecture in <code>hunger-learn-mvp-architecture.md</code> from "stage 1 prototype" to a thin, real, end-to-end demo. This page shows the plan. Nothing in it has been built yet.</p>
+  </div>
+  <div>
+    <span class="stamp">PLAN ONLY · not started</span>
+    <button class="theme-btn" id="themeBtn" type="button">light / dark</button>
+  </div>
+</header>
+
+<section class="badges" aria-label="Design principles">
+  <div class="badge" data-sk="blue"><div class="tag">SIMPLE</div><h3>1 app · 1 DB · 1 AI SDK</h3><p>Next.js + Supabase. docproc runs beside it as one Python service.</p></div>
+  <div class="badge" data-sk="green"><div class="tag">COST</div><h3>AI per document, not per learner</h3><p>Generate once per version. Learners are served stored content.</p></div>
+  <div class="badge" data-sk="yellow"><div class="tag">ACCURACY</div><h3>Every item cites its clause</h3><p>An exact quote is checked by code, then by an LLM judge.</p></div>
+  <div class="badge" data-sk="violet"><div class="tag">QUALITY</div><h3>Nothing published without a human</h3><p>An approval gate and an audit log on every item.</p></div>
+</section>
+
+<h2>The product loop, and what exists today</h2>
+<p class="lede">Six stages from the architecture doc. <span class="good">✓ docproc</span> means your friend's prototype already covers it. <span class="bad">⚠</span> marks the gaps found in testing. <span style="color:var(--accent);font-weight:700">to build</span> means nothing exists yet.</p>
+<p class="swipe">swipe the diagram →</p>
+<div class="diagram-wrap"><svg id="flow" viewBox="0 0 1200 470" role="img" aria-label="Six-stage flow: understand, generate, approve, learn, monitor, with reject and v2 loops"></svg></div>
+
+<div class="two" style="margin-top:28px">
+  <div class="sticky" data-sk="red">
+    <h3>What testing found in docproc</h3>
+    <ul>
+      <li><span class="good">✓</span> 34 own tests pass; the demo works for PDF, scan and DOCX</li>
+      <li><span class="good">✓</span> 5 of 15 corpus docs give the right clause count</li>
+      <li><span class="bad">✗</span> <code>.txt</code> crashes the loader (4 corpus files, 2 of the v2 docs)</li>
+      <li><span class="bad">✗</span> numbered Arabic headings → 0 clauses, yet <code>complete=True</code></li>
+      <li><span class="bad">✗</span> pickup-wait v1→v2 shows 8 clauses as <b>removed</b> (gold: 9 unchanged, 1 changed, 1 moved)</li>
+      <li><span class="bad">✗</span> no <i>courier</i> role; role tagging drift turns identical text into "changed"</li>
+      <li><span class="bad">✗</span> <code>.env.example</code> needs <code>bge-m3</code>, which isn't pulled</li>
+    </ul>
+  </div>
+  <div class="sticky" data-sk="yellow">
+    <h3>Decisions already made</h3>
+    <ul>
+      <li><b>Keep docproc</b> as a Python service (LangGraph, OvisOCR3 for scans, BGE-M3 embeddings). Don't rewrite it.</li>
+      <li><b>Thin end-to-end</b>: all 6 stages work, each kept minimal.</li>
+      <li><b>LLM = OpenRouter or local Ollama</b>, switched by env vars. Both speak the OpenAI API, so one adapter serves both.</li>
+      <li><b>Evals before features</b>: the 15-doc golden set is the scoreboard.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>System sketch</h2>
+<p class="lede">Where each piece runs. Supabase is the single database: docproc writes clauses and diffs to it through its existing Postgres backend.</p>
+<p class="swipe">swipe the diagram →</p>
+<div class="diagram-wrap"><svg id="arch" viewBox="0 0 1200 360" role="img" aria-label="Architecture: browser, Next.js, Supabase, docproc service, LLM provider, eval harness"></svg></div>
+
+<h2>Build phases</h2>
+<p class="lede">In dependency order. Each phase ends with a check we can show, not just "code written". Phases 5 and 6 can run in parallel.</p>
+<div class="order" aria-label="Phase order">
+  <span class="n">0</span><span class="arr">→</span><span class="n">1</span><span class="arr">→</span><span class="n">2</span><span class="arr">→</span><span class="n">3</span><span class="arr">→</span><span class="n">4</span><span class="arr">→</span><span class="n">5 ∥ 6</span><span class="arr">→</span><span class="n">7</span>
+</div>
+
+<section class="phases">
+  <article class="phase" data-sk="red">
+    <div class="head"><span class="num">0</span><h3>Harden docproc</h3></div>
+    <div class="chips"><span class="chip">Stage 1</span><span class="chip">Stage 6</span><span class="chip">Python</span></div>
+    <p class="why">The foundation exists but breaks on our own corpus. Fix the root causes first.</p>
+    <ul>
+      <li>Add a <code>.txt</code> loader</li>
+      <li>Carry a heading's clause number into its body, so imperative Arabic clauses are found</li>
+      <li>Roles become <code>courier / employee / partner</code>; read the doc's <span class="ar">«إلى: …»</span> / "To: …" line</li>
+      <li>Equal text hash ⇒ never "changed" over role drift</li>
+      <li>0 clauses, or a big drop vs v1 ⇒ <code>complete=False</code>, so removals go to review</li>
+      <li>One regression test per bug</li>
+    </ul>
+    <div class="files mono">loaders/ · llm/fixture.py · models.py · matching.py · graphs/</div>
+    <div class="done"><b>Done when:</b> all 12 dev uploads process, pickup-wait v1→v2 = 9 unchanged · 1 changed · 1 moved, and <code>pytest -q</code> is green.</div>
+  </article>
+
+  <article class="phase" data-sk="orange">
+    <div class="head"><span class="num">1</span><h3>Eval harness first</h3></div>
+    <div class="chips"><span class="chip">EVAL</span><span class="chip">golden set</span></div>
+    <p class="why">The judges want numbers. Every later change gets scored, so we never guess.</p>
+    <ul>
+      <li>Run every dev doc and score it against <code>dev/gold/</code></li>
+      <li>Extraction recall, citation exact-match, diff accuracy</li>
+      <li>$ and tokens per doc, seconds per doc</li>
+      <li>Held-out set stays frozen: run once at the end, never tuned on</li>
+    </ul>
+    <div class="files mono">scripts/eval_corpus.py → out/eval.json</div>
+    <div class="done"><b>Done when:</b> one command prints the metrics table from the architecture doc.</div>
+  </article>
+
+  <article class="phase" data-sk="blue">
+    <div class="head"><span class="num">2</span><h3>Platform skeleton</h3></div>
+    <div class="chips"><span class="chip">Supabase</span><span class="chip">Next.js</span><span class="chip">FastAPI</span></div>
+    <p class="why">One database and one app shell that every later stage plugs into.</p>
+    <ul>
+      <li>Schema: documents, versions, clauses, items, status log, learners, attempts, mastery, badges</li>
+      <li>pgvector, RLS per role, read-only analytics views</li>
+      <li>docproc points at Supabase Postgres, using its existing backend</li>
+      <li>Thin API: <code>POST /process</code>, <code>GET /report</code></li>
+      <li>Next.js App Router, Arabic-first RTL</li>
+    </ul>
+    <div class="files mono">supabase/migrations · docproc/api.py · app/</div>
+    <div class="done"><b>Done when:</b> uploading in the web app shows the extracted clauses with page citations.</div>
+  </article>
+
+  <article class="phase" data-sk="green">
+    <div class="head"><span class="num">3</span><h3>Generate + verify</h3></div>
+    <div class="chips"><span class="chip">Stage 2</span><span class="chip">AI SDK</span><span class="chip">Zod</span></div>
+    <p class="why">Training per role, generated once, and provably grounded in its clause.</p>
+    <ul>
+      <li><code>generateObject</code> with a Zod schema: lesson, scenario, 5–10 questions per procedure</li>
+      <li>Every item stores its <code>clause_id</code> and an exact quote</li>
+      <li>Check 1 (code): the quote exists in the clause. Check 2: an LLM judge</li>
+      <li>Invalid output → retry with the validation error fed back</li>
+      <li>Stretch goal: one explainer video (script → ar-SA TTS → MP4)</li>
+    </ul>
+    <div class="done"><b>Done when:</b> every item cites a clause, failed checks show ⚠, and the gold <i>flagged draft</i> gets caught.</div>
+  </article>
+
+  <article class="phase" data-sk="violet">
+    <div class="head"><span class="num">4</span><h3>Human approval</h3></div>
+    <div class="chips"><span class="chip">Stage 3</span><span class="chip">Auth roles</span></div>
+    <p class="why">Nothing reaches a learner until a trainer says yes.</p>
+    <ul>
+      <li>Review queue: item beside its source clause, ⚠ items first</li>
+      <li>Approve · edit · reject (reject regenerates the item)</li>
+      <li>Lifecycle: draft → verified → approved → published → outdated</li>
+      <li>Audit log: who, what, when, which clause version</li>
+    </ul>
+    <div class="done"><b>Done when:</b> a rejected item comes back regenerated, and learners only ever query <i>published</i> items (enforced by RLS).</div>
+  </article>
+
+  <article class="phase" data-sk="blue">
+    <div class="head"><span class="num">5</span><h3>Learn & prove mastery</h3></div>
+    <div class="chips"><span class="chip">Stage 4</span><span class="chip">no AI at serve time</span></div>
+    <p class="why">The same SOP, shaped for each role's device. No new content is written here.</p>
+    <ul>
+      <li>Rules pick the format; the JSON screen spec is validated by Zod</li>
+      <li>Courier 📱 video + 1 question · Employee 💻 scenario · Partner 📋 checklist</li>
+      <li>Graded against the approved answer key</li>
+      <li>Mastered → badge. Not yet → retry in another format</li>
+    </ul>
+    <div class="done"><b>Done when:</b> the three roles each see their own format, and a wrong answer triggers a different format.</div>
+  </article>
+
+  <article class="phase" data-sk="green">
+    <div class="head"><span class="num">6</span><h3>Monitor readiness</h3></div>
+    <div class="chips"><span class="chip">Stage 5</span><span class="chip">read-only</span></div>
+    <p class="why">Supervisors see who is ready, and can ask in Arabic.</p>
+    <ul>
+      <li>% mastered per procedure · role · branch, plus who needs retraining</li>
+      <li>Seeded from <code>dev/gold/learners.json</code></li>
+      <li>Ask: <span class="ar">«من لم يتقن إجراء الانتظار الجديد؟»</span></li>
+      <li>LLM → SQL on read-only views only; anything but a SELECT is refused</li>
+    </ul>
+    <div class="done"><b>Done when:</b> the Arabic question returns names, and an <code>UPDATE</code> attempt is blocked.</div>
+  </article>
+
+  <article class="phase" data-sk="yellow">
+    <div class="head"><span class="num">7</span><h3>v2 loop + demo</h3></div>
+    <div class="chips"><span class="chip">Stage 6</span><span class="chip">COST</span></div>
+    <p class="why">The money shot: a new version only redoes what changed.</p>
+    <ul>
+      <li>Upload v2 → docproc diff</li>
+      <li>Unchanged and moved: keep (moved only updates its citation)</li>
+      <li>Changed, new, removed → <i>outdated</i> → regenerate → re-approve</li>
+      <li>Affected learners get a "what changed" lesson; their badges are re-checked</li>
+      <li>A scoreboard page shows the eval metrics and the AI cost saved</li>
+    </ul>
+    <div class="done"><b>Done when:</b> a live upload of pickup-wait v2 re-opens only the 15→10-minute rule's items.</div>
+  </article>
+</section>
+
+<h2>Demo script: the "awesome work!!!" moments</h2>
+<p class="lede">Six minutes, one story, real data from the corpus.</p>
+<div class="demo" data-sk="gray">
+  <ol>
+    <li><span class="wow">It reads anything.</span> Upload an Arabic scan. Clauses appear with page citations, beside the source text.</li>
+    <li><span class="wow">It refuses to make things up.</span> A generated item whose quote isn't in the clause is flagged ⚠ and blocked before review.</li>
+    <li><span class="wow">A human is always in charge.</span> The trainer approves, edits or rejects, and every action lands in the audit log.</li>
+    <li><span class="wow">One SOP, three learners.</span> A courier on a phone, an employee on a laptop and a partner on a tablet each get their own format.</li>
+    <li><span class="wow">Ask in Arabic.</span> <span class="ar">«من لم يتقن…؟»</span> returns a list of names from read-only views.</li>
+    <li><span class="wow">v2 costs almost nothing.</span> Upload the new version: 10 of 11 clauses are kept at $0, and only the 15→10-minute rule goes back for approval. Then show the eval scoreboard on the held-out set.</li>
+  </ol>
+</div>
+
+<h2>Engineering rules we follow</h2>
+<p class="lede">From the engineering-best-practices skill, applied to this project.</p>
+<section class="practices">
+  <div data-sk="blue"><h3>Workflows, not agents</h3><p>Every stage is a fixed pipeline. The steps are known in advance, so no autonomous agent is needed.</p></div>
+  <div data-sk="green"><h3>Schemas at every AI edge</h3><p>Pydantic in Python, Zod in TypeScript. Invalid output is retried with the error fed back.</p></div>
+  <div data-sk="orange"><h3>Evals before features</h3><p>The golden set exists. Score every change against it, and keep held-out untouched.</p></div>
+  <div data-sk="red"><h3>Fail loudly</h3><p>A 0-clause run is incomplete, not a success. Errors carry the file, page and request context.</p></div>
+  <div data-sk="violet"><h3>Least privilege</h3><p>RLS per role. Text-to-SQL sees read-only views only, and publishing needs a human.</p></div>
+  <div data-sk="yellow"><h3>Every AI call is logged</h3><p>Model, prompt version, tokens, cost and latency, so the cost-per-doc metric is real.</p></div>
+</section>
+
+<h2>How we verify each phase</h2>
+<div class="two">
+  <div data-sk="gray">
+    <h3>Automated</h3>
+    <ul>
+      <li><code>pytest -q</code> stays green, including Postgres parity</li>
+      <li>Eval metrics after each phase, compared with the previous run</li>
+      <li>Type checks and lint in both Python and TypeScript</li>
+    </ul>
+  </div>
+  <div data-sk="gray">
+    <h3>By hand</h3>
+    <ul>
+      <li>Click through the 6-step demo script end to end</li>
+      <li>Phone-width check of the learner screens, in RTL</li>
+      <li>One held-out run with frozen config before the demo</li>
+    </ul>
+  </div>
+</div>
+
+<footer>Plan drafted 2026-11-21 from <code>hunger-learn-mvp-architecture.md</code> and the docproc test run. Nothing has been built yet: each phase starts only on your go-ahead.</footer>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  const SVG_NS = "http://www.w3.org/2000/svg";
+
+  function cssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue("--" + name).trim();
+  }
+
+  function addText(svg, x, y, text, cls, anchor) {
+    const t = document.createElementNS(SVG_NS, "text");
+    t.setAttribute("x", String(x));
+    t.setAttribute("y", String(y));
+    t.setAttribute("class", cls);
+    t.setAttribute("text-anchor", anchor);
+    t.textContent = text;
+    svg.appendChild(t);
+  }
+
+  function addBox(rc, svg, box, seed) {
+    svg.appendChild(rc.rectangle(box.x, box.y, box.w, box.h, {
+      seed: seed, roughness: 1.3, bowing: 1.2, stroke: cssVar("ink"), strokeWidth: 1.8,
+      fill: cssVar(box.fill), fillStyle: "hachure", hachureGap: 7, fillWeight: 0.9, hachureAngle: -41
+    }));
+    const cx = box.x + box.w / 2;
+    addText(svg, cx, box.y + 34, box.title, "t-title", "middle");
+    box.lines.forEach(function (line, i) {
+      addText(svg, cx, box.y + 60 + i * 20, line, "t-body", "middle");
+    });
+    if (box.status) {
+      addText(svg, cx, box.y + box.h - 12, box.status.text, "t-" + box.status.kind, "middle");
+    }
+  }
+
+  function addArrow(rc, svg, points, dashed, seed) {
+    const opts = { seed: seed, roughness: 1.1, stroke: cssVar("ink"), strokeWidth: 1.7 };
+    if (dashed) { opts.strokeLineDash = [8, 7]; }
+    svg.appendChild(points.length > 2 ? rc.curve(points, opts) : rc.line(points[0][0], points[0][1], points[1][0], points[1][1], opts));
+    const end = points[points.length - 1];
+    const prev = points[points.length - 2];
+    const angle = Math.atan2(end[1] - prev[1], end[0] - prev[0]);
+    const headOpts = { seed: seed + 1, roughness: 0.8, stroke: cssVar("ink"), strokeWidth: 1.7 };
+    [0.45, -0.45].forEach(function (spread) {
+      const hx = end[0] - 15 * Math.cos(angle + spread);
+      const hy = end[1] - 15 * Math.sin(angle + spread);
+      svg.appendChild(rc.line(end[0], end[1], hx, hy, headOpts));
+    });
+  }
+
+  function drawDiagram(svgId, diagram) {
+    const svg = document.getElementById(svgId);
+    while (svg.firstChild) { svg.removeChild(svg.firstChild); }
+    const rc = rough.svg(svg);
+    diagram.arrows.forEach(function (a, i) {
+      addArrow(rc, svg, a.points, a.dashed, 500 + i * 7);
+      if (a.label) { addText(svg, a.label[0], a.label[1], a.label[2], "t-note", "middle"); }
+    });
+    diagram.boxes.forEach(function (b, i) { addBox(rc, svg, b, 100 + i * 13); });
+  }
+
+  const FLOW = {
+    boxes: [
+      { x: 20, y: 70, w: 205, h: 120, fill: "blue", title: "1 · Understand", lines: ["upload → read → extract", "clauses · hash · embedding"], status: { kind: "ok", text: "✓ docproc  ·  ⚠ gaps" } },
+      { x: 260, y: 70, w: 205, h: 120, fill: "green", title: "2 · Generate", lines: ["lessons · scenarios · Qs", "verify: quote + judge"], status: { kind: "todo", text: "to build" } },
+      { x: 500, y: 70, w: 205, h: 120, fill: "violet", title: "3 · Approve", lines: ["review queue · ⚠ first", "status · audit log"], status: { kind: "todo", text: "to build" } },
+      { x: 740, y: 70, w: 205, h: 120, fill: "orange", title: "4 · Learn", lines: ["format per role/device", "mastery → badge"], status: { kind: "todo", text: "to build" } },
+      { x: 975, y: 70, w: 205, h: 120, fill: "yellow", title: "5 · Monitor", lines: ["readiness dashboard", "ask in Arabic → SQL"], status: { kind: "todo", text: "to build" } },
+      { x: 260, y: 320, w: 205, h: 120, fill: "red", title: "6 · v2 diff", lines: ["hash → embed → lexical", "added/removed/changed"], status: { kind: "ok", text: "✓ docproc  ·  ⚠ gaps" } },
+      { x: 560, y: 330, w: 250, h: 100, fill: "gray", title: "unchanged → keep", lines: ["zero AI cost"], status: null }
+    ],
+    arrows: [
+      { points: [[225, 130], [260, 130]], dashed: false, label: null },
+      { points: [[465, 130], [500, 130]], dashed: false, label: null },
+      { points: [[705, 130], [740, 130]], dashed: false, label: null },
+      { points: [[945, 130], [975, 130]], dashed: false, label: null },
+      { points: [[602, 70], [545, 38], [420, 38], [363, 68]], dashed: false, label: [482, 24, "reject → regenerate"] },
+      { points: [[800, 70], [842, 14], [900, 30], [885, 68]], dashed: false, label: [1012, 30, "not yet → other format"] },
+      { points: [[362, 320], [362, 192]], dashed: false, label: [540, 262, "only changed · new · removed clauses"] },
+      { points: [[465, 380], [560, 380]], dashed: false, label: null },
+      { points: [[122, 190], [140, 330], [258, 378]], dashed: true, label: [210, 292, "v2 re-runs stage 1"] }
+    ]
+  };
+
+  const ARCH = {
+    boxes: [
+      { x: 20, y: 40, w: 180, h: 110, fill: "gray", title: "Browser", lines: ["phone · tablet · laptop"], status: null },
+      { x: 250, y: 30, w: 290, h: 130, fill: "blue", title: "Next.js app", lines: ["RTL · Tailwind · shadcn/ui", "AI SDK: generate · judge · SQL"], status: null },
+      { x: 600, y: 30, w: 270, h: 130, fill: "green", title: "Supabase", lines: ["Postgres + pgvector", "Auth · RLS · Storage"], status: null },
+      { x: 920, y: 30, w: 260, h: 130, fill: "yellow", title: "AI call log", lines: ["model · prompt version", "tokens · $ · latency"], status: null },
+      { x: 250, y: 220, w: 290, h: 120, fill: "violet", title: "LLM provider", lines: ["OpenRouter  |  local Ollama", "(one OpenAI-compatible API)"], status: null },
+      { x: 600, y: 220, w: 270, h: 120, fill: "red", title: "docproc service", lines: ["LangGraph · OvisOCR3", "BGE-M3 · FastAPI"], status: null },
+      { x: 920, y: 220, w: 260, h: 120, fill: "orange", title: "Eval harness", lines: ["15 golden docs", "dev · held-out (frozen)"], status: null }
+    ],
+    arrows: [
+      { points: [[200, 95], [250, 95]], dashed: false, label: null },
+      { points: [[540, 95], [600, 95]], dashed: false, label: null },
+      { points: [[870, 95], [920, 95]], dashed: true, label: null },
+      { points: [[395, 160], [395, 220]], dashed: false, label: [352, 196, "AI SDK"] },
+      { points: [[510, 160], [600, 215]], dashed: false, label: [488, 206, "POST /process"] },
+      { points: [[735, 220], [735, 160]], dashed: false, label: [800, 196, "clauses · diff"] },
+      { points: [[600, 300], [540, 300]], dashed: false, label: null },
+      { points: [[920, 280], [870, 280]], dashed: true, label: null }
+    ]
+  };
+
+  function sketchCards() {
+    const fillStyles = { gray: "solid" };
+    document.querySelectorAll("[data-sk]").forEach(function (el, i) {
+      const old = el.querySelector(":scope > svg.sk-bg");
+      if (old) { el.removeChild(old); }
+      const w = el.offsetWidth;
+      const h = el.offsetHeight;
+      const svg = document.createElementNS(SVG_NS, "svg");
+      svg.setAttribute("class", "sk-bg");
+      svg.setAttribute("viewBox", "0 0 " + w + " " + h);
+      svg.setAttribute("aria-hidden", "true");
+      const rc = rough.svg(svg);
+      const fillName = el.getAttribute("data-sk");
+      svg.appendChild(rc.rectangle(4, 4, w - 8, h - 8, {
+        seed: 900 + i * 11, roughness: 1.4, bowing: 1.5, stroke: cssVar("ink"), strokeWidth: 1.8,
+        fill: cssVar(fillName), fillStyle: fillStyles[fillName] || "solid"
+      }));
+      el.insertBefore(svg, el.firstChild);
+    });
+  }
+
+  function drawAll() {
+    drawDiagram("flow", FLOW);
+    drawDiagram("arch", ARCH);
+    sketchCards();
+  }
+
+  let resizeTimer = 0;
+  window.addEventListener("resize", function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(sketchCards, 150);
+  });
+
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawAll);
+
+  document.getElementById("themeBtn").addEventListener("click", function () {
+    const root = document.documentElement;
+    const current = root.getAttribute("data-theme");
+    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDark = current === "dark" || (current === null && systemDark);
+    root.setAttribute("data-theme", isDark ? "light" : "dark");
+    drawAll();
+  });
+
+  document.fonts.ready.then(drawAll);
+})();
+</script>
+</body>
+</html>

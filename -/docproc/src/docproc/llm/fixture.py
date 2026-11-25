@@ -17,6 +17,7 @@ _AUDIENCE_WORDS: dict[Audience, list[str]] = {
     Audience.owner: ["owner", "owners", "business owner", "المالك", "الملاك", "للملاك", "صاحب العمل", "أصحاب العمل"],
     Audience.employee: ["employee", "employees", "staff", "الموظف", "الموظفين", "الموظفون", "للموظفين", "العاملين"],
     Audience.partner: ["partner", "partners", "الشريك", "الشركاء", "للشركاء"],
+    Audience.courier: ["courier", "couriers", "rider", "riders", "المندوب", "المناديب", "مندوب التوصيل", "السائق"],
 }
 _LIST_PREFIX = re.compile(r"^\s*(?:[-•*▪]|\(?[a-zأ-ي\d٠-٩]\))\s+")
 

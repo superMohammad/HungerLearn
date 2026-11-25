@@ -1,0 +1,16 @@
+# HungerLearn database: Postgres 17 + pgvector (Supabase-compatible).
+# docproc writes clause tables; the web app owns the training tables (web/db/migrations).
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    container_name: hungerlearn-db
+    environment:
+      POSTGRES_USER: hungerlearn
+      POSTGRES_PASSWORD: hungerlearn
+      POSTGRES_DB: hungerlearn
+    ports:
+      - "127.0.0.1:5442:5432"
+    volumes:
+      - hungerlearn-pgdata:/var/lib/postgresql/data
+volumes:
+  hungerlearn-pgdata:

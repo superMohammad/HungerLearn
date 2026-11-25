@@ -1,0 +1,8 @@
+{
+  "enabledPlugins": {
+    "supabase@anthropic-plugin-directory": false,
+    "playwright@anthropic-plugin-directory": true,
+    "context7@anthropic-plugin-directory": true,
+    "remotion@anthropic-plugin-directory": true
+  }
+}

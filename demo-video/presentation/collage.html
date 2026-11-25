@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Hunger Learn · Screens</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#1E0B04; --deep:#2A1208; --brown:#5E2D20; --yellow:#FFD700; --cream:#FFF7E0; }
+  * { box-sizing: border-box; margin: 0; }
+  body { width: 1920px; height: 1080px; overflow: hidden; font-family: "IBM Plex Sans Arabic", sans-serif;
+    background: radial-gradient(ellipse 80% 75% at 55% 45%, #4A200E 0%, var(--deep) 55%, var(--ink) 100%); position: relative; }
+  .win { position: absolute; border-radius: 16px; overflow: hidden; background: #FFFDF5;
+    box-shadow: 0 50px 100px rgba(0,0,0,.55), 0 0 0 1px rgba(255,247,224,.12); }
+  .bar { height: 38px; background: #F3E6C4; display: flex; align-items: center; gap: 8px; padding: 0 16px; direction: ltr; }
+  .bar i { width: 11px; height: 11px; border-radius: 6px; background: #E0B9A6; display: block; }
+  .bar i:nth-child(2) { background: #E8CF8F; } .bar i:nth-child(3) { background: #C9C2A0; }
+  .bar span { margin-left: 16px; height: 22px; padding: 0 14px; border-radius: 11px; background: #FFF9E8;
+    font: 13px "IBM Plex Mono", monospace; color: var(--brown); display: flex; align-items: center; }
+  .shot { width: 100%; height: calc(100% - 38px); background-repeat: no-repeat; background-size: 100% auto; }
+  .phone { position: absolute; width: 300px; height: 650px; border-radius: 48px; padding: 12px;
+    background: linear-gradient(145deg, #2B1A12, #0F0704); box-shadow: 0 60px 120px rgba(0,0,0,.6), inset 0 0 0 2px rgba(255,247,224,.1); }
+  .phone .screen { width: 100%; height: 100%; border-radius: 37px; overflow: hidden; background-size: 100% auto; background-repeat: no-repeat;
+    background-color: #FFF7E0; position: relative; }
+  .phone .screen::after { content: ""; position: absolute; top: 10px; left: 50%; width: 90px; height: 26px; margin-left: -45px; border-radius: 13px; background: #0B0503; }
+  .label { position: absolute; font-weight: 700; font-size: 20px; color: var(--ink); background: var(--yellow);
+    padding: 6px 16px; border-radius: 999px; box-shadow: 0 12px 30px rgba(0,0,0,.35); white-space: nowrap; }
+  header { position: absolute; top: 64px; right: 90px; display: flex; flex-direction: column; align-items: flex-end; gap: 14px; }
+  header img { width: 250px; }
+  header p { color: var(--cream); font-size: 34px; font-weight: 500; }
+</style>
+</head>
+<body>
+  <header>
+    <img src="../public/brand/hungerlearn-logo-light.png" alt="Hunger Learn">
+    <p>من دليل الإجراءات إلى فريق جاهز</p>
+  </header>
+
+  <!-- admin screens (back) -->
+  <div class="win" style="left:70px; top:110px; width:1000px; height:560px;">
+    <div class="bar"><i></i><i></i><i></i><span>hungerlearn.app/admin/review</span></div>
+    <div class="shot" style="background-image:url(../public/shots/admin-review.png); background-size: 122% auto; background-position: 35% 9%;"></div>
+  </div>
+  <div class="label" style="right:860px; top:58px;">المحتوى المولَّد بجانب بنده المصدر</div>
+
+  <div class="win" style="left:70px; top:705px; width:560px; height:330px;">
+    <div class="bar"><i></i><i></i><i></i><span>/admin/readiness</span></div>
+    <div class="shot" style="background-image:url(../public/shots/admin-readiness.png); background-size: 150% auto; background-position: 62% 34%;"></div>
+  </div>
+  <div class="label" style="left:90px; top:1012px;">جاهزية الفريق لكل إجراء وفرع</div>
+
+  <div class="win" style="left:650px; top:705px; width:400px; height:330px;">
+    <div class="bar"><i></i><i></i><i></i><span>/admin/documents</span></div>
+    <div class="shot" style="background-image:url(../public/shots/admin-document.png); background-size: 160% auto; background-position: 100% 31%;"></div>
+  </div>
+  <div class="label" style="left:670px; top:1012px;">كل بند بنصّه الحرفي</div>
+
+  <!-- learner phones (front) -->
+  <div class="phone" style="left:1290px; top:330px; transform: rotate(-4deg);">
+    <div class="screen" style="background-image:url(../public/shots/learn-lesson.png);"></div>
+  </div>
+  <div class="phone" style="left:1560px; top:380px; transform: rotate(3deg); width:290px; height:630px;">
+    <div class="screen" style="background-image:url(../public/shots/learn-q-delay.png);"></div>
+  </div>
+  <div class="phone" style="left:1060px; top:400px; transform: rotate(-9deg); width:280px; height:606px; z-index:-0;">
+    <div class="screen" style="background-image:url(../public/shots/learn-home.png);"></div>
+  </div>
+  <div class="label" style="left:1330px; top:1005px;">المتدرب: درس ← تمرين ← اختبار بثقة</div>
+</body>
+</html>

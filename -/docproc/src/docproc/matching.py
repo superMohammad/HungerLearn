@@ -20,7 +20,7 @@ from rapidfuzz import fuzz
 
 from docproc.config import Settings
 from docproc.models import Audience, ClauseRecord, Status
-from docproc.normalize import clause_body, modalities, negations, normalize, numbers
+from docproc.normalize import core_text, modalities, negations, normalize, numbers
 
 ID_NAMESPACE = uuid.UUID("6f1c2a52-9a43-4c1e-9d55-0d0c5e2b7a10")
 REMOVAL_DEFERRED = "removal_deferred_incomplete_extraction"
@@ -57,8 +57,23 @@ class Candidate:
 
 
 def lexical_similarity(a: str, b: str) -> float:
-    na, nb = normalize(clause_body(a)), normalize(clause_body(b))
+    na, nb = core_text(a, None), core_text(b, None)
     return max(fuzz.ratio(na, nb), fuzz.token_sort_ratio(na, nb)) / 100.0
+
+
+CONTENT_REASONS = ("numbers", "negation", "modality", "audience", "wording")
+
+
+def _body(r: ClauseRecord) -> str:
+    """Normalized clause text without clause number or a leading copy of its heading."""
+    return core_text(r.quote, r.heading)
+
+
+def status_for(reasons: list[str]) -> Status:
+    """A verified pair is `changed` only if its content differs; otherwise layout moved it."""
+    if any(r.startswith(CONTENT_REASONS) for r in reasons):
+        return Status.changed
+    return Status.moved if "location changed" in reasons else Status.unchanged
 
 
 def change_reasons(old: ClauseRecord, new: ClauseRecord) -> list[str]:
@@ -72,9 +87,11 @@ def change_reasons(old: ClauseRecord, new: ClauseRecord) -> list[str]:
     if mo != mn:
         reasons.append(f"modality: {', '.join(mo) or '-'} -> {', '.join(mn) or '-'}")
     ao, an = sorted(a.value for a in old.audiences), sorted(a.value for a in new.audiences)
-    if ao != an:
+    # Only audiences the text itself names are evidence of a change; an inherited or unspecified
+    # audience is an extraction label, and label drift on identical text is not a policy change.
+    if ao != an and old.audience_source == "explicit" and new.audience_source == "explicit":
         reasons.append(f"audience: {', '.join(ao)} -> {', '.join(an)}")
-    if normalize(old.quote) != normalize(new.quote) and not any(r.startswith(("numbers", "negation", "modality")) for r in reasons):
+    if _body(old) != _body(new) and not any(r.startswith(("numbers", "negation", "modality")) for r in reasons):
         reasons.append("wording changed")
     if old.location.position_key() != new.location.position_key():
         reasons.append("location changed")
@@ -206,8 +223,9 @@ class Matcher:
                 self.reserved_old.add(p.old.record_id)
                 self.reserved_old.update(q.old.record_id for q in same_new)
                 continue
+            reasons = change_reasons(p.old, p.new)
             self._take(MatchResult(
-                Status.changed, self.sid_for(p.old), p.old, p.new, reasons=change_reasons(p.old, p.new),
+                status_for(reasons), self.sid_for(p.old), p.old, p.new, reasons=reasons,
                 cosine=round(p.cosine, 4), lexical=round(p.lexical or 0, 4),
             ))
 

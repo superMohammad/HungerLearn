@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "skills": {
+    "remotion-best-practices": {
+      "source": "remotion-dev/skills",
+      "commit": "6f55706d1069e512430582ad86e4e57dc07afe1b",
+      "sourceType": "github",
+      "skillPath": "skills/remotion-best-practices/SKILL.md",
+      "computedHash": "3a00c916c1a0ee0ccb64b27b08049508d712d65c04ee1bd84d96709854c488e4"
+    },
+    "supabase-postgres-best-practices": {
+      "source": "supabase/agent-skills",
+      "commit": "c9be0e931b7930f7d02126d04774d904c381e7d7",
+      "sourceType": "github",
+      "skillPath": "skills/supabase-postgres-best-practices/SKILL.md",
+      "computedHash": "3eb972c2d7c818e544e35cc33ea8d7147d4d78ae08142ef40037b0fbac7a2505"
+    },
+    "ui-ux-pro-max": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "commit": "2de1134dc4d1cfe112934611ae5803ae17a1bd7e",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/ui-ux-pro-max/SKILL.md",
+      "computedHash": "605686282fb6812d8e3f4b1a06c9fb8ba7be4d7395090f41f221a9ba5a3dbe6b"
+    },
+    "vercel-react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "commit": "5a37a6329fbad3666c3207392a6a7c0110e92efb",
+      "sourceType": "github",
+      "skillPath": "skills/react-best-practices/SKILL.md",
+      "computedHash": "7991ed4fbecdac23f47c1a40c243e00a212a9e7f3604db93959b3ae11dffe299"
+    }
+  }
+}

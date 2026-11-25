@@ -1,0 +1,11 @@
+# Project MCP servers for Codex (loaded when the project is trusted).
+# Claude Code gets the same servers from the plugins in .claude/settings.json.
+# Supabase stays off until a hosted Supabase project exists.
+
+[mcp_servers.playwright]
+command = "npx"
+args = ["-y", "@playwright/mcp@latest"]
+
+[mcp_servers.context7]
+command = "npx"
+args = ["-y", "@upstash/context7-mcp@latest"]

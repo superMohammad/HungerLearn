@@ -13,12 +13,13 @@ class PostgresRepository(SqlRepository):
     jph = "%s::jsonb"
     vph = "%s::vector"
 
-    def __init__(self, dsn: str) -> None:
+    def __init__(self, dsn: str, embedding_dim: int) -> None:
         import psycopg
 
         conn = psycopg.connect(dsn)
         super().__init__(conn)
         self._vector_registered = False
+        self._embedding_dim = embedding_dim
 
     def _register(self) -> None:
         if not self._vector_registered:
@@ -29,6 +30,7 @@ class PostgresRepository(SqlRepository):
 
     def init_schema(self) -> None:
         sql = resources.files("docproc.storage").joinpath("schema_postgres.sql").read_text(encoding="utf-8")
+        sql = sql.replace("{embedding_dim}", str(self._embedding_dim))
         with self.conn.cursor() as cur:
             cur.execute(sql)
         self.conn.commit()
@@ -42,6 +44,9 @@ class PostgresRepository(SqlRepository):
         return np.asarray(v, dtype=np.float32)
 
     def _decode_vec(self, v) -> np.ndarray:
+        # pgvector>=0.4 returns pgvector.Vector; older versions return numpy arrays
+        if hasattr(v, "to_numpy"):
+            return np.asarray(v.to_numpy(), dtype=np.float32)
         return np.asarray(v, dtype=np.float32)
 
     def search_similar(self, model_id: str, vector: np.ndarray, k: int = 5) -> list[tuple[str, float]]:

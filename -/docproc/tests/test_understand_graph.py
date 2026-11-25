@@ -77,3 +77,12 @@ def test_inherited_audience_without_heading_evidence_is_downgraded(make_app, fix
     r = st["records"][0]
     assert r.audiences == [Audience.unspecified]
     assert any(i.kind == "audience_evidence_missing" for i in st["issues"])
+
+
+def test_fuzzy_quote_span_never_starts_mid_word():
+    from docproc.graphs.understand import _snap_to_words
+
+    text = "٢. تأخر التجهيز" + chr(10) + "إذا بقي الطلب قيد التجهيز بعد 10 دقائق"
+    start = text.index("يز" + chr(10))  # fuzzy alignment landed inside "التجهيز"
+    s, e = _snap_to_words(text, start, len(text))
+    assert text[s:e] == "إذا بقي الطلب قيد التجهيز بعد 10 دقائق"

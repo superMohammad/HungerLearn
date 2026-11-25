@@ -29,7 +29,7 @@ def test_postgres_matches_sqlite(make_app, fixtures_dir):
 
     doc = f"parity-{uuid.uuid4().hex[:8]}"
     _, a = run_pair(make_app(), fixtures_dir / "policy_v1.docx", fixtures_dir / "policy_v2.docx", doc=doc)
-    pg = PostgresRepository(os.environ["DOCPROC_PG_DSN"])
+    pg = PostgresRepository(os.environ["DOCPROC_PG_DSN"], 1024)
     _, b = run_pair(make_app(repo=pg), fixtures_dir / "policy_v1.docx", fixtures_dir / "policy_v2.docx", doc=doc)
     assert _signature(a) == _signature(b)
     assert pg.search_similar("fixture:char3-1024", pg.get_embeddings("fixture:char3-1024", [b.clauses[0].new.content_hash])[b.clauses[0].new.content_hash], k=1)[0][1] > 0.99

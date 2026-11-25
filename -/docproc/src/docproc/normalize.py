@@ -113,13 +113,47 @@ def clause_body(text: str) -> str:
     return CLAUSE_NO.sub("", text, count=1)
 
 
-def content_hash(quote: str, audiences: Iterable[str]) -> str:
+def strip_heading(text: str, heading: str | None) -> str:
+    """Text without a leading copy of its own section heading.
+
+    Table rows often hold "<heading> <rule>" in one block, so whether the extracted quote starts
+    with the heading depends on layout. The heading is position, not content, like the clause number.
+    """
+    if not heading:
+        return text
+    body, head = clause_body(text), normalize(clause_body(heading))
+    if head and normalize(body).startswith(head + " "):
+        words = len(head.split())
+        return body.split(None, words)[-1]
+    return text
+
+
+# A short numbered label on its own first line ("٤. قبل المغادرة" + newline), as table rows produce.
+_TITLE_LINE = re.compile(r"^\s*(?:[\d٠-٩]+(?:[.\-][\d٠-٩]+)*[.)])\s*[^\n.،:؛!?؟]{1,60}\n(?=\s*\S)")
+_TITLE_MAX_WORDS = 7
+
+
+def strip_title_line(text: str) -> str:
+    """Drops a leading numbered title line. It labels the clause (layout), it is not rule text."""
+    m = _TITLE_LINE.match(text)
+    if m is None or len(m.group(0).split()) > _TITLE_MAX_WORDS:
+        return text
+    return text[m.end():]
+
+
+def core_text(quote: str, heading: str | None) -> str:
+    """Normalized rule text used for identity: no title line, heading copy, or clause number."""
+    return normalize(clause_body(strip_heading(strip_title_line(quote), heading)))
+
+
+def content_hash(quote: str, audiences: Iterable[str], heading: str | None) -> str:
     """Hash of lightly normalized source text + sorted audience set (explicit and inherited).
 
-    Page, position and clause number are excluded so a moved clause keeps its hash.
+    Page, position, clause number, a leading title line and a leading copy of the section
+    heading are excluded so a moved or re-laid-out clause keeps its hash.
     """
     aud = ",".join(sorted(set(audiences)))
-    payload = f"{normalize(clause_body(quote))}|aud={aud}"
+    payload = f"{core_text(quote, heading)}|aud={aud}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 

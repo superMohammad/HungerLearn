@@ -10,3 +10,6 @@ __pycache__/
 # Secrets and local settings
 .env
 .claude/settings.local.json
+
+# Local run artifacts
+.playwright-mcp/

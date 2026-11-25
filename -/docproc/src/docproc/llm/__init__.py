@@ -11,7 +11,7 @@ def make_extractor(settings: Settings) -> ClauseExtractor:
 
         return OpenAICompatExtractor(
             settings.llm_base_url, settings.llm_model, settings.llm_api_key,
-            settings.llm_timeout_s, settings.llm_max_retries,
+            settings.llm_timeout_s, settings.llm_max_retries, settings.llm_reasoning_effort,
         )
     if settings.llm == "anthropic":
         from docproc.llm.anthropic import AnthropicExtractor

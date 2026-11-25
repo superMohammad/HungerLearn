@@ -20,14 +20,17 @@ class Settings(BaseSettings):
     llm_model: str = "gpt-4o-mini"
     llm_base_url: str = "https://api.openai.com/v1"  # e.g. http://localhost:11434/v1 for Ollama
     llm_api_key: str = ""
+    llm_reasoning_effort: str = ""  # openai_compat only; "none" disables thinking (Gemma 4 / Qwen on Ollama)
     anthropic_api_key: str = ""
     llm_timeout_s: float = 120.0
     llm_max_retries: int = 2
 
     # Embeddings (BGE-M3 dense, 1024-d)
-    embeddings: Literal["ollama", "st_cpu", "fixture"] = "ollama"
-    embedding_model: str = "bge-m3"  # Ollama tag; st_cpu uses BAAI/bge-m3
+    # embeddinggemma: google/embeddinggemma-2 via sentence-transformers (set embedding_dim=768)
+    embeddings: Literal["ollama", "st_cpu", "embeddinggemma", "fixture"] = "ollama"
+    embedding_model: str = "bge-m3"  # Ollama tag or HF id; st_cpu uses BAAI/bge-m3
     embedding_dim: int = 1024
+    embedding_device: str = "cpu"  # embeddinggemma only: cpu | cuda
     embedding_batch_size: int = 4
     ollama_url: str = "http://localhost:11434"
 

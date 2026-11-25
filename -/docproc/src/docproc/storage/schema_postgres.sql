@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS embeddings (
     model_id     TEXT NOT NULL,
     content_hash TEXT NOT NULL,
     dim          INTEGER NOT NULL,
-    vector       vector(1024) NOT NULL,
+    vector       vector({embedding_dim}) NOT NULL,
     PRIMARY KEY (model_id, content_hash)
 );
 CREATE INDEX IF NOT EXISTS ix_emb_hnsw ON embeddings USING hnsw (vector vector_cosine_ops);

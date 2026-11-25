@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: review-flawed-orders-api
+expected_outcome: |
+  A prioritized review of orders_api.py that leads with the security bugs (no object-level
+  authorization on order reads, mass assignment on PATCH, API key in the query string), then the
+  HTTP contract bugs (state change on GET, errors returned as 200, leaked exception text, no
+  idempotency on payment creation, unbounded page size, float money), then naming (verb paths),
+  plus a corrected version that uses noun resources, specific status codes, RFC 9457 Problem
+  Details, cursor pagination with a maximum, and Idempotency-Key on the payment POST.
+context:
+  scaffold_script: place-files.sh

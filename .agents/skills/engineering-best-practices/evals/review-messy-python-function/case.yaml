@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: review-messy-python-function
+expected_outcome: |
+  A prioritized review of order_processor.py that catches the real bugs (mutable default cache,
+  unbound `t` for skipped orders, swallowed exceptions, unused response) before style issues,
+  plus a typed, refactored version without flag-driven branching or silent error handling.
+context:
+  scaffold_script: place-files.sh

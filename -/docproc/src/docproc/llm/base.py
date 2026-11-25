@@ -15,8 +15,11 @@ wording, Arabic-Indic or Latin digits, punctuation, and reading order as they ap
 translate, paraphrase, fix typos, or merge text from different paragraphs unless they form one clause.
 - statement: one short sentence (same language as the quote) stating the rule.
 - steps: ordered steps if the clause is a procedure, otherwise [].
-- audiences: any of owner, employee, partner. Use unspecified only when no audience applies. If \
-several audiences explicitly apply, list all of them.
+- audiences: any of owner, employee, partner, courier: the people who must FOLLOW the rule, not \
+people the rule merely mentions (in "ask the branch employee to update the order", the employee is \
+mentioned, not the audience). A rule written in the second person ("you", "لا تغادر") is for the \
+document's reader, whose role is often only in the title or heading. Use unspecified when the \
+follower is not stated. If several audiences explicitly must follow it, list all of them.
 - audience_source: "explicit" if the clause text names the audience, "inherited" if it comes only \
 from the section heading, "unspecified" otherwise.
 - audience_evidence: the words naming the audience; for inherited audiences, the exact heading text.

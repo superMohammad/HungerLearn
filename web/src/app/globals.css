@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+/*
+ * HungerLearn visual identity, derived from HungerStation (hungerstation.com logo SVG and
+ * theme-color): brown #5E2D20 / deep brown #471C09 wordmark, yellow #FFD700 / #FBEF00.
+ * Light, warm surfaces by default; a deep-brown dark mode. Status never relies on
+ * red/yellow/green alone: every state carries a text label and an icon.
+ */
+:root {
+  --bg: #fff8e1;
+  --surface: #ffffff;
+  --surface-2: #fff1c2;
+  --ink: #471c09;
+  --ink-soft: #7a4a3a;
+  --line: #ead9b0;
+  --brand: #5e2d20;
+  --accent: #ffd700;
+  --accent-strong: #f5c400;
+  --on-accent: #471c09;
+  --ember: #b23c0b;
+  --ember-bg: #fde6d8;
+  --focus: #5e2d20;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1a0d07;
+    --surface: #26140b;
+    --surface-2: #34190e;
+    --ink: #fff4d6;
+    --ink-soft: #d9bfa8;
+    --line: #4a2a1b;
+    --brand: #ffd700;
+    --accent: #ffd700;
+    --accent-strong: #ffe14d;
+    --on-accent: #2a1208;
+    --ember: #ff9a62;
+    --ember-bg: #3d1a0b;
+    --focus: #ffd700;
+  }
+}
+
+/* Fixed brand surfaces that stay deep brown in both themes (auth panel, landing bands, footer). */
+:root {
+  --night: #471c09;
+  --night-2: #5e2d20;
+  --on-night: #fff4d6;
+  --on-night-soft: #e9d3bb;
+  --sun: #ffd700;
+}
+
+@theme inline {
+  --color-night: var(--night);
+  --color-night-2: var(--night-2);
+  --color-on-night: var(--on-night);
+  --color-on-night-soft: var(--on-night-soft);
+  --color-sun: var(--sun);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-on-accent: var(--on-accent);
+  --color-ember: var(--ember);
+  --color-ember-bg: var(--ember-bg);
+  --font-sans: var(--font-plex-arabic), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --font-serif: var(--font-naskh), serif;
+}
+
+html {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Numbers are always monospace with tabular figures. */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Quoted source text (clauses) uses the serif Naskh face. */
+.source-quote {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  line-height: 1.9;
+}
+
+@keyframes slide-in-left {
+  from { transform: translateX(-24px) scale(0.98); opacity: 0; }
+  to { transform: translateX(0) scale(1); opacity: 1; }
+}
+.panel-enter {
+  animation: slide-in-left 220ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel-enter { animation: none; }
+  * { transition: none !important; }
+}

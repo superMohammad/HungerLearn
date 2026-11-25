@@ -190,7 +190,7 @@ def build_understand_graph(deps: UnderstandDeps):
                 page=block.page, image_name=block.image_name, image_index=block.image_index,
                 block_index=block.index, heading_path=sec.heading_path, text_source=block.text_source,
             )
-            h = content_hash(quote, [a.value for a in audiences])
+            h = content_hash(quote, [a.value for a in audiences], d.heading or sec.heading)
             ordinal = len(records)
             records.append(ClauseRecord(
                 record_id=str(uuid.uuid5(ID_NAMESPACE, f"rec|{state['document_id']}|{state['version_id']}|{ordinal}|{h}")),
@@ -240,6 +240,19 @@ def build_understand_graph(deps: UnderstandDeps):
     return g.compile()
 
 
+def _snap_to_words(text: str, start: int, end: int) -> tuple[int, int]:
+    """Shrinks a fuzzy span so it never starts or ends inside a word (e.g. the tail of a heading)."""
+    while start < end and start > 0 and text[start - 1].isalnum() and text[start].isalnum():
+        start += 1
+    while start < end and text[start].isspace():
+        start += 1
+    while end > start and end < len(text) and text[end - 1].isalnum() and text[end].isalnum():
+        end -= 1
+    while end > start and text[end - 1].isspace():
+        end -= 1
+    return start, end
+
+
 def _locate_quote(sec: Section, quote: str) -> tuple[str, int, int, Block, bool] | None:
     """Find the quote in the section text; return the exact *source* span and its block."""
     text = sec.text
@@ -261,5 +274,7 @@ def _locate_quote(sec: Section, quote: str) -> tuple[str, int, int, Block, bool]
             return None
         i, j, fuzzy = al.dest_start, al.dest_end, True
     start, end = idx[i], idx[j - 1] + 1
+    if fuzzy:
+        start, end = _snap_to_words(text, start, end)
     block = next(b for off, b in reversed(offsets) if off <= start)
     return text[start:end], start, end, block, fuzzy

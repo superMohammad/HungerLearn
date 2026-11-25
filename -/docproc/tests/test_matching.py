@@ -14,7 +14,7 @@ def rec(ver, ordinal, quote, heading="H", number=None, page=1, aud=("employee",)
         record_id=f"{ver}-{ordinal}", document_id="d", version_id=ver, ordinal=ordinal, stable_id=sid,
         quote=quote, statement=quote, audiences=list(aud), audience_source="explicit", clause_number=number,
         heading=heading, location=SourceLocation(kind="pdf_page", page=page, block_index=ordinal, heading_path=[heading]),
-        content_hash=content_hash(quote, aud),
+        content_hash=content_hash(quote, aud, heading),
     )
 
 
@@ -82,3 +82,15 @@ def test_one_to_one():
     st = {r.new.record_id: (r.status, r.stable_id) for r in rs if r.new}
     assert st["v2-0"] == (Status.changed, "S1")
     assert st["v2-1"][0] == Status.added and st["v2-1"][1] != "S1"
+
+
+def test_audience_label_drift_on_identical_text_is_not_a_change():
+    from docproc.matching import change_reasons, status_for
+
+    old = rec("v1", 0, "Do not leave the branch before dispatch says so.", aud=("courier",)).model_copy(
+        update={"audience_source": "unspecified"})
+    new = rec("v2", 0, "Do not leave the branch before dispatch says so.", aud=("employee",))
+    assert status_for(change_reasons(old, new)) is Status.unchanged
+    # Both sides name the audience in the text: that is a real change.
+    explicit_old = old.model_copy(update={"audience_source": "explicit"})
+    assert status_for(change_reasons(explicit_old, new)) is Status.changed

@@ -1,0 +1,17 @@
+{
+  "description": "Clip library offered to the training generator (prompt section 6, 'Reuse first'). A clip is available once its file exists in this folder. Prompts for each clip are in CLIP-REQUESTS.md.",
+  "clips": [
+    { "clip_id": "CL-C01-dont", "file": "CL-C01-dont.mp4", "orientation": "portrait", "seconds": 6, "clause": "CW-02", "tags": ["courier", "pickup_counter", "order_still_preparing", "waits_idle_without_reporting"] },
+    { "clip_id": "CL-C01-do", "file": "CL-C01-do.mp4", "orientation": "portrait", "seconds": 6, "clause": "CW-02", "tags": ["courier", "pickup_counter", "order_still_preparing", "checks_watch", "sends_report_from_phone"] },
+    { "clip_id": "CL-C02-dont", "file": "CL-C02-dont.mp4", "orientation": "portrait", "seconds": 6, "clause": "CW-04", "tags": ["courier", "pickup_counter", "leaves_branch_without_order"] },
+    { "clip_id": "CL-C02-do", "file": "CL-C02-do.mp4", "orientation": "portrait", "seconds": 6, "clause": "CW-04", "tags": ["courier", "pickup_counter", "waits_calmly", "staff_hands_over_order", "leaves_with_order"] },
+    { "clip_id": "CL-C03-dont", "file": "CL-C03-dont.mp4", "orientation": "portrait", "seconds": 6, "clause": "CW-09", "tags": ["courier", "pickup_counter", "takes_bag_without_checking_label"] },
+    { "clip_id": "CL-C03-do", "file": "CL-C03-do.mp4", "orientation": "portrait", "seconds": 6, "clause": "CW-09", "tags": ["courier", "pickup_counter", "compares_bag_label_with_phone", "returns_wrong_bag", "asks_for_matching_bag"] },
+    { "clip_id": "CL-P01-dont", "file": "CL-P01-dont.mp4", "orientation": "landscape", "seconds": 6, "clause": "PP-02", "tags": ["partner", "packing_table", "paper_bag", "bag_left_open_unsealed"] },
+    { "clip_id": "CL-P01-do", "file": "CL-P01-do.mp4", "orientation": "landscape", "seconds": 6, "clause": "PP-02", "tags": ["partner", "packing_table", "paper_bag", "folds_bag_top", "seals_with_tape", "visible_seal"] },
+    { "clip_id": "CL-P02-dont", "file": "CL-P02-dont.mp4", "orientation": "landscape", "seconds": 6, "clause": "PP-11", "tags": ["partner", "packing_table", "hot_and_cold_in_same_bag"] },
+    { "clip_id": "CL-P02-do", "file": "CL-P02-do.mp4", "orientation": "landscape", "seconds": 6, "clause": "PP-11", "tags": ["partner", "packing_table", "hot_items_separate_bag", "cold_items_separate_bag", "labels_both_bags"] },
+    { "clip_id": "CL-P03-dont", "file": "CL-P03-dont.mp4", "orientation": "landscape", "seconds": 6, "clause": "PP-12", "tags": ["partner", "packing_table", "drink_cup_loose_lid", "drink_with_food_in_same_bag"] },
+    { "clip_id": "CL-P03-do", "file": "CL-P03-do.mp4", "orientation": "landscape", "seconds": 6, "clause": "PP-12", "tags": ["partner", "packing_table", "presses_lid_closed", "cup_upright_in_holder", "drink_in_separate_bag"] }
+  ]
+}

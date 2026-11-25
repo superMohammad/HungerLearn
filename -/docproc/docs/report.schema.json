@@ -3,6 +3,7 @@
     "Audience": {
       "enum": [
         "owner",
+        "courier",
         "employee",
         "partner",
         "unspecified"

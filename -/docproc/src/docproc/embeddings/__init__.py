@@ -69,6 +69,29 @@ class SentenceTransformerEmbedder:
         return v.astype(np.float32)
 
 
+class EmbeddingGemmaEmbedder:
+    """google/embeddinggemma-2 text vectors via sentence-transformers (>=6.1).
+
+    Clause-vs-clause matching is symmetric, so every text uses the model's STS prompt
+    ("task: sentence similarity | query: "). Vectors are 768-d and L2-normalized.
+    """
+
+    def __init__(self, model: str, device: str, batch: int) -> None:
+        from sentence_transformers import SentenceTransformer
+
+        self.st = SentenceTransformer(model, device=device)
+        self.batch = batch
+        self.dim = self.st.get_embedding_dimension()
+        self.model_id = f"st:{model}:STS"
+
+    def embed(self, texts: list[str]) -> np.ndarray:
+        if not texts:
+            return np.zeros((0, self.dim), np.float32)
+        v = self.st.encode(texts, prompt_name="STS", batch_size=self.batch,
+                           normalize_embeddings=True, convert_to_numpy=True)
+        return v.astype(np.float32)
+
+
 class FixtureEmbedder:
     """Deterministic hashed character-trigram vectors. Similar text => high cosine, like BGE-M3,
     which is exactly what we need to prove that 30 -> 15 days is still caught by the text check."""
@@ -94,6 +117,8 @@ def make_embedder(settings: Settings) -> Embedder:
         return OllamaEmbedder(settings.ollama_url, settings.embedding_model, settings.embedding_dim, settings.embedding_batch_size)
     if settings.embeddings == "st_cpu":
         return SentenceTransformerEmbedder("BAAI/bge-m3", settings.embedding_batch_size)
+    if settings.embeddings == "embeddinggemma":
+        return EmbeddingGemmaEmbedder(settings.embedding_model, settings.embedding_device, settings.embedding_batch_size)
     return FixtureEmbedder(settings.embedding_dim)
 
 

@@ -20,6 +20,7 @@ pytest -q -m real_models          # real Ollama/BGE-M3/LLM backends; skipped unl
 docproc demo [--format pdf|scanned] [--real]   # bilingual v1 -> v2 demo, writes out/report_v2.json
 docproc process FILE --doc DOC_ID --version VER [--links links.json] [--ocr-json ocr.json]
 docproc report --doc DOC_ID --version VER
+docproc eval [--real]             # score extraction + v1->v2 on data/synthetic_sops/dev; writes out/eval_dev_*.json
 docproc export-schema             # regenerates docs/report.schema.json
 python scripts/make_fixtures.py   # rebuilds committed tests/fixtures
 ```

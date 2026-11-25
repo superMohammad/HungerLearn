@@ -206,5 +206,39 @@ def demo(
     _print_report(rep, out_dir / f"report_{v2_id}.json")
 
 
+@app.command("eval")
+def eval_dev(
+    real: bool = typer.Option(False, help="Use the configured LLM/embeddings instead of fixtures"),
+    out_dir: Path = typer.Option(Path("out")),
+) -> None:
+    """Score clause extraction and v1 -> v2 comparison on data/synthetic_sops/dev; writes out/eval_dev[_real].json."""
+    _utf8_stdout()
+    from docproc.evaluation import DATASET_DIR, run_eval
+
+    suffix = "real" if real else "fixture"
+    db = out_dir / f"eval_dev_{suffix}.sqlite3"
+    db.unlink(missing_ok=True)
+    over: dict[str, str] = {"backend": "sqlite", "sqlite_path": str(db), "ocr": "null"}
+    if not real:
+        over.update(llm="fixture", embeddings="fixture")
+    a = _app(get_settings().model_copy(update=over))
+    a.repo.init_schema()
+    rep = run_eval(a, DATASET_DIR, out_dir / "eval_pages")
+    out = out_dir / f"eval_dev_{suffix}.json"
+    out.write_text(json.dumps(rep.model_dump(mode="json"), ensure_ascii=False, indent=2), encoding="utf-8")
+    typer.echo(f"LLM={rep.llm} ({rep.llm_model}) embeddings={rep.embedding_model} -> {out}")
+    for e in rep.extraction:
+        typer.echo(f"  extract {e.document_id:<32} recall {e.recall:.2f}  precision {e.precision:.2f}  "
+                   f"({e.found_clauses}/{e.gold_clauses} found, {e.extracted_clauses} extracted, "
+                   f"{e.quote_not_found_issues} quote_not_found)  missed {e.missed_clause_ids}")
+    for d in rep.diffs:
+        typer.echo(f"  diff    {d.from_document_id} -> {d.to_document_id}  {d.correct}/{d.clauses} correct  "
+                   f"needs_review {d.needs_review}  wrong {[(w.clause_id, w.expected, w.predicted) for w in d.wrong]}")
+    for s in rep.skipped:
+        typer.echo(f"  skipped {s.document_id}: {s.reason}")
+    typer.echo(f"macro recall {rep.macro_recall:.2f}  macro precision {rep.macro_precision:.2f}  "
+               f"diff accuracy {rep.diff_accuracy:.2f}")
+
+
 if __name__ == "__main__":
     app()

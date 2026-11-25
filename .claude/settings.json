@@ -9,19 +9,6 @@
     "deny": [
       "Read(**/.env)",
       "Read(**/.env.local)"
-    ],
-    "ask": [
-      "Edit(/.github/**)",
-      "Edit(/.githooks/**)",
-      "Edit(/.claude/settings.json)",
-      "Edit(/.codex/**)",
-      "Edit(/scripts/check.mjs)",
-      "Edit(/scripts/check-fast.mjs)",
-      "Edit(/scripts/guard-diff.mjs)",
-      "Edit(/scripts/lib/**)",
-      "Edit(/scripts/agent-*)",
-      "Edit(/web/eslint.config.mjs)",
-      "Edit(/web/tsconfig.json)"
     ]
   },
   "hooks": {

@@ -1,0 +1,15 @@
+{
+  "//": "Type-checks the workflow scripts (plain .mjs with JSDoc types) using web's TypeScript: node scripts/check.mjs scripts",
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "strict": true,
+    "noEmit": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "es2022",
+    "typeRoots": ["../web/node_modules/@types"],
+    "types": ["node"]
+  },
+  "include": ["*.mjs", "lib/*.mjs", "test/*.mjs"]
+}

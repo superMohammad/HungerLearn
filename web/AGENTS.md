@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Hunger Learn web rules
 
-The root `AGENTS.md` (workflow, risk tiers, `scripts/check`) applies too. Commands: `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test` (`node:test` files in `src/lib/*.test.ts`), `pnpm db:migrate`, `pnpm db:seed`. User-visible features and how to prove them: `docs/feature-map.md`.
+The root `AGENTS.md` (workflow, risk tiers, `node scripts/check.mjs`) applies too. Commands: `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test` (`node:test` files in `src/lib/*.test.ts`), `pnpm db:migrate`, `pnpm db:seed`. User-visible features and how to prove them: `docs/feature-map.md`.
 
 - The app tables live in `web/db/migrations/`; docproc creates its own tables. `readiness_v` plus the `hl_readonly` role (SELECT on that view only) is the only surface the text-to-SQL feature can read.
 - Long work (docproc, generation, video) runs after the response via `after()`; progress is in `pipeline_jobs` and `lesson_videos`. Renders are serialized on one GPU queue.

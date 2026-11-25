@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-# Team pre-commit hook (activated by core.hooksPath=.githooks; the agent SessionStart hook and
-# scripts/setup-teammate.sh set it). Runs the same fast checks agents must pass.
-set -euo pipefail
-exec "$(git rev-parse --show-toplevel)/scripts/check-fast"
+#!/bin/sh
+# Team pre-commit hook (activated by core.hooksPath=.githooks; the agent SessionStart hook and the
+# setup scripts set it). Runs the same fast checks agents must pass. POSIX sh: Git for Windows runs it too.
+exec node "$(git rev-parse --show-toplevel)/scripts/check-fast.mjs"

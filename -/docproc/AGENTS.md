@@ -1,17 +1,17 @@
 # AGENTS.md — docproc
 
-Package rules for `-/docproc/` (stages 1 and 6). The root `AGENTS.md` (workflow, risk tiers, `scripts/check`) applies too.
+Package rules for `-/docproc/` (stages 1 and 6). The root `AGENTS.md` (workflow, risk tiers, `node scripts/check.mjs`) applies too.
 
 ## Commands
 
-Run from `-/docproc/`. The committed `.venv` was made on Windows (`Scripts/`, no `bin/`); on Linux use `.venv-linux`, which `scripts/check` expects:
+Run from `-/docproc/`. `node scripts/check.mjs` expects the virtualenv at `.venv-linux` on Linux and macOS, and at `.venv` on Windows (`Scripts\` instead of `bin/`):
 
 ```sh
-uv venv .venv-linux && VIRTUAL_ENV=.venv-linux uv pip install -e ".[dev,pg,gemma]"   # extras: pg, st, gemma, anthropic, ovis
+uv venv .venv-linux && uv pip install --python .venv-linux -e ".[dev,pg,gemma]"   # Windows: .venv; extras: pg, st, gemma, anthropic, ovis
 cp .env.example .env
-. .venv-linux/bin/activate
+. .venv-linux/bin/activate                                                       # Windows PowerShell: .venv\Scripts\Activate.ps1
 
-ruff check src tests scripts      # lint (part of scripts/check)
+ruff check src tests scripts      # lint (part of node scripts/check.mjs)
 pytest -q                         # full suite; no GPU, API key, or server needed
 pytest tests/test_matching.py::<test_name> -q   # single test
 pytest -q -m postgres             # SQLite vs Postgres parity (needs docker compose up -d + DOCPROC_PG_DSN; CI runs it)

@@ -15,10 +15,10 @@
       "Edit(/.githooks/**)",
       "Edit(/.claude/settings.json)",
       "Edit(/.codex/**)",
-      "Edit(/scripts/check)",
-      "Edit(/scripts/check-fast)",
-      "Edit(/scripts/lib.sh)",
-      "Edit(/scripts/guard-diff)",
+      "Edit(/scripts/check.mjs)",
+      "Edit(/scripts/check-fast.mjs)",
+      "Edit(/scripts/guard-diff.mjs)",
+      "Edit(/scripts/lib/**)",
       "Edit(/scripts/agent-*)",
       "Edit(/web/eslint.config.mjs)",
       "Edit(/web/tsconfig.json)"
@@ -28,7 +28,7 @@
     "SessionStart": [
       {
         "hooks": [
-          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/scripts/agent-session-start-hook", "timeout": 30 }
+          { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/scripts/agent-session-start-hook.mjs\"", "timeout": 30 }
         ]
       }
     ],
@@ -36,14 +36,14 @@
       {
         "matcher": "Bash",
         "hooks": [
-          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/scripts/agent-bash-guard-hook", "timeout": 10 }
+          { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/scripts/agent-bash-guard-hook.mjs\"", "timeout": 10 }
         ]
       }
     ],
     "Stop": [
       {
         "hooks": [
-          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/scripts/agent-stop-hook", "timeout": 900 }
+          { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/scripts/agent-stop-hook.mjs\"", "timeout": 900 }
         ]
       }
     ]

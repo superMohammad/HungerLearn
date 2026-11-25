@@ -19,8 +19,8 @@ What exists today:
 | `.agents/skills/` (symlinked from `skills/` and `.claude/skills`) | Shared agent skills for Codex and Claude Code: the team workflow skills (see Workflow below), Supabase Postgres, Vercel React, UI/UX, Remotion (pinned in `skills-lock.json`), and the team's own `engineering-best-practices` (use it for code quality, API design, Python setup and agent design; this file wins over it). |
 | `docs/` | `design-identity.md` (mandatory UI identity), `feature-map.md` (user-visible features and their proof), `rules-log.md` (mistakes turned into checks), `plans/` (approved Enhanced/High-risk plans). |
 | `universal-ai-engineering-workflow.html` | The research and reasoning behind the Workflow section. Read it to understand why; this file is the rule. |
-| `.claude/`, `.codex/` | Thin per-tool adapters: hooks that call the shared `scripts/agent-*-hook`, the `reviewer` subagent, MCP servers (Playwright, Context7). |
-| `scripts/` | `check`, `check-fast`, `guard-diff` (verification), `agent-*-hook` (tool hooks), `setup-teammate.sh` (laptop without GPU), `setup-gpu-host.sh` (the team's GPU machine). |
+| `.claude/`, `.codex/` | Thin per-tool adapters: hooks that call the shared `scripts/agent-*-hook.mjs`, the `reviewer` subagent, MCP servers (Playwright, Context7). |
+| `scripts/` | Plain Node, no dependencies, same on Linux, macOS and Windows: `check.mjs`, `check-fast.mjs`, `guard-diff.mjs`, `verify-app.mjs` (verification), `agent-*-hook.mjs` (tool hooks), `setup-teammate.mjs` (laptop without GPU). `setup-gpu-host.sh` (bash) is for the team's Ubuntu GPU machine only. |
 | `.githooks/`, `.github/` | Git hooks (pre-commit runs `check-fast`, pre-push blocks `main`); CI, PR and issue templates, CODEOWNERS. |
 
 The top-level directory is literally named `-`. Always quote it or use `./-` / `--` in shell commands (`cd ./-/docproc`, `ls -- -`).
@@ -33,11 +33,12 @@ The repository, not the prompt, carries the quality bar. Package rules live in `
 
 ### Commands
 
-- `scripts/check-fast`: lint, types and unit tests of the packages changed on this branch, plus `guard-diff`. The pre-commit hook and the agents' Stop hook run it; an agent cannot end a turn while it is red.
-- `scripts/check [web|docproc|media …]`: everything, incl. `next build`. CI runs it per package. Must pass before a PR.
-- `scripts/guard-diff BASE`: fails on added test skips, `eslint-disable`, `@ts-ignore`, `# noqa`, `type: ignore`, loosened strictness, or deleted test files. Only a human may override (`HL_ALLOW_WEAKENING="<reason>"`, CI label `allow-weakening`).
+- `node scripts/check-fast.mjs`: lint, types and unit tests of the packages changed on this branch, plus `guard-diff`. The pre-commit hook and the agents' Stop hook run it; an agent cannot end a turn while it is red.
+- `node scripts/check.mjs [web|docproc|media|scripts …]`: everything, incl. `next build`. CI runs it per package. Must pass before a PR.
+- `node scripts/verify-app.mjs [F01 F02 …]`: drives the running app through `docs/feature-map.md` rows in Arabic and English with Playwright and saves screenshots and traces to `.verify/<branch>/` (CI runs it too).
+- `node scripts/guard-diff.mjs [BASE]`: fails on added test skips, `eslint-disable`, `@ts-ignore`, `# noqa`, `type: ignore`, loosened strictness, or deleted test files. Only a human may override (`HL_ALLOW_WEAKENING="<reason>"`, CI label `allow-weakening`).
 - The agent SessionStart hook sets `core.hooksPath=.githooks` on every clone and reports missing setup.
-- These scripts need Linux (bash ≥ 4.4, GNU coreutils) and `jq`. `check-fast` and `guard-diff` look at the whole working tree, including untracked files, so untracked scratch code with a suppression blocks commits: keep scratch files outside the repo.
+- Everything runs the same on Linux, macOS and Windows (Node 22+; git hooks are POSIX `sh`, which Git for Windows provides). `check-fast` and `guard-diff` look at the whole working tree, including untracked files, so untracked scratch code with a suppression blocks commits: keep scratch files outside the repo.
 
 ### Risk tiers
 
@@ -45,8 +46,8 @@ Pick the tier before starting; if unsure, go one higher. Any High-risk path in t
 
 | Tier | Typical change | Process |
 |---|---|---|
-| Minimal | Typo, copy, comment, config with no behaviour change | implement → `scripts/check` → PR |
-| Standard | Bug fix or self-contained feature in one package | `plan-change` → failing test first → implement → `scripts/check` → `verify-app` if UI → `reviewer` → `pr-ready` |
+| Minimal | Typo, copy, comment, config with no behaviour change | implement → `node scripts/check.mjs` → PR |
+| Standard | Bug fix or self-contained feature in one package | `plan-change` → failing test first → implement → `node scripts/check.mjs` → `verify-app` if UI → `reviewer` → `pr-ready` |
 | Enhanced | Multi-package, schema, pipeline, prompt/model or generation change; diff over ~400 lines | as Standard, plus a written plan in `docs/plans/` approved by an engineer, stacked PRs, full feature-map verification, review in the other tool, eval delta on `dev/` data |
 | High-risk | Auth/sessions, permissions, DB roles, migrations, deletion, text-to-SQL, secrets, anything irreversible | as Enhanced, plus a design note with a threat model, `/security-review` (Claude) or `@codex security review`, code-owner approval, rollback plan. Never auto-merge. |
 
@@ -55,7 +56,7 @@ High-risk paths: `web/src/lib/session.ts`, `web/src/lib/accounts.ts`, `web/src/l
 ### Definition of done
 
 1. Every acceptance criterion has a check that passed; show the command and its output. Bugs: the test failed before the fix and passes after.
-2. `scripts/check` passes. No skipped or deleted tests, suppressions, loosened types, or CI/hook edits to get green.
+2. `node scripts/check.mjs` passes. No skipped or deleted tests, suppressions, loosened types, or CI/hook edits to get green.
 3. UI or flow changes: `verify-app` evidence for each touched `docs/feature-map.md` row, in Arabic and English.
 4. Standard and above: a fresh-context review (the `reviewer` subagent, or `review-change` in the other tool) with every must-fix resolved.
 
@@ -65,7 +66,7 @@ High-risk paths: `web/src/lib/session.ts`, `web/src/lib/accounts.ts`, `web/src/l
 
 ### Always human-controlled
 
-Risk tier and acceptance criteria; architecture decisions, new dependencies, DB roles and grants; merging to `main` (agents work on branches and never push `main`, force-push or skip git hooks; `scripts/agent-bash-guard-hook` blocks these); deploying; changes to CI, hooks, `scripts/`, lint and type config; publishing training to learners; anything touching `held_out/`. If a requirement is ambiguous, ask or write the assumption into the plan; never guess silently.
+Risk tier and acceptance criteria; architecture decisions, new dependencies, DB roles and grants; merging to `main` (agents work on branches and never push `main`, force-push or skip git hooks; `scripts/agent-bash-guard-hook.mjs` blocks these); deploying; changes to CI, hooks, `scripts/`, lint and type config; publishing training to learners; anything touching `held_out/`. If a requirement is ambiguous, ask or write the assumption into the plan; never guess silently.
 
 ### Code Review Rules
 
@@ -84,7 +85,7 @@ cd media && uv venv .venv && VIRTUAL_ENV=.venv uv pip install --extra-index-url 
 cd web && pnpm install && cp .env.example .env.local   # then fill the absolute paths
 pnpm db:migrate && pnpm db:seed                        # app tables, read-only role, demo learners + accounts (DEMO_PASSWORD)
 pnpm dev                                               # http://localhost:3000
-scripts/check                                          # from the repo root, before every PR
+node scripts/check.mjs                                 # from the repo root, before every PR
 ```
 
 Web specifics (accounts, i18n, background jobs, publishing) are in `web/AGENTS.md`; docproc commands and invariants in `-/docproc/AGENTS.md`; media in `media/AGENTS.md`.
@@ -94,7 +95,7 @@ Web specifics (accounts, i18n, background jobs, publishing) are in `web/AGENTS.m
 Only one team machine has a GPU (RTX 3090, 24 GB). Everything that needs CUDA runs there and nowhere else: LLM inference (Ollama `gemma4`), NAMAA TTS and lesson-video renders (`hlmedia`), and any future training. Never install CUDA torch or run `hlmedia` on a teammate laptop.
 
 - The GPU host and the laptops share a private Tailscale network. The GPU host runs `scripts/setup-gpu-host.sh` once: Ollama listens on the network with one model loaded at a time, and ports 11434 (Ollama) and 3000 (shared staging app) are reachable only over `tailscale0`.
-- A teammate runs `GPU_HOST=<tailscale name or IP> DEMO_PASSWORD=<min 8 chars> scripts/setup-teammate.sh`: local Postgres, docproc with CPU torch (EmbeddingGemma on CPU, same 768-d vectors), web with `LLM_BASE_URL` on the GPU host, and the team git hooks. EmbeddingGemma is a gated Hugging Face model: accept its licence and run `hf auth login` first. Codex users trust the project once so `.codex/hooks.json` runs.
+- A teammate on Linux, macOS or Windows (needs git, Node 22+, pnpm, uv, Docker) runs `GPU_HOST=<tailscale name or IP> DEMO_PASSWORD=<min 8 chars> node scripts/setup-teammate.mjs` (PowerShell: `$env:GPU_HOST="…"; $env:DEMO_PASSWORD="…"; node scripts/setup-teammate.mjs`): local Postgres, docproc with CPU torch (EmbeddingGemma on CPU, same 768-d vectors), web with `LLM_BASE_URL` on the GPU host, and the team git hooks. EmbeddingGemma is a gated Hugging Face model: accept its licence and run `hf auth login` first. Codex users trust the project once so `.codex/hooks.json` runs.
 - Lesson videos render only on the GPU host. Verify video features on the staging app at `http://<GPU_HOST>:3000`.
 - When the GPU host is off, LLM calls fail. That is expected; do not add fallbacks.
 - The Postgres container and the GPU queue are shared: parallel agents (one worktree and branch each) must not run migrations or renders at the same time. `.worktreeinclude` copies the `.env` files into Claude Code worktrees.

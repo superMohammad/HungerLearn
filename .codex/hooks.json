@@ -1,10 +1,10 @@
 {
-  "description": "Hunger Learn team workflow: same shared scripts as .claude/settings.json. Trust these hooks once (Codex pins them by hash).",
+  "description": "Hunger Learn team workflow: same shared Node scripts as .claude/settings.json (Linux, macOS, Windows). Trust these hooks once (Codex pins them by hash).",
   "hooks": {
     "SessionStart": [
       {
         "hooks": [
-          { "type": "command", "command": "\"$(git rev-parse --show-toplevel)\"/scripts/agent-session-start-hook", "timeout": 30 }
+          { "type": "command", "command": "node \"$(git rev-parse --show-toplevel)/scripts/agent-session-start-hook.mjs\"", "timeout": 30 }
         ]
       }
     ],
@@ -12,14 +12,14 @@
       {
         "matcher": "Bash",
         "hooks": [
-          { "type": "command", "command": "\"$(git rev-parse --show-toplevel)\"/scripts/agent-bash-guard-hook", "timeout": 10 }
+          { "type": "command", "command": "node \"$(git rev-parse --show-toplevel)/scripts/agent-bash-guard-hook.mjs\"", "timeout": 10 }
         ]
       }
     ],
     "Stop": [
       {
         "hooks": [
-          { "type": "command", "command": "\"$(git rev-parse --show-toplevel)\"/scripts/agent-stop-hook", "timeout": 900, "statusMessage": "Running scripts/check-fast" }
+          { "type": "command", "command": "node \"$(git rev-parse --show-toplevel)/scripts/agent-stop-hook.mjs\"", "timeout": 900, "statusMessage": "Running scripts/check-fast.mjs" }
         ]
       }
     ]

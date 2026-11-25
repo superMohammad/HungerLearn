@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# PreToolUse hook (shell tool) for Claude Code and Codex. Blocks commands that bypass the team's safety
+# rails: pushing to main, force-pushing, skipping git hooks, and editing git's hook path.
+# A bare `git push` from main is stopped by .githooks/pre-push.
+# Exit 2 with the reason on stderr denies the call in both tools.
+set -euo pipefail
+
+cmd="$(jq -r '.tool_input.command // ""')"
+
+deny() {
+  echo "Blocked by scripts/agent-bash-guard-hook: $1 Ask the human to do it if it is really needed." >&2
+  exit 2
+}
+
+if grep -Eq '(^|[^[:alnum:]_-])git[[:space:]].*\bpush\b' <<<"$cmd"; then
+  grep -Eq '(--force|--force-with-lease|[[:space:]]-[a-zA-Z]*f\b|[[:space:]]\+[^[:space:]]+)' <<<"$cmd" &&
+    deny "agents never force-push."
+  grep -Eq '[[:space:]](main|HEAD:main|[^[:space:]]*:main|refs/heads/main)([[:space:]]|$)' <<<"$cmd" &&
+    deny "agents never push to main; push a branch and open a PR."
+fi
+grep -Eq -- '--no-verify\b' <<<"$cmd" && deny "agents never skip git hooks (--no-verify)."
+grep -Eq 'core\.hooksPath' <<<"$cmd" && ! grep -Eq -- '--get\b' <<<"$cmd" &&
+  deny "agents never change core.hooksPath."
+exit 0

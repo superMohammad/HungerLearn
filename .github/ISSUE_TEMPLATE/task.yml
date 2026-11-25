@@ -1,0 +1,38 @@
+name: Task
+description: A bug, feature or change, written so a human or an agent can deliver and verify it.
+body:
+  - type: dropdown
+    id: tier
+    attributes:
+      label: Risk tier
+      description: See AGENTS.md → Workflow → Risk tiers. If unsure, pick the higher one.
+      options: [Minimal, Standard, Enhanced, High-risk]
+    validations: { required: true }
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Why this matters. Link feature-map rows (docs/feature-map.md, e.g. F04) and related issues.
+    validations: { required: true }
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Acceptance criteria
+      description: Each one checkable.
+      value: |
+        - [ ] Given … when … then …
+    validations: { required: true }
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification plan
+      description: Which tests, which feature-map rows (AR + EN), what evidence, eval delta for AI changes.
+    validations: { required: true }
+  - type: textarea
+    id: scope
+    attributes:
+      label: Out of scope
+  - type: textarea
+    id: questions
+    attributes:
+      label: Open questions

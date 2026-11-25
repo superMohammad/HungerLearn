@@ -18,7 +18,7 @@ DOCPROC="$REPO/-/docproc"
 WEB="$REPO/web"
 OLLAMA="http://$GPU_HOST:11434"
 
-for cmd in docker uv node pnpm curl; do
+for cmd in docker uv node pnpm curl jq git; do
   command -v "$cmd" >/dev/null || { echo "Missing required command: $cmd" >&2; exit 1; }
 done
 
@@ -86,10 +86,15 @@ DEMO_PASSWORD=$DEMO_PASSWORD
 EOF
 (cd "$WEB" && pnpm install && pnpm db:migrate && pnpm db:seed)
 
+echo "== Team workflow: git hooks (pre-commit runs scripts/check-fast, pre-push blocks main)"
+git -C "$REPO" config --local core.hooksPath .githooks
+"$REPO/scripts/check"
+
 cat <<EOF
 
 Done. Next:
   1. Accept the EmbeddingGemma licence on Hugging Face, then: $DOCPROC/.venv-linux/bin/hf auth login
   2. cd web && pnpm dev     -> http://localhost:3000
-  3. Before a PR: cd web && pnpm test && pnpm typecheck && pnpm lint; cd ../-/docproc && .venv-linux/bin/pytest -q
+  3. Read the Workflow section of AGENTS.md. Before every PR: scripts/check
+  4. Codex users: open the repo in Codex once and trust the project hooks (.codex/hooks.json).
 EOF

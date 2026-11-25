@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Guard the guards: fail when the change weakens checks instead of fixing code.
+# Scans lines added since BASE (committed, uncommitted and untracked code files) for skipped/focused
+# tests, lint/type suppressions and disabled strictness, and fails on deleted test files.
+#
+# Usage: scripts/guard-diff BASE
+# Override (a human decision, with a reason): HL_ALLOW_WEAKENING="<reason>" scripts/guard-diff BASE
+# In CI the PR label "allow-weakening" sets it.
+set -euo pipefail
+
+BASE="${1:?Usage: scripts/guard-diff BASE}"
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO"
+
+CODE_FILES='\.(ts|tsx|mts|cts|js|jsx|mjs|cjs|py|json)$'
+TEST_FILES='(^|/)(test_[^/]*\.py|[^/]*_test\.py|conftest\.py|[^/]*\.(test|spec)\.(ts|tsx|mts|js|mjs))$'
+WEAKENING='(\b(it|test|describe)\.(skip|only|todo)\(|\{ *(skip|only|todo): *true|\bt\.skip\(|eslint-disable|@ts-ignore|@ts-expect-error|@ts-nocheck|pytest\.mark\.(skip|xfail)\b|pytest\.skip\(|type: *ignore|pyright: *ignore|# *noqa|"strict": *false|"noImplicitAny": *false)'
+
+violations="$(
+  {
+    # Added lines in tracked files, printed as "file:+line".
+    git diff --no-color --no-ext-diff -U0 "$BASE" -- . ':(exclude)scripts/guard-diff' |
+      awk '/^\+\+\+ b\// { file = substr($0, 7); next } /^\+[^+]/ { print file ":" substr($0, 2) }'
+    # Untracked files: every line is new.
+    git ls-files --others --exclude-standard | while read -r f; do
+      [ -f "$f" ] && awk -v f="$f" '{ print f ":" $0 }' "./$f"
+    done
+  } | awk -F: -v code="$CODE_FILES" '$1 ~ code' | grep -E "$WEAKENING" || true
+)"
+
+deleted="$(git diff --name-only --no-renames --diff-filter=D "$BASE" | grep -E "$TEST_FILES" || true)"
+
+if [ -z "$violations" ] && [ -z "$deleted" ]; then
+  echo "guard-diff: no weakened checks"
+  exit 0
+fi
+
+{
+  echo "guard-diff: this change weakens checks."
+  [ -n "$violations" ] && printf 'Added suppressions / skipped tests:\n%s\n' "$violations"
+  [ -n "$deleted" ] && printf 'Deleted test files:\n%s\n' "$deleted"
+  echo "Fix the root cause instead: make the test pass, fix the type, satisfy the lint rule."
+  echo "If the weakening is truly needed, a human sets HL_ALLOW_WEAKENING=\"<reason>\" (CI: label allow-weakening) and links an issue."
+} >&2
+
+if [ -n "${HL_ALLOW_WEAKENING:-}" ]; then
+  echo "guard-diff: allowed by a human: $HL_ALLOW_WEAKENING" >&2
+  exit 0
+fi
+exit 1

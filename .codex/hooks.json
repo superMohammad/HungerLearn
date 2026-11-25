@@ -1,0 +1,27 @@
+{
+  "description": "Hunger Learn team workflow: same shared scripts as .claude/settings.json. Trust these hooks once (Codex pins them by hash).",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "\"$(git rev-parse --show-toplevel)\"/scripts/agent-session-start-hook", "timeout": 30 }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "\"$(git rev-parse --show-toplevel)\"/scripts/agent-bash-guard-hook", "timeout": 10 }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "\"$(git rev-parse --show-toplevel)\"/scripts/agent-stop-hook", "timeout": 900, "statusMessage": "Running scripts/check-fast" }
+        ]
+      }
+    ]
+  }
+}

@@ -27,7 +27,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8"]
+dev = ["pytest>=8", "ruff>=0.17"]
 
 [project.scripts]
 hlmedia = "hlmedia.cli:main"
@@ -41,3 +41,11 @@ testpaths = ["tests"]
 [tool.uv]
 extra-index-url = ["https://download.pytorch.org/whl/cu128"]
 index-strategy = "unsafe-best-match"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+# Lenient start (syntax errors, pyflakes, statement checks); ratchet up per directory over time.
+select = ["E4", "E7", "E9", "F"]
+ignore = ["E741"]

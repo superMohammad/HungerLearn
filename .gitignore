@@ -13,3 +13,6 @@ __pycache__/
 
 # Local run artifacts
 .playwright-mcp/
+
+# Runtime-verification evidence (screenshots, traces, logs) per branch
+.verify/

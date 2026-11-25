@@ -1,0 +1,74 @@
+# Required checks for every pull request. Each job runs the same scripts/check that agents, git hooks
+# and humans run locally, so "green" means the same thing everywhere.
+# media is checked on the GPU host only (CUDA-pinned torch); see AGENTS.md.
+name: ci
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  # A human adds the "allow-weakening" label (with a reason in the PR) to let guard-diff pass.
+  HL_ALLOW_WEAKENING: ${{ contains(github.event.pull_request.labels.*.name, 'allow-weakening') && 'PR label allow-weakening' || '' }}
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: pnpm/action-setup@v4
+        with: { package_json_file: web/package.json }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm, cache-dependency-path: web/pnpm-lock.yaml }
+      - run: pnpm install --frozen-lockfile
+        working-directory: web
+      - run: scripts/check web
+
+  docproc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: astral-sh/setup-uv@v6
+      - name: Install docproc (offline test extras)
+        working-directory: ./-/docproc
+        run: uv venv --python 3.12 .venv-linux && VIRTUAL_ENV=.venv-linux uv pip install -e ".[dev,pg]"
+      - run: scripts/check docproc
+
+  docproc-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      db:
+        image: pgvector/pgvector:pg17
+        env: { POSTGRES_USER: docproc, POSTGRES_PASSWORD: docproc, POSTGRES_DB: docproc }
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U docproc" --health-interval 2s --health-retries 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: SQLite vs Postgres parity
+        working-directory: ./-/docproc
+        env: { DOCPROC_PG_DSN: "postgresql://docproc:docproc@localhost:5432/docproc" }
+        run: |
+          uv venv --python 3.12 .venv-linux && VIRTUAL_ENV=.venv-linux uv pip install -e ".[dev,pg]"
+          .venv-linux/bin/pytest -q -m postgres
+
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: gitleaks
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.28.0/gitleaks_8.28.0_linux_x64.tar.gz | tar -xz gitleaks
+          ./gitleaks git --redact --no-banner --log-opts="${{ github.event_name == 'pull_request' && format('{0}..{1}', github.event.pull_request.base.sha, github.event.pull_request.head.sha) || '-1' }}" .

@@ -168,7 +168,7 @@ def build_understand_graph(deps: UnderstandDeps):
             quote, start, end, block, fuzzy = located
             if fuzzy:
                 issues.append(ExtractionIssue(kind="quote_fuzzy_matched", section_id=section_id, page=block.page, blocking=False,
-                                              detail=f"LLM quote differed slightly; stored exact source span instead"))
+                                              detail="LLM quote differed slightly; stored exact source span instead"))
             if (section_id, start, end) in seen_spans:
                 continue
             seen_spans.add((section_id, start, end))

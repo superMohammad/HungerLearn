@@ -8,7 +8,7 @@ description: Use when fixing a reported bug or failing behaviour in Hunger Learn
 2. Reproduce it with the smallest automated test that fails for the reported reason:
    - web: `web/src/lib/*.test.ts` (`node:test` via `pnpm test`);
    - docproc: `-/docproc/tests/` with the offline fixtures (`make_app`, `run_pair` in `tests/conftest.py`);
-   - media: `media/tests/` (GPU host only).
+   - media: `media/tests/` (GPU machine only).
    Run it and keep the failing output.
 3. Find the root cause. Don't patch the symptom. Don't add a timeout, retry, fallback or comment as the fix.
 4. Fix it. Keep the diff minimal and leave unrelated code untouched.

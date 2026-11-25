@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 /**
- * One describe block per docs/feature-map.md row that runs without the GPU host (no LLM, no video).
+ * One describe block per docs/feature-map.md row that runs without an LLM or video.
  * Each row is walked in both UI languages. Select rows with: scripts/verify-app F01 F02
  */
 const LANGS = [

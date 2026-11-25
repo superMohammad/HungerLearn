@@ -1,6 +1,6 @@
 # Required checks for every pull request. Each job runs the same node scripts/check.mjs that agents,
 # git hooks and humans run locally, so "green" means the same thing everywhere.
-# media is checked on the GPU host only (CUDA-pinned torch); see AGENTS.md.
+# media is checked only on the GPU machine (CUDA-pinned torch); see AGENTS.md.
 name: ci
 on:
   pull_request:
@@ -60,7 +60,7 @@ jobs:
           printf 'refs/heads/feat a refs/heads/feat b\n' | sh .githooks/pre-push
           echo '{}' | node scripts/agent-session-start-hook.mjs
 
-  # Runtime verification of the feature-map rows that need no GPU host (node scripts/verify-app.mjs).
+  # Runtime verification of the feature-map rows that need no LLM (node scripts/verify-app.mjs).
   web-e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 20

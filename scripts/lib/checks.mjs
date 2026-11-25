@@ -32,11 +32,11 @@ function checkDocproc() {
   run(venvTool(bin, "pytest"), ["-q"], DOCPROC);
 }
 
-/** media pins CUDA torch, so its environment exists only on the GPU host (see AGENTS.md). */
+/** media pins CUDA torch, so its environment exists only on the GPU machine (see AGENTS.md). */
 function checkMedia() {
   const bin = venvBin(MEDIA, ".venv");
   if (!existsSync(venvTool(bin, "pytest"))) {
-    console.error("NOTE media: not checked on this machine (no media/.venv; media runs only on the GPU host).");
+    console.error("NOTE media: not checked on this machine (no media/.venv; media runs only on the GPU machine).");
     return;
   }
   requireFile(venvTool(bin, "ruff"), 'Run: cd media && uv pip install --python .venv -e ".[dev]"');

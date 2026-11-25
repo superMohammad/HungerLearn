@@ -1,12 +1,16 @@
 // @ts-check
 /**
  * Set up Hunger Learn on a laptop without a GPU (Linux, macOS or Windows).
- * LLM calls go to Ollama on the team GPU host over Tailscale; Postgres, docproc and web run locally.
- * Lesson videos (hlmedia) render only on the GPU host.
+ * LLM calls go to an OpenAI-compatible endpoint the teammate chooses (e.g. OpenRouter, or Ollama on their
+ * own machine); Postgres, docproc and web run locally. Lesson videos (hlmedia) are not rendered here.
  *
- * Needs: git, Node 22+, pnpm, uv, Docker (running), Tailscale up.
- * Usage (bash/zsh):    GPU_HOST=<tailscale name or IP> DEMO_PASSWORD=<min 8 chars> node scripts/setup-teammate.mjs
- * Usage (PowerShell):  $env:GPU_HOST="<name or IP>"; $env:DEMO_PASSWORD="<min 8 chars>"; node scripts/setup-teammate.mjs
+ * Needs: git, Node 22+, pnpm, uv, Docker (running).
+ * Usage (bash/zsh):
+ *   LLM_BASE_URL=<…/v1> LLM_MODEL=<model> LLM_API_KEY=<key> DEMO_PASSWORD=<min 8 chars> node scripts/setup-teammate.mjs
+ * Usage (PowerShell):
+ *   $env:LLM_BASE_URL="…"; $env:LLM_MODEL="…"; $env:LLM_API_KEY="…"; $env:DEMO_PASSWORD="…"; node scripts/setup-teammate.mjs
+ * Examples: OpenRouter  LLM_BASE_URL=https://openrouter.ai/api/v1  LLM_MODEL=google/gemma-4-…  LLM_API_KEY=sk-or-…
+ *           Ollama      LLM_BASE_URL=http://localhost:11434/v1  LLM_MODEL=gemma4:latest  LLM_API_KEY=ollama
  */
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
@@ -33,12 +37,19 @@ function sleep(ms) {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 }
 
-// Probed before runMain because fetch is async; an unset GPU_HOST is reported inside runMain.
-const ollama = `http://${process.env.GPU_HOST ?? ""}:11434`;
-const ollamaUp = process.env.GPU_HOST ? await fetch(`${ollama}/api/tags`, { signal: AbortSignal.timeout(10_000) }).then((r) => r.ok, () => false) : false;
+/** Status line of `GET <base>/models`, or the network error. Probed before runMain because fetch is async. */
+async function probeLlm() {
+  const base = process.env.LLM_BASE_URL;
+  if (!base) return "LLM_BASE_URL not set";
+  return fetch(`${base}/models`, { headers: { Authorization: `Bearer ${process.env.LLM_API_KEY ?? ""}` }, signal: AbortSignal.timeout(10_000) })
+    .then((r) => (r.ok ? "ok" : `HTTP ${r.status} ${r.statusText}`), (e) => String(e));
+}
+const llmProbe = await probeLlm();
 
 runMain(() => {
-  const gpuHost = requiredEnv("GPU_HOST", "the Tailscale name or IP of the GPU host");
+  const llmBaseUrl = requiredEnv("LLM_BASE_URL", "an OpenAI-compatible base URL ending in /v1 (OpenRouter, your own Ollama, …)");
+  const llmModel = requiredEnv("LLM_MODEL", "the model name at that endpoint");
+  const llmApiKey = requiredEnv("LLM_API_KEY", "the endpoint's API key (any non-empty value for Ollama)");
   const demoPassword = requiredEnv("DEMO_PASSWORD", "at least 8 characters, shared by the seeded demo accounts");
   if (demoPassword.length < 8) throw new CheckFailed("DEMO_PASSWORD must be at least 8 characters");
   const missing = ["git", "docker", "uv", "pnpm"].filter((c) => !hasCommand(c));
@@ -49,8 +60,8 @@ runMain(() => {
     if (existsSync(f)) throw new CheckFailed(`${f} already exists. Move it away first; this script does not overwrite config.`);
   }
 
-  step(`Checking Ollama on the GPU host (${ollama})`);
-  if (!ollamaUp) throw new CheckFailed(`Ollama is not reachable at ${ollama}. Is Tailscale up on both machines and the GPU host on?`);
+  step(`Checking the LLM endpoint (${llmBaseUrl}/models)`);
+  if (llmProbe !== "ok") throw new CheckFailed(`LLM endpoint check failed: GET ${llmBaseUrl}/models -> ${llmProbe}. Check LLM_BASE_URL and LLM_API_KEY.`);
 
   step("Starting Postgres + pgvector");
   run("docker", ["compose", "-f", path.join(REPO, "docker-compose.yml"), "up", "-d"], REPO);
@@ -69,9 +80,9 @@ runMain(() => {
     "DOCPROC_BACKEND=postgres",
     "DOCPROC_PG_DSN=postgresql://hungerlearn:hungerlearn@127.0.0.1:5442/hungerlearn",
     "DOCPROC_LLM=openai_compat",
-    `DOCPROC_LLM_BASE_URL=${ollama}/v1`,
-    "DOCPROC_LLM_MODEL=gemma4:latest",
-    "DOCPROC_LLM_API_KEY=ollama",
+    `DOCPROC_LLM_BASE_URL=${llmBaseUrl}`,
+    `DOCPROC_LLM_MODEL=${llmModel}`,
+    `DOCPROC_LLM_API_KEY=${llmApiKey}`,
     "DOCPROC_LLM_TIMEOUT_S=300",
     "DOCPROC_LLM_REASONING_EFFORT=high",
     "DOCPROC_EMBEDDINGS=embeddinggemma",
@@ -90,19 +101,19 @@ runMain(() => {
   writeFileSync(webEnv, [
     "DATABASE_URL=postgresql://hungerlearn:hungerlearn@127.0.0.1:5442/hungerlearn",
     "READONLY_DATABASE_URL=postgresql://hl_readonly:hl_readonly@127.0.0.1:5442/hungerlearn",
-    `LLM_BASE_URL=${ollama}/v1`,
-    "LLM_MODEL=gemma4:latest",
-    "LLM_API_KEY=ollama",
+    `LLM_BASE_URL=${llmBaseUrl}`,
+    `LLM_MODEL=${llmModel}`,
+    `LLM_API_KEY=${llmApiKey}`,
     "LLM_REASONING_EFFORT=high",
     `DOCPROC_DIR=${DOCPROC}`,
     `DOCPROC_BIN=${venvTool(venvBin(DOCPROC, venv), "docproc")}`,
-    `# hlmedia needs CUDA: renders fail on this laptop. Verify videos on http://${gpuHost}:3000`,
+    "# hlmedia needs CUDA: lesson video renders fail on this laptop. That is expected.",
     `MEDIA_DIR=${MEDIA}`,
     `MEDIA_BIN=${venvTool(venvBin(MEDIA, ".venv"), "hlmedia")}`,
     `MEDIA_OUT_DIR=${mediaOut}`,
     `UPLOAD_DIR=${uploads}`,
     `TRAINING_PROMPT_PATH=${path.join(REPO, "hunger-learn-training-generator-prompt.md")}`,
-    `OLLAMA_URL=${ollama}`,
+    "OLLAMA_URL=http://localhost:11434",
     `DEMO_PASSWORD=${demoPassword}`,
     "",
   ].join("\n"));

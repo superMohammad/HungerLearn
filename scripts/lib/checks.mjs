@@ -3,7 +3,7 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { findWeakening, reportWeakening } from "./guard.mjs";
-import { baseRev, CheckFailed, DOCPROC, docprocVenvName, IS_WINDOWS, MEDIA, requireFile, run, SCRIPTS, step, venvBin, venvTool, WEB } from "./hl.mjs";
+import { baseRev, CheckFailed, DOCPROC, docprocVenvName, MEDIA, requireFile, run, SCRIPTS, step, venvBin, venvTool, WEB } from "./hl.mjs";
 
 /** @typedef {import("./hl.mjs").Package} Package */
 
@@ -48,10 +48,11 @@ function checkMedia() {
 
 /** The workflow scripts themselves: strict type-check of the JSDoc-typed .mjs files with web's TypeScript, then their tests. */
 function checkScripts() {
-  const tsc = path.join(WEB, "node_modules", ".bin", IS_WINDOWS ? "tsc.cmd" : "tsc");
+  // TypeScript's own entry file, run with this Node: no .cmd shim, so no shell on Windows.
+  const tsc = path.join(WEB, "node_modules", "typescript", "bin", "tsc");
   requireFile(tsc, "Run: cd web && pnpm install");
   step("scripts: typecheck");
-  run(tsc, ["-p", "tsconfig.json"], SCRIPTS);
+  run(process.execPath, [tsc, "-p", "tsconfig.json"], SCRIPTS);
   step("scripts: tests");
   run(process.execPath, ["--test", "test/*.test.mjs"], SCRIPTS);
 }

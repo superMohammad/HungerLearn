@@ -33,12 +33,26 @@ export function step(message) {
 }
 
 /**
+ * Quotes one argument for cmd.exe: wraps it in double quotes when it has spaces or cmd metacharacters.
+ * @param {string} arg
+ */
+export function quoteForCmd(arg) {
+  if (arg !== "" && !/[\s"&|<>^()%!,;=]/.test(arg)) return arg;
+  return `"${arg.replaceAll('"', '""')}"`;
+}
+
+/**
  * Runs a command with inherited output; throws CheckFailed with the command line on a non-zero exit.
- * `pnpm` is a .cmd shim on Windows, so commands run through the shell there.
+ * Absolute executables (node, venv tools) are spawned directly. Bare names (pnpm, git, uv, docker) can be
+ * .cmd shims on Windows, which only cmd.exe can start, so those go through the shell there with every
+ * argument quoted (paths may contain spaces, e.g. C:\Users\First Last).
  * @param {string} command @param {readonly string[]} args @param {string} cwd
  */
 export function run(command, args, cwd) {
-  const result = spawnSync(command, [...args], { cwd, stdio: "inherit", shell: IS_WINDOWS });
+  const viaShell = IS_WINDOWS && !path.isAbsolute(command);
+  const result = viaShell
+    ? spawnSync([command, ...args.map(quoteForCmd)].join(" "), { cwd, stdio: "inherit", shell: true })
+    : spawnSync(command, [...args], { cwd, stdio: "inherit" });
   if (result.error !== undefined) throw new CheckFailed(`Could not start ${command}: ${result.error.message}`);
   if (result.status !== 0) throw new CheckFailed(`Failed (exit ${result.status}) in ${path.relative(REPO, cwd) || "."}: ${command} ${args.join(" ")}`);
 }

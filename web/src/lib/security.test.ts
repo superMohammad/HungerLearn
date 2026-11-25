@@ -20,9 +20,18 @@ function sourceFiles(dir: string): string[] {
   });
 }
 
+/** Source with LF endings: Windows checkouts may use CRLF. */
+function readSource(file: string): string {
+  return readFileSync(file, "utf8").replace(/\r\n/g, "\n");
+}
+
+function isServerActionFile(source: string): boolean {
+  return /^\s*["']use server["'];/.test(source);
+}
+
 function serverActionsIn(file: string): ExportedAction[] {
-  const source = readFileSync(file, "utf8");
-  if (!/^\s*["']use server["'];/.test(source)) return [];
+  const source = readSource(file);
+  if (!isServerActionFile(source)) return [];
   return [...source.matchAll(/export\s+async\s+function\s+(\w+)\s*\([^)]*\)[^{]*\{\n([^\n]*)/g)].map((m) => ({
     file: path.relative(SRC, file),
     name: m[1],
@@ -40,6 +49,14 @@ test("every server action re-checks the session as its first statement", () => {
     "Start each server action with `await requireAdmin()` or `await requireLearner()` (src/lib/session.ts). " +
       "Only sign-in, sign-up and sign-out may skip it (PUBLIC_ACTIONS).",
   );
+});
+
+test("server actions are exported only as `export async function` (the form the session check can see)", () => {
+  const hidden = sourceFiles(SRC).filter((file) => {
+    const source = readSource(file);
+    return isServerActionFile(source) && /export\s+(const|let|var|default)\b/.test(source);
+  });
+  assert.deepEqual(hidden.map((f) => path.relative(SRC, f)), [], "Write server actions as `export async function name(...)`.");
 });
 
 test("the public action allowlist only names actions that exist", () => {

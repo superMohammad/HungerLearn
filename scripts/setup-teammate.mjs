@@ -20,9 +20,12 @@ function requiredEnv(name, hint) {
   return value;
 }
 
-/** @param {string} command */
+/** Bare names can be .cmd shims on Windows, which only cmd.exe can start. @param {string} command */
 function hasCommand(command) {
-  return spawnSync(command, ["--version"], { stdio: "ignore", shell: IS_WINDOWS }).status === 0;
+  const result = IS_WINDOWS
+    ? spawnSync(`${command} --version`, { stdio: "ignore", shell: true })
+    : spawnSync(command, ["--version"], { stdio: "ignore" });
+  return result.status === 0;
 }
 
 /** @param {number} ms */

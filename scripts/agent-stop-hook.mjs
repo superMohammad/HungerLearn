@@ -8,7 +8,7 @@
  */
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { lstatSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { git, REPO, untrackedFiles } from "./lib/hl.mjs";
 
@@ -34,7 +34,8 @@ hash.update(git(["diff", "--no-color", "--no-ext-diff", "HEAD"]));
 for (const f of untrackedFiles()) {
   const full = path.join(REPO, f);
   hash.update(f);
-  if (statSync(full).isFile()) hash.update(readFileSync(full));
+  // lstat: a dangling untracked symlink must not crash the hook (a crash would let the turn end silently).
+  if (lstatSync(full).isFile()) hash.update(readFileSync(full));
 }
 const treeHash = hash.digest("hex");
 

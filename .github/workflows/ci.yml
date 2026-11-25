@@ -49,6 +49,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
         working-directory: web
       - run: node scripts/check.mjs scripts
+      - name: web unit tests (incl. the server-action session scan) on this OS
+        run: pnpm test
+        working-directory: web
       - name: Git hooks run under the platform's sh (Git for Windows on Windows)
         shell: bash
         run: |

@@ -1,3 +1,12 @@
-# Shell scripts and git hooks must keep LF endings on Windows checkouts, or sh (Git for Windows) fails on them.
+# LF for source code, also on Windows checkouts: git hooks run under sh (Git for Windows), and line-based
+# checks (security.test.ts, guard-diff) must see the same text on every OS.
+# Deliberately not repo-wide: data/ and test fixtures keep their bytes (some corpus files use CRLF on purpose).
 .githooks/* text eol=lf
 *.sh text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.mts text eol=lf
+*.mjs text eol=lf
+*.js text eol=lf
+*.py text eol=lf
+*.yml text eol=lf

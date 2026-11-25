@@ -4,7 +4,7 @@
  * base revision (committed, uncommitted and untracked code files) for skipped/focused tests, lint and
  * type suppressions and disabled strictness, and lists deleted test files.
  */
-import { readFileSync, statSync } from "node:fs";
+import { lstatSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { git, lines, REPO, untrackedFiles } from "./hl.mjs";
 
@@ -46,7 +46,7 @@ function addedLines(base) {
   }
   for (const f of untrackedFiles()) {
     const full = path.join(REPO, f);
-    if (!CODE_FILE.test(f) || !statSync(full).isFile()) continue;
+    if (!CODE_FILE.test(f) || !lstatSync(full).isFile()) continue;
     for (const line of readFileSync(full, "utf8").split("\n")) added.push({ file: f, line });
   }
   return added;

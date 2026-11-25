@@ -48,7 +48,7 @@ Pick the tier before starting; if unsure, go one higher. Any High-risk path in t
 |---|---|---|
 | Minimal | Typo, copy, comment, config with no behaviour change | implement → `node scripts/check.mjs` → PR |
 | Standard | Bug fix or self-contained feature in one package | `plan-change` → failing test first → implement → `node scripts/check.mjs` → `verify-app` if UI → `reviewer` → `pr-ready` |
-| Enhanced | Multi-package, schema, pipeline, prompt/model or generation change; diff over ~400 lines | as Standard, plus a written plan in `docs/plans/` approved by an engineer, stacked PRs, full feature-map verification, review in the other tool, eval delta on `dev/` data |
+| Enhanced | Multi-package, schema, pipeline, prompt/model or generation change; diff over ~400 lines | as Standard, plus a written plan in `docs/plans/` approved by an engineer, stacked PRs, full feature-map verification, review in the other tool, eval delta on `dev/` data (`docproc eval --real` before and after, from `-/docproc/`) |
 | High-risk | Auth/sessions, permissions, DB roles, migrations, deletion, text-to-SQL, secrets, anything irreversible | as Enhanced, plus a design note with a threat model, `/security-review` (Claude) or `@codex security review`, code-owner approval, rollback plan. Never auto-merge. |
 
 High-risk paths: `web/src/lib/session.ts`, `web/src/lib/accounts.ts`, `web/src/lib/db.ts`, `web/src/lib/sql-guard.ts`, `web/src/lib/readiness.ts`, `web/db/migrations/**`, anything touching `hl_readonly` / `readiness_v`, `.github/**`, `.githooks/**`, `scripts/**`, `.claude/**`, `.codex/**` (see `.github/CODEOWNERS`).

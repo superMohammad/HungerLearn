@@ -2,9 +2,10 @@
 /** Tests for the workflow scripts. CI runs them on Linux, macOS and Windows: node scripts/check.mjs scripts */
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
-import { packagesOf, quoteForCmd, REPO } from "../lib/hl.mjs";
+import { IS_WINDOWS, packagesOf, quoteForCmd, REPO, WEB } from "../lib/hl.mjs";
 
 const GUARD = path.join(REPO, "scripts", "agent-bash-guard-hook.mjs");
 
@@ -80,4 +81,37 @@ test("cmd.exe arguments are quoted only when needed", () => {
 test("changed files map to their packages", () => {
   assert.deepEqual(packagesOf(["web/src/a.ts", "-/docproc/src/x.py", "docs/feature-map.md", "scripts/check.mjs"]), ["web", "docproc", "scripts"]);
   assert.deepEqual(packagesOf(["README.md"]), []);
+});
+
+/** @typedef {{ command: string, commandWindows: string }} CodexHook */
+/** @returns {CodexHook[]} */
+function codexHooks() {
+  /** @type {{ hooks: Record<string, { hooks: CodexHook[] }[]> }} */
+  const config = JSON.parse(readFileSync(path.join(REPO, ".codex", "hooks.json"), "utf8"));
+  return Object.values(config.hooks).flatMap((groups) => groups.flatMap((g) => g.hooks));
+}
+
+/** Run a hook command line the way Codex does: `cmd.exe /C "<line>"` on Windows, `sh -c` elsewhere. @param {string} line @param {string} input */
+function runHookLine(line, input) {
+  const options = { cwd: WEB, input, encoding: /** @type {const} */ ("utf8") };
+  return IS_WINDOWS
+    ? spawnSync(process.env.ComSpec ?? "cmd.exe", ["/C", `"${line}"`], { ...options, windowsVerbatimArguments: true })
+    : spawnSync("sh", ["-c", line], options);
+}
+
+test("every Codex hook has a commandWindows that cmd.exe can run (no $(...))", () => {
+  for (const hook of codexHooks()) {
+    assert.ok(hook.commandWindows, `missing commandWindows for: ${hook.command}`);
+    assert.doesNotMatch(hook.commandWindows, /\$\(|[&|<>^%]/);
+    assert.equal(hook.commandWindows.match(/scripts\/[\w-]+\.mjs/)?.[0], hook.command.match(/scripts\/[\w-]+\.mjs/)?.[0]);
+  }
+});
+
+test("the Codex guard hook command blocks a force-push from a subdirectory on this OS", () => {
+  const guard = codexHooks().find((h) => h.command.includes("agent-bash-guard-hook.mjs"));
+  assert.ok(guard);
+  const line = IS_WINDOWS ? guard.commandWindows : guard.command;
+  const blocked = runHookLine(line, JSON.stringify({ tool_input: { command: "git push --force origin x" } }));
+  assert.equal(blocked.status, 2, blocked.stderr);
+  assert.equal(runHookLine(line, JSON.stringify({ tool_input: { command: "git status" } })).status, 0);
 });

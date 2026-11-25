@@ -66,7 +66,7 @@ High-risk paths: `web/src/lib/session.ts`, `web/src/lib/accounts.ts`, `web/src/l
 
 ### Always human-controlled
 
-Risk tier and acceptance criteria; architecture decisions, new dependencies, DB roles and grants; merging to `main` (agents work on branches and never push `main`, force-push or skip git hooks; `scripts/agent-bash-guard-hook.mjs` blocks these); deploying; changes to CI, hooks, `scripts/`, lint and type config; publishing training to learners; anything touching `held_out/`. If a requirement is ambiguous, ask or write the assumption into the plan; never guess silently.
+Risk tier and acceptance criteria; architecture decisions, new dependencies, DB roles and grants; merging to `main` (agents work on branches and never push `main`, force-push or skip git hooks; `scripts/agent-bash-guard-hook.mjs` blocks these); deploying; changes to CI, hooks, `scripts/`, lint and type config (agents may edit them; a code owner reviews them in the PR, see `.github/CODEOWNERS`); publishing training to learners; anything touching `held_out/`. If a requirement is ambiguous, ask or write the assumption into the plan; never guess silently.
 
 ### Code Review Rules
 

@@ -24,5 +24,5 @@ Steps:
    (it must pass).
 4. Add a row to `docs/rules-log.md`.
 
-Changes to lint config, `scripts/`, hooks or CI are human-controlled: propose them and let the engineer
-approve the edit.
+Changes to lint config, `scripts/`, hooks or CI are human-controlled: make them, say so in the PR, and a
+code owner reviews them there (`.github/CODEOWNERS`).

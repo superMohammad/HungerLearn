@@ -5,7 +5,7 @@
 **Approved:** @superMohammad, 2026-11-27
 
 Decisions on the open questions (@superMohammad):
-1. The owner's gemma4 runs with a 32768-token context (Ollama picks it automatically; `OLLAMA_CONTEXT_LENGTH` is not set). Keep the default `llm_context_tokens=4096`; the owner sets `DOCPROC_LLM_CONTEXT_TOKENS=32768` locally.
+1. The owner's gemma4 runs with a 32768-token context (Ollama picks it automatically; `OLLAMA_CONTEXT_LENGTH` is not set). Set the default `llm_context_tokens=32768`. A teammate whose server has a smaller context sets `DOCPROC_LLM_CONTEXT_TOKENS` to match it (Ollama silently truncates).
 2. About 3 to 11 judge calls per v2 document is OK until the separate PR logs docproc calls in `ai_calls`.
 
 Condition: gemma4 thinks by default and its thinking tokens count against `change_max_output_tokens=512`, so answers would be cut off. The judge call turns thinking off (or budgets for it), with a test. The one-line `-/docproc/AGENTS.md` note stays out of this PR; Mohammad adds it separately.
@@ -32,7 +32,7 @@ The **model alone** decides whether a matched pair changed and how. The fixed ru
    - `make_change_judge(settings)`. `App.change_judge` is passed through `CompareDeps` to the `Matcher`.
 3. **Context window** (`config.py`):
    - Only matched pairs whose normalized text differs are sent to the model, one call each with just `heading`, `old_quote` and `new_quote`. Identical, moved or hash-matched pairs cost nothing.
-   - New settings: `llm_context_tokens` (default 4096; must match the server, e.g. `OLLAMA_CONTEXT_LENGTH`, because Ollama silently truncates) and `change_max_output_tokens` (default 512).
+   - New settings: `llm_context_tokens` (default 32768, the owner's gemma4 server; must match the server, e.g. `OLLAMA_CONTEXT_LENGTH`, because Ollama silently truncates) and `change_max_output_tokens` (default 512).
    - A conservative estimate (`ceil(utf8_bytes / 2)`) plus the output budget must fit. Otherwise there is no call and no truncation: the pair becomes `needs_review` with the token numbers in the reason.
 4. **Matching** (`matching.py`; rules stay only here): in `assign()`, identical body or `same_but_title` → unchanged/moved without a call. Otherwise: guard, then `judge`, then **evidence check** (each evidence string must occur in its quote, else `needs_review`). Then `reasons = ["<kind>: <old> -> <new>"]` plus `location changed`. `CONTENT_REASONS` and `status_for` use the kinds; `change_reasons` becomes `rule_change_reasons`, used only by `FixtureJudge`.
 5. **Scorer** (`evaluation.py`): `score_change_pairs(pairs, judge)` follows the same path as `assign()`. `run_eval` uses `app.change_judge`. `needs_review` counts as not caught.

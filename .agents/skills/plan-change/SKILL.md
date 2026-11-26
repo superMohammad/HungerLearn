@@ -4,6 +4,10 @@ description: Use before editing code for any Standard, Enhanced or High-risk tas
 ---
 # Plan a change
 
+First, record that this skill is in use: `node scripts/skill-log.mjs plan-change` (Claude Code also logs it
+automatically). The PR gate reads this log: the `pr-policy` check needs the skills of the change's tier
+(AGENTS.md → Workflow).
+
 1. Restate the goal and each acceptance criterion as a checkable statement ("given … when … then …").
    If any criterion is ambiguous, ask the user. Never pick an interpretation silently; if you must
    assume, write the assumption in the plan for the engineer to confirm.

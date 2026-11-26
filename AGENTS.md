@@ -36,6 +36,8 @@ The repository, not the prompt, carries the quality bar. Package rules live in `
 - `node scripts/check-fast.mjs`: lint, types and unit tests of the packages changed on this branch, plus `guard-diff`. The pre-commit hook and the agents' Stop hook run it; an agent cannot end a turn while it is red.
 - `node scripts/check.mjs [web|docproc|media|scripts …]`: everything, incl. `next build`. CI runs it per package. Must pass before a PR.
 - `node scripts/verify-app.mjs [F01 F02 …]`: drives the running app through `docs/feature-map.md` rows in Arabic and English with Playwright and saves screenshots and traces to `.verify/<branch>/` (CI runs it too).
+- `node scripts/pr-policy.mjs <pr-body-file>`: the PR gate (see below). Required check `pr-policy` on every PR; run it locally before pushing.
+- `node scripts/skill-log.mjs <skill>` / `node scripts/skills-used.mjs`: record a skill load on this branch / print the `skills:` line for the PR description.
 - `node scripts/guard-diff.mjs [BASE]`: fails on added test skips, `eslint-disable`, `@ts-ignore`, `# noqa`, `type: ignore`, loosened strictness, or deleted test files. Only a human may override (`HL_ALLOW_WEAKENING="<reason>"`, CI label `allow-weakening`).
 - The agent SessionStart hook sets `core.hooksPath=.githooks` on every clone and reports missing setup.
 - Everything runs the same on Linux, macOS and Windows (Node 22+; git hooks are POSIX `sh`, which Git for Windows provides). `check-fast` and `guard-diff` look at the whole working tree, including untracked files, so untracked scratch code with a suppression blocks commits: keep scratch files outside the repo.
@@ -48,10 +50,10 @@ Pick the tier before starting; if unsure, go one higher. Any High-risk path in t
 |---|---|---|
 | Minimal | Typo, copy, comment, config with no behaviour change | implement → `node scripts/check.mjs` → PR |
 | Standard | Bug fix or self-contained feature in one package | `plan-change` → failing test first → implement → `node scripts/check.mjs` → `verify-app` if UI → `reviewer` → `pr-ready` |
-| Enhanced | Multi-package, schema, pipeline, prompt/model or generation change; diff over ~400 lines | as Standard, plus a written plan in `docs/plans/` approved by an engineer, stacked PRs, full feature-map verification, review in the other tool, eval delta on `dev/` data (`docproc eval --real` before and after, from `-/docproc/`) |
-| High-risk | Auth/sessions, permissions, DB roles, migrations, deletion, text-to-SQL, secrets, anything irreversible | as Enhanced, plus a design note with a threat model, `/security-review` (Claude) or `@codex security review`, code-owner approval, rollback plan. Never auto-merge. |
+| Enhanced | Multi-package, schema, pipeline, prompt/model or generation change; diff over ~400 lines | as Standard, plus a written plan in `docs/plans/` approved by Mohammad (an `**Approved:**` line naming `@superMohammad`), stacked PRs, full feature-map verification, a second review (the other tool, or a second `review-change` pass), eval delta on `dev/` data (`docproc eval --real` before and after, from `-/docproc/`) |
+| High-risk | Auth/sessions, permissions, DB roles, migrations, deletion, text-to-SQL, secrets, anything irreversible | as Enhanced, plus a design note with a threat model, `/security-review` (Claude) or `@codex security review`, Mohammad's approval, rollback plan. Never auto-merge. |
 
-High-risk paths: `web/src/lib/session.ts`, `web/src/lib/accounts.ts`, `web/src/lib/db.ts`, `web/src/lib/sql-guard.ts`, `web/src/lib/readiness.ts`, `web/db/migrations/**`, anything touching `hl_readonly` / `readiness_v`, `.github/**`, `.githooks/**`, `scripts/**`, `.claude/**`, `.codex/**` (see `.github/CODEOWNERS`).
+High-risk paths: `web/src/lib/session.ts`, `web/src/lib/accounts.ts`, `web/src/lib/db.ts`, `web/src/lib/sql-guard.ts`, `web/src/lib/readiness.ts`, `web/db/migrations/**`, anything touching `hl_readonly` / `readiness_v`, `.github/**`, `.githooks/**`, `scripts/**`, `.claude/**`, `.codex/**`, `.agents/skills/**`, `skills/**`, every `AGENTS.md` and `CLAUDE.md`, `web/eslint.config.mjs`, `web/tsconfig.json`, `docker-compose.yml`, docproc's `storage/schema_*.sql` (see `.github/CODEOWNERS`; `scripts/lib/policy.mjs` holds the same list, and a test keeps CODEOWNERS inside it).
 
 ### Definition of done
 
@@ -59,6 +61,14 @@ High-risk paths: `web/src/lib/session.ts`, `web/src/lib/accounts.ts`, `web/src/l
 2. `node scripts/check.mjs` passes. No skipped or deleted tests, suppressions, loosened types, or CI/hook edits to get green.
 3. UI or flow changes: `verify-app` evidence for each touched `docs/feature-map.md` row, in Arabic and English.
 4. Standard and above: a fresh-context review (the `reviewer` subagent, or `review-change` in the other tool) with every must-fix resolved.
+5. The required check `pr-policy` passes.
+
+### PR gate (enforced)
+
+Using the skills and these rules is a precondition for merging, checked by machines, not by memory:
+
+- **`pr-policy` (required CI check, `scripts/pr-policy.mjs`)** fails a PR when: the `**Risk tier:**` line is missing or lower than the diff needs (High-risk paths or changed lines mentioning `hl_readonly`/`readiness_v`; multi-package, pipeline/OCR/prompt/corpus files or over 400 changed lines for Enhanced; computed by `scripts/lib/policy.mjs`); a checkbox is unticked without `n/a: <reason>`; "What changes for users", "Evidence" (with the `node scripts/check.mjs` result) or, from Enhanced, "Risks and rollback" is empty; an Enhanced or High-risk PR does not add or change its own plan in `docs/plans/` with an `**Approved:**` line naming `@superMohammad`; or the `skills:` line lacks the tier's skills (Standard+: `plan-change`, `review-change` or `reviewer`, `pr-ready`; High-risk: `security-review`; `verify-app` when UI files change).
+- **Skill log:** each workflow skill's first step runs `node scripts/skill-log.mjs <skill>`; Claude Code also logs Skill loads and `reviewer` runs itself (PostToolUse hook). `node scripts/skills-used.mjs` prints the `skills:` line and marks skills that were only recorded by hand `(manual)`. The `**Approved:**` line and manual entries are self-reported: Mohammad's review before merging is the real approval.
 
 ### Shared skills (`.agents/skills`)
 
@@ -66,7 +76,7 @@ High-risk paths: `web/src/lib/session.ts`, `web/src/lib/accounts.ts`, `web/src/l
 
 ### Always human-controlled
 
-Risk tier and acceptance criteria; architecture decisions, new dependencies, DB roles and grants; merging to `main` (agents work on branches and never push `main`, force-push or skip git hooks; `scripts/agent-bash-guard-hook.mjs` blocks these); deploying; changes to CI, hooks, `scripts/`, lint and type config (agents may edit them; a code owner reviews them in the PR, see `.github/CODEOWNERS`); publishing training to learners; anything touching `held_out/`. If a requirement is ambiguous, ask or write the assumption into the plan; never guess silently.
+Risk tier and acceptance criteria; architecture decisions, new dependencies, DB roles and grants; approving and merging PRs: Mohammad (`@superMohammad`) is the only approver and the only one who merges; an agent merges only when he asks in the session, with every required check green, never with `--admin` (agents work on branches and never push `main`, force-push or skip git hooks; `scripts/agent-bash-guard-hook.mjs` blocks these); deploying; changes to CI, hooks, `scripts/`, lint and type config (agents may edit them; Mohammad reviews them in the PR); publishing training to learners; anything touching `held_out/`. If a requirement is ambiguous, ask or write the assumption into the plan; never guess silently.
 
 ### Code Review Rules
 

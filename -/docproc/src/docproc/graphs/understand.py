@@ -20,7 +20,7 @@ from docproc.matching import ID_NAMESPACE
 from docproc.models import (
     Audience, Block, ClauseDraft, ClauseRecord, ExtractionIssue, Section, SourceLocation, VersionInfo,
 )
-from docproc.normalize import content_hash, normalize, normalize_with_map
+from docproc.normalize import content_hash, normalize, normalize_with_map, strip_title_line
 from docproc.ocr.base import OCRAdapter, OCRPageRequest
 from docproc.storage.base import SqlRepository
 
@@ -163,15 +163,22 @@ def build_understand_graph(deps: UnderstandDeps):
         issues = list(state.get("issues", []))
         records: list[ClauseRecord] = []
         seen_spans: set[tuple[str, int, int]] = set()
-        for section_id, d in state["drafts"]:
+        located_drafts = [(section_id, d, _locate_quote(sections[section_id], d.quote)) for section_id, d in state["drafts"]]
+        covered: dict[str, list[tuple[int, int]]] = {}
+        for section_id, _, loc in located_drafts:
+            if loc is not None:
+                covered.setdefault(section_id, []).append((loc[1], loc[2]))
+        for section_id, d, located in located_drafts:
             sec = sections[section_id]
-            located = _locate_quote(sec, d.quote)
             if located is None:
                 issues.append(ExtractionIssue(kind="quote_not_found", section_id=section_id,
                                               page=sec.blocks[0].page if sec.blocks else None,
                                               detail=f"quote not found in source text: {d.quote[:120]!r}"))
                 continue
             quote, start, end, block, fuzzy = located
+            titled = _with_numbered_title_line(sec.text, start, end, covered[section_id])
+            if titled != start:
+                quote, start, block = sec.text[titled:end], titled, _block_at(sec, titled)
             if fuzzy:
                 issues.append(ExtractionIssue(kind="quote_fuzzy_matched", section_id=section_id, page=block.page, blocking=False,
                                               detail="LLM quote differed slightly; stored exact source span instead"))
@@ -259,13 +266,43 @@ def _snap_to_words(text: str, start: int, end: int) -> tuple[int, int]:
     return start, end
 
 
+def _block_at(sec: Section, pos: int) -> Block:
+    """The block of `sec.text` (blocks joined by newlines) that holds character `pos`. Pure."""
+    off = 0
+    found = sec.blocks[0]
+    for b in sec.blocks:
+        if off > pos:
+            break
+        found = b
+        off += len(b.text) + 1
+    return found
+
+
+def _with_numbered_title_line(text: str, start: int, end: int, covered: list[tuple[int, int]]) -> int:
+    """Start of the span `text[start:end]` widened over a numbered title line right above it. Pure.
+
+    Whether the model copies a procedure's title line ("1. Open the delay case") into the quote varies
+    from run to run. `matching.same_but_title` needs it in the quote as evidence when the other version
+    (a PDF text layer) has it inline. The line is taken only if `strip_title_line` strips it, so the content
+    hash cannot change, and only if no other draft's span in the section covers it (a short numbered rule
+    such as "3. Wear gloves" is then its own clause, not this one's title).
+    """
+    if strip_title_line(text[start:end]) != text[start:end]:
+        return start  # it already starts with its own title line; a second one would enter the hash
+    line_end = text.rfind("\n", 0, start)
+    if line_end < 0 or text[line_end + 1:start].strip():
+        return start
+    line_start = text.rfind("\n", 0, line_end) + 1
+    if any(s < line_end and e > line_start for s, e in covered):
+        return start
+    if strip_title_line(text[line_start:end]).strip() != text[start:end].strip():
+        return start
+    return line_start + (len(text[line_start:line_end]) - len(text[line_start:line_end].lstrip()))
+
+
 def _locate_quote(sec: Section, quote: str) -> tuple[str, int, int, Block, bool] | None:
     """Find the quote in the section text; return the exact *source* span and its block."""
     text = sec.text
-    offsets, pos = [], 0
-    for b in sec.blocks:
-        offsets.append((pos, b))
-        pos += len(b.text) + 1
     norm_text, idx = normalize_with_map(text)
     norm_quote = normalize_with_map(quote)[0]
     if not norm_quote:
@@ -282,5 +319,4 @@ def _locate_quote(sec: Section, quote: str) -> tuple[str, int, int, Block, bool]
     start, end = idx[i], idx[j - 1] + 1
     if fuzzy:
         start, end = _snap_to_words(text, start, end)
-    block = next(b for off, b in reversed(offsets) if off <= start)
-    return text[start:end], start, end, block, fuzzy
+    return text[start:end], start, end, _block_at(sec, start), fuzzy

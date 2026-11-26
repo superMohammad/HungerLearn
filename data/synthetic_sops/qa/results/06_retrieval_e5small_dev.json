@@ -1,0 +1,47 @@
+{
+  "model": "intfloat/multilingual-e5-small",
+  "split": "dev",
+  "index_size": 94,
+  "filtered": {
+    "queries": 30,
+    "recall@1": 0.667,
+    "recall@3": 0.9,
+    "mrr": 0.783,
+    "cross_language_recall@3": 0.889,
+    "wrong_match_ranked_above_expected": 0.133,
+    "misses@3": [
+      "dev-courier-01 rank 5: top=('courier-pickup-wait-v2', 'CW-03')",
+      "dev-courier-06 rank 10: top=('courier-failed-handoff-v1', 'CH-10')",
+      "dev-courier-08 rank 5: top=('courier-pickup-wait-v2', 'CW-16')"
+    ]
+  },
+  "unfiltered": {
+    "queries": 30,
+    "recall@1": 0.2,
+    "recall@3": 0.367,
+    "mrr": 0.313,
+    "cross_language_recall@3": 0.056,
+    "wrong_match_ranked_above_expected": 0.6,
+    "misses@3": [
+      "dev-courier-01 rank 52: top=('employee-delayed-order-v1', 'ED-03')",
+      "dev-courier-02 rank 4: top=('courier-pickup-wait-v1', 'CW-16')",
+      "dev-courier-03 rank 22: top=('employee-delayed-order-v1', 'ED-03')",
+      "dev-courier-05 rank 35: top=('courier-pickup-wait-v1', 'CW-03')",
+      "dev-courier-06 rank 84: top=('courier-pickup-wait-v1', 'CW-02')",
+      "dev-courier-08 rank 10: top=('courier-pickup-wait-v1', 'CW-16')",
+      "dev-employee-01 rank 23: top=('courier-pickup-wait-v1', 'CW-03')",
+      "dev-employee-03 rank 16: top=('courier-pickup-wait-v2', 'CW-02')",
+      "dev-employee-05 rank 24: top=('employee-delayed-order-v1', 'ED-10')",
+      "dev-employee-06 rank 31: top=('partner-item-substitution-v1', 'PS-02')",
+      "dev-partner-01 rank 16: top=('partner-item-substitution-v1', 'PS-13')",
+      "dev-partner-02 rank 25: top=('employee-delayed-order-v1', 'ED-03')",
+      "dev-partner-05 rank 9: top=('courier-pickup-wait-v1', 'CW-03')",
+      "dev-partner-06 rank 48: top=('courier-pickup-wait-v1', 'CW-13')",
+      "dev-courier-09 rank 31: top=('employee-delayed-order-v1', 'ED-03')",
+      "dev-courier-10 rank 35: top=('courier-pickup-wait-v1', 'CW-13')",
+      "dev-employee-09 rank 16: top=('courier-pickup-wait-v1', 'CW-13')",
+      "dev-employee-10 rank 39: top=('employee-delayed-order-v2', 'ED-02')",
+      "dev-partner-10 rank 37: top=('partner-packing-sealing-v1', 'PP-14')"
+    ]
+  }
+}

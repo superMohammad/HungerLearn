@@ -129,6 +129,7 @@
           "action": "send one external photo and order ID to dispatch",
           "threshold": {
             "value": 4,
+            "printed_value": "٤",
             "unit": "minute",
             "operator": "<="
           },
@@ -157,8 +158,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا كان الطلب موزعاً على أكثر من كيس",
-          "action": "سجّل رمز الكيس المتضرر في البلاغ وبيّن أي الأكياس بقي سليماً.",
+          "trigger": "order is split across several bags",
+          "action": "record the damaged bag code in the report and state which bags are intact",
           "threshold": {
             "value": 2,
             "unit": "bag",
@@ -175,8 +176,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا صار الملصق غير مقروء بسبب البلل",
-          "action": "استخدم رقم الطلب من التطبيق واذكر في البلاغ أن رمز الكيس غير ظاهر."
+          "trigger": "label became unreadable from moisture",
+          "action": "use the order number from the app and note in the report that the bag code is not visible"
         }
       },
       {
@@ -187,8 +188,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا ظهر اسم العميل أو عنوانه في الصورة",
-          "action": "أعد تصوير موضع التلف من زاوية تخفي تلك البيانات."
+          "trigger": "customer name or address appears in the damage photo",
+          "action": "retake the photo from an angle that hides those details"
         }
       },
       {
@@ -199,8 +200,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا طلب العميل فتح طرد متضرر قبل التسليم",
-          "action": "أبقه مغلقاً واطلب من مسؤول التوزيع تحديد الخطوة التالية."
+          "trigger": "customer asks to open a damaged parcel before handover",
+          "action": "keep the parcel closed and ask dispatch for the next step"
         }
       },
       {
@@ -211,9 +212,9 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا برز زجاج مكسور من الغلاف",
-          "action": "لا تلمسه. أبعد الآخرين عنه واتصل بمسؤول التوزيع ليحدّد طريقة الاستلام.",
-          "negation": "لا تلمسه",
+          "trigger": "broken glass protrudes from the packaging",
+          "action": "keep other people away and call dispatch to decide how the parcel is collected",
+          "negation": "do not touch the glass",
           "exception_to": "CD-01"
         }
       },
@@ -225,8 +226,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا وجّهك مسؤول التوزيع لإرجاع الطرد",
-          "action": "سلّمه لمشرف الفرع وسجّل رقم إيصال المرتجع في البلاغ."
+          "trigger": "dispatch directs a return",
+          "action": "hand the parcel to the branch supervisor and record the return receipt number in the report"
         }
       },
       {
@@ -237,8 +238,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا أبلغك العميل بتلف بعد تسجيل التسليم",
-          "action": "حوّل البلاغ إلى مسؤول التوزيع وأبقِ حالة التسليم كما هي."
+          "trigger": "customer reports damage after delivery was recorded",
+          "action": "forward the report to dispatch and leave the delivery status unchanged"
         }
       }
     ]
@@ -384,6 +385,7 @@
           "action": "mark Urgent and route to duty supervisor",
           "threshold": {
             "value": 5,
+            "printed_value": "5",
             "unit": "minute",
             "operator": "<="
           }
@@ -412,8 +414,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If the customer declines to give a name",
-          "action": "file the complaint under the order ID and record that the name was withheld."
+          "trigger": "customer declines to give a name",
+          "action": "file the complaint under the order ID and note that the name was withheld"
         }
       },
       {
@@ -425,8 +427,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If the customer calls again about the same incident",
-          "action": "add the update to the original case and preserve its opening time."
+          "trigger": "customer calls again about the same incident",
+          "action": "add the update to the original case and keep its opening time"
         }
       },
       {
@@ -438,8 +440,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If the customer offers a screenshot",
-          "action": "send the case upload link and attach the image through the complaint portal."
+          "trigger": "customer offers a screenshot",
+          "action": "send the upload link and attach the image in the complaint portal"
         }
       },
       {
@@ -451,8 +453,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If a screenshot shows an unrelated person's phone number",
-          "action": "mask that number in the review copy before sharing it with the queue."
+          "trigger": "screenshot shows an unrelated person's phone number",
+          "action": "mask that number in the review copy before the queue sees it"
         }
       },
       {
@@ -464,8 +466,9 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If an Urgent case is routed and the duty supervisor is unavailable",
-          "action": "notify the on-call backup using the same case ID."
+          "trigger": "Urgent case routed but the duty supervisor is unavailable",
+          "action": "notify the on-call backup under the same case ID",
+          "exception_to": "EG-02"
         }
       },
       {
@@ -477,8 +480,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If the customer asks to be called back",
-          "action": "record their preferred time and assign the callback to the case owner."
+          "trigger": "customer asks for a callback",
+          "action": "record the preferred time and assign the callback to the case owner"
         }
       },
       {
@@ -490,8 +493,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "After the assigned queue records its decision",
-          "action": "log the outcome and send the approved response before closing the complaint."
+          "trigger": "assigned queue has recorded its decision",
+          "action": "record the outcome and send the approved reply, then close the complaint"
         }
       }
     ]
@@ -625,6 +628,7 @@
           "action": "match app pickup code to branch screen",
           "threshold": {
             "value": 4,
+            "printed_value": "٤",
             "unit": "digit",
             "operator": "="
           }
@@ -652,6 +656,8 @@
         },
         "facts": {
           "responsible_role": "partner",
+          "trigger": "branch screen is down",
+          "action": "hand over only after the supervisor checks the code in the backup pickup log and records the handover time",
           "actor": "branch supervisor",
           "exceptions": [
             "screen unavailable and supervisor checks backup record and logs handover time"
@@ -667,8 +673,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "إذا ظهر أكثر من كيس على طلب واحد",
-          "action": "طابق عدد الأكياس المعروضة مع سجل التجهيز قبل بدء التسليم.",
+          "trigger": "one order shows more than one bag",
+          "action": "match the displayed bag count with the prep record before starting handover",
           "threshold": {
             "value": 2,
             "unit": "bag",
@@ -679,15 +685,15 @@
       },
       {
         "clause_id": "PV-11",
-        "quote": "إذا عرض المندوب طلباً لفرع آخر، أدلّه على اسم الفرع الظاهر في التطبيق وأبقِ الأكياس في مكانها.",
+        "quote": "إذا عرض المندوب طلباً لفرع آخر، نبّهه إلى اسم الفرع الظاهر في التطبيق وأبقِ الأكياس في مكانها.",
         "locator": {
           "section": "٥. التحقق من الفرع",
           "table_row": 6
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "إذا عرض المندوب طلباً لفرع آخر",
-          "action": "أدلّه على اسم الفرع الظاهر في التطبيق وأبقِ الأكياس في مكانها."
+          "trigger": "courier presents an order for another branch",
+          "action": "point the courier to the branch name shown in the app and keep the bags in place"
         }
       },
       {
@@ -699,8 +705,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "إذا ظهر الرمز نفسه على طلبين في الشاشة",
-          "action": "أوقف تسليمهما واطلب من المشرف المطابقة برقم الطلب وتعيين المندوب.",
+          "trigger": "same code appears on two orders",
+          "action": "stop both handovers and ask the supervisor to match them by order number and courier assignment",
           "threshold": {
             "value": 2,
             "unit": "order",
@@ -718,8 +724,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "إذا تغيّر المندوب المعيّن قبل الاستلام",
-          "action": "حدّث العرض في شاشة الفرع واطلب الرمز من المندوب المعيّن حالياً."
+          "trigger": "assigned courier changes before pickup",
+          "action": "refresh the branch screen and take the code from the currently assigned courier"
         }
       },
       {
@@ -731,8 +737,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "إذا لم يكن الطلب المعروض جاهزاً",
-          "action": "اطلب من المندوب الانتظار خارج المسار وسجّل رقم الطلب في قائمة الانتظار."
+          "trigger": "displayed order is not ready",
+          "action": "ask the courier to wait outside the lane and add the order number to the waiting list"
         }
       },
       {
@@ -744,8 +750,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "بعد أن يتسلم المندوب جميع الأكياس المطابقة",
-          "action": "حدّث حالة الطلب إلى «تم الاستلام» وسجّل وقت خروجه من النقطة."
+          "trigger": "courier has received all matching bags",
+          "action": "set the order status to Picked up and record the courier's exit time"
         }
       },
       {
@@ -757,8 +763,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "إذا ظهرت حالة «تم الاستلام» والأكياس ما زالت خلف النقطة",
-          "action": "أبلغ المشرف ليصحح الحالة قبل أي محاولة تسليم."
+          "trigger": "status shows Picked up while bags are still behind the counter",
+          "action": "have the supervisor correct the status before any handover attempt"
         }
       }
     ]

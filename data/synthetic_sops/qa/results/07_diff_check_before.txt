@@ -1,0 +1,49 @@
+== courier-pickup-wait-v1 -> courier-pickup-wait-v2
+   CW-02: changed   moved=False update_citation=True  changed_facts=['threshold'] ok
+   CW-04: unchanged moved=True  update_citation=True  changed_facts=[] ok
+   CW-10: unchanged moved=False update_citation=True  changed_facts=[] ok
+   CW-11: unchanged moved=False update_citation=True  changed_facts=[] ok
+   CW-12: unchanged moved=False update_citation=True  changed_facts=[] ok
+   CW-13: unchanged moved=False update_citation=True  changed_facts=[] ok
+   CW-14: unchanged moved=False update_citation=True  changed_facts=[] ok
+   CW-15: unchanged moved=False update_citation=True  changed_facts=[] ok
+   CW-16: unchanged moved=False update_citation=True  changed_facts=[] ok
+   reassessment clauses: ['CW-02']
+== employee-delayed-order-v1 -> employee-delayed-order-v2
+   ED-01: unchanged moved=False update_citation=True  changed_facts=[] ok
+   ED-02: changed   moved=False update_citation=True  changed_facts=['action', 'actor'] ok
+   ED-03: unchanged moved=False update_citation=True  changed_facts=[] ok
+   ED-04: removed   moved=False update_citation=False changed_facts=[] ok
+   ED-10: unchanged moved=False update_citation=True  changed_facts=[] ok
+   ED-11: unchanged moved=False update_citation=True  changed_facts=[] ok
+   ED-12: unchanged moved=False update_citation=True  changed_facts=[] ok
+   ED-13: unchanged moved=False update_citation=True  changed_facts=[] ok
+   ED-14: unchanged moved=False update_citation=True  changed_facts=[] ok
+   ED-15: unchanged moved=False update_citation=True  changed_facts=[] ok
+   ED-16: unchanged moved=False update_citation=True  changed_facts=[] ok
+   reassessment clauses: ['ED-02']
+== partner-packing-sealing-v1 -> partner-packing-sealing-v2
+   PP-01: unchanged moved=False update_citation=True  changed_facts=[] ok
+   PP-02: added     moved=False update_citation=True  changed_facts=['exceptions'] MISMATCH
+   PP-03: unchanged moved=False update_citation=True  changed_facts=[] ok
+   PP-04: added     moved=False update_citation=True  changed_facts=[] ok
+   PP-10: unchanged moved=False update_citation=True  changed_facts=[] ok
+   PP-11: unchanged moved=False update_citation=True  changed_facts=[] ok
+   PP-12: unchanged moved=False update_citation=True  changed_facts=[] ok
+   PP-13: unchanged moved=False update_citation=True  changed_facts=[] ok
+   PP-14: unchanged moved=False update_citation=True  changed_facts=[] ok
+   PP-15: unchanged moved=False update_citation=True  changed_facts=[] ok
+   PP-16: unchanged moved=False update_citation=True  changed_facts=[] ok
+   reassessment clauses: ['PP-02', 'PP-04']
+== CW-02 scenario
+   ok   threshold 15 -> 10 minutes, glyphs ١٥ -> 10
+   ok   operator unchanged (>=)
+   ok   classified changed, not moved
+   ok   training-cw-02 needs reapproval, citation refreshed
+   ok   assessment A-C1 linked to the change
+   ok   only CW-02 is reassessed
+   ok   HL-101 (mastered v1, Fig Gate) reassessed
+   ok   HL-103 (in progress v1, Fig Gate) gets updated assignment
+   ok   HL-102 (Papaya Bend) untouched
+   ok   nobody outside the courier family is reassessed
+FAIL partner-packing-sealing-v2/PP-02: derived added/moved=False/update=True vs gold changed/False/True

@@ -5,8 +5,8 @@ description: Use when a Hunger Learn change is finished and about to become a pu
 # Get a change PR-ready
 
 First, record that this skill is in use: `node scripts/skill-log.mjs pr-ready` (Claude Code also logs it
-automatically). The PR gate reads this log: the `pr-policy` check needs the skills of the change's tier
-(AGENTS.md → Workflow).
+automatically). The PR gate reads this log: `gh pr create` and the `pr-policy` check need the skills of
+the change's tier (AGENTS.md → Workflow).
 
 1. Make sure you are on a branch, not `main` (`git switch -c <type>/<slug>` if needed).
 2. Run `node scripts/check.mjs` and keep the summary of its output. If it fails, fix the root cause first.
@@ -24,5 +24,6 @@ automatically). The PR gate reads this log: the `pr-policy` check needs the skil
    because the same check is required on the PR.
 6. Check the diff is only the task: `git diff --stat origin/main...HEAD`. Split refactors from behaviour
    changes; aim for a diff a human can review in one sitting (under ~400 lines).
-7. Push the branch and open the PR only when the user asks (`gh pr create --body-file …`). Merge only
-   when the human asks in the session, with every required check green, and never with `--admin`.
+7. Push the branch and open the PR only when the user asks (`gh pr create --body-file …`; the agent guard
+   refuses it until the tier's skills are in the skill log). Merge only when the human asks in the session,
+   with every required check green, and never with `--admin` (the guard enforces the last two).

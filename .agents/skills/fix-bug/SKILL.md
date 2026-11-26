@@ -5,8 +5,8 @@ description: Use when fixing a reported bug or failing behaviour in Hunger Learn
 # Fix a bug
 
 First, record that this skill is in use: `node scripts/skill-log.mjs fix-bug` (Claude Code also logs it
-automatically). The PR gate reads this log: the `pr-policy` check needs the skills of the change's tier
-(AGENTS.md → Workflow).
+automatically). The PR gate reads this log: `gh pr create` and the `pr-policy` check need the skills of
+the change's tier (AGENTS.md → Workflow).
 
 1. Restate the bug as expected vs actual, with the exact input. If you can't, ask.
 2. Reproduce it with the smallest automated test that fails for the reported reason:

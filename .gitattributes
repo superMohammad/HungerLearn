@@ -13,4 +13,5 @@
 # The corpus is hashed in FREEZE.sha256: never convert line endings in it, even with core.autocrlf=true
 # (otherwise PDFs, JSON gold and the CRLF .txt uploads change bytes on a Windows checkout).
 data/synthetic_sops/** -text
+# Safe only while no .py file is listed in FREEZE.sha256; never freeze a script under this rule.
 data/synthetic_sops/**/*.py text eol=lf

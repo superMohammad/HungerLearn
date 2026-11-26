@@ -10,3 +10,7 @@
 *.js text eol=lf
 *.py text eol=lf
 *.yml text eol=lf
+# The corpus is hashed in FREEZE.sha256: never convert line endings in it, even with core.autocrlf=true
+# (otherwise PDFs, JSON gold and the CRLF .txt uploads change bytes on a Windows checkout).
+data/synthetic_sops/** -text
+data/synthetic_sops/**/*.py text eol=lf

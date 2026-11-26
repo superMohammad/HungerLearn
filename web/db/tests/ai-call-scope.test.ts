@@ -163,6 +163,20 @@ function testDb(): postgres.Sql {
 
 type AiCallRow = { purpose: string; model: string; document_id: string | null; version_id: string | null; input_tokens: number; output_tokens: number };
 
+/** Highest ai_calls id so far: rows with a larger id were written by the code under test. */
+async function lastId(): Promise<string> {
+  const [{ id }] = await testDb()<{ id: string }[]>`SELECT COALESCE(max(id), 0)::text AS id FROM ai_calls`;
+  return id;
+}
+
+type ScopeRow = { purpose: string; document_id: string | null; version_id: string | null };
+
+async function callsSince(id: string): Promise<ScopeRow[]> {
+  const rows = await testDb()<ScopeRow[]>`
+    SELECT purpose, document_id, version_id FROM ai_calls WHERE id > ${id}::bigint ORDER BY id`;
+  return rows.map((r) => ({ ...r }));
+}
+
 async function lastCall(purpose: string): Promise<AiCallRow> {
   const rows = await testDb()<AiCallRow[]>`
     SELECT purpose, model, document_id, version_id, input_tokens, output_tokens FROM ai_calls
@@ -200,16 +214,19 @@ before(async () => {
 
 /** Always drops the test database, even when setup failed halfway. */
 after(async () => {
+  const closing = await Promise.allSettled([
+    appEnvSet ? sql().end() : Promise.resolve(),
+    appEnvSet ? readonlySql().end() : Promise.resolve(),
+    db?.end() ?? Promise.resolve(),
+    new Promise<void>((resolve) => (llm === undefined ? resolve() : llm.close(() => resolve()))),
+  ]);
   try {
-    await Promise.all([appEnvSet ? sql().end() : undefined, appEnvSet ? readonlySql().end() : undefined, db?.end()]);
-    if (llm !== undefined) {
-      const server = llm;
-      await new Promise<void>((resolve) => server.close(() => resolve()));
-    }
-  } finally {
     await admin.unsafe(`DROP DATABASE IF EXISTS ${dbName} WITH (FORCE)`);
+  } finally {
     await admin.end();
   }
+  const failed = closing.find((r) => r.status === "rejected");
+  if (failed !== undefined) throw failed.reason;
 });
 
 test("migration 003 runs twice on a database that already logged calls, and keeps the old rows", async () => {
@@ -277,13 +294,11 @@ test("package generation and its judge calls log the procedure's version", async
     steps: ["بلّغ مركز التوزيع"],
     stableIds: [CLAUSE.stableId],
   };
-  const [{ before }] = await testDb()<{ before: string }[]>`SELECT COALESCE(max(id), 0)::text AS before FROM ai_calls`;
+  const since = await lastId();
   const pkg = await buildPackage(DOC, procedure, [CLAUSE], "");
   assert.equal(pkg.items.length, 1);
-  const rows = await testDb()<{ purpose: string; document_id: string | null; version_id: string | null }[]>`
-    SELECT purpose, document_id, version_id FROM ai_calls WHERE id > ${before}::bigint ORDER BY id`;
   assert.deepEqual(
-    rows.map((r) => ({ ...r })),
+    await callsSince(since),
     [
       { purpose: "generate.package", document_id: DOC.documentId, version_id: "v2" },
       { purpose: "verify.judge", document_id: DOC.documentId, version_id: "v2" },
@@ -305,10 +320,10 @@ test("the verification judge logs the document and version of the item it checks
     feedback: "عند 10 دقائق أو أكثر تبلّغ المركز.",
     confidence_tap: true,
   };
-  await verifyEditedQuestion(DOC, "v2", payload, CLAUSE.quote, CLAUSE);
-  const row = await lastCall("verify.judge");
-  assert.equal(row.document_id, DOC.documentId);
-  assert.equal(row.version_id, "v2");
+  // Its own version id, so only this call can satisfy the check (earlier tests logged judge calls for v2).
+  const since = await lastId();
+  await verifyEditedQuestion(DOC, "v3", payload, CLAUSE.quote, CLAUSE);
+  assert.deepEqual(await callsSince(since), [{ purpose: "verify.judge", document_id: DOC.documentId, version_id: "v3" }]);
 });
 
 test("readiness text-to-SQL is about learners, so its call has no document or version", async () => {

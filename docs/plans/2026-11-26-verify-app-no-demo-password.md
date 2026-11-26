@@ -7,7 +7,7 @@
 The skill still says "the user gives you `DEMO_PASSWORD`". Mohammad decided agents never ask for it.
 
 ## Change
-- **LLM rows (verify-app step 4), admin:** the Playwright browser's admin session, or the seeded admin's quick-fill chip on `/signin`, where the server fills the password. If there is no chip, the engineer signs in there themselves, never through the chat.
+- **LLM rows (verify-app step 4), admin:** the Playwright browser's admin session, or the seeded admin's quick-fill chip on `/signin`, where the page fills the password field (the agent never reads it). If there is no chip, the engineer signs in there themselves, never through the chat.
 - **LLM rows, learner:** one reused verify learner per branch, signed up through the app.
   - Its email is `verify-<slug>@verify.hungerlearn.test`: zod accepts it, and the demo quick-fill's `LIKE '%@hungerlearn.test'` does not match it.
   - Its password is the fixed throwaway `verify-learner-local`, so a later session can sign in again.
@@ -16,7 +16,8 @@ The skill still says "the user gives you `DEMO_PASSWORD`". Mohammad decided agen
 - **Master plan:** its PR C line is updated to match.
 
 ## Threat model
-- **No secret moves:** no password passes through the agent or the chat.
+- **No secret moves:** no password passes through the chat.
+- **Exposure the rule covers:** the demo password is in the dev sign-in page's data, which the quick-fill already serves to any visitor. The skill forbids reading the password field or the page source, so it stays out of the agent's context.
 - **Risk: an agent goes looking for the password.** Mitigated by the explicit fallback, where the engineer signs in in the browser.
 - **Risk: verify learners pollute readiness and the sign-in quick-fill.** Mitigated by:
   - one recognisable learner per branch, documented as staying until the database is reset;

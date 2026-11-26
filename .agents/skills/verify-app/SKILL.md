@@ -22,11 +22,12 @@ the change's tier (AGENTS.md → Workflow).
    Never ask for `DEMO_PASSWORD` and never read `.env*` files (`scripts/verify-app.mjs` reads `DEMO_PASSWORD`
    itself for the scripted rows).
    - Admin: in the Playwright browser, use its admin session, or tap the seeded admin's quick-fill chip on
-     `/signin` and sign in (the server fills the password). Only if no chip is shown, ask the engineer to sign in
-     there themselves; never ask them to type the password in the chat.
+     `/signin` and sign in (the page fills the password field; never read that field's value or the page source).
+     Only if no chip is shown, ask the engineer to sign in there themselves; never ask them to type the password in
+     the chat.
    - Learner: sign up one verify learner per branch through the app (F02): email
-     `verify-<slug>@verify.hungerlearn.test` (`<slug>` = the branch name with every character outside `[a-z0-9-]`
-     replaced by `-`; this domain stays out of the sign-in page's demo quick-fill), name starting `verify-`, and the
+     `verify-<slug>@verify.hungerlearn.test` (`<slug>` = the branch name lower-cased, with every character outside
+     `[a-z0-9-]` replaced by `-`; this domain stays out of the sign-in page's demo quick-fill), name starting `verify-`, and the
      fixed throwaway password `verify-learner-local` (a local test account, not a secret). If it already exists,
      sign in with that password. For F05 pick the role and branch of the training you published in F04, or `/learn`
      is empty. These learners stay in the local database (and in F06 readiness) until the database is reset

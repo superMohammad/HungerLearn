@@ -182,3 +182,45 @@ export function policyProblems(pr) {
   if (missing.length > 0) problems.push(`Skills used: skills missing for ${tier}: ${missing.join(", ")} (the "skills:" line of ## Skills used).`);
   return problems;
 }
+
+/** `--admin` in any spelling gh accepts for a boolean flag (`--admin`, `--admin=true`, ...). @param {readonly string[]} words */
+export function usesAdminBypass(words) {
+  return words.some((w) => /^--admin(=.*)?$/.test(w));
+}
+
+/** `gh pr merge` flags that take a value (the value is not the PR). */
+const MERGE_VALUE_FLAGS = new Set(["-R", "--repo", "-b", "--body", "-F", "--body-file", "-t", "--subject", "--match-head-commit", "-A", "--author-email"]);
+
+/**
+ * Arguments for `gh pr checks` that name the same PR as `gh pr merge <words>`: its first positional word,
+ * plus `--repo <owner/repo>` when given, so the checks read are the checks of the PR being merged.
+ * @param {readonly string[]} words @returns {string[]}
+ */
+export function mergeTarget(words) {
+  /** @type {string[]} */
+  const target = [];
+  /** @type {string[]} */
+  const repo = [];
+  for (let i = 0; i < words.length; i += 1) {
+    const w = words[i];
+    const [flag, inline] = w.startsWith("--") && w.includes("=") ? [w.slice(0, w.indexOf("=")), w.slice(w.indexOf("=") + 1)] : [w, null];
+    if (MERGE_VALUE_FLAGS.has(flag)) {
+      const value = inline ?? words[i + 1] ?? "";
+      if (inline === null) i += 1;
+      if (flag === "-R" || flag === "--repo") repo.push("--repo", value);
+    } else if (!w.startsWith("-") && target.length === 0) target.push(w);
+  }
+  return [...target, ...repo];
+}
+
+/**
+ * Why an agent may not run `gh pr merge <words>`, or null when it may: never with the admin bypass, and only when
+ * `gh pr checks --required` exited 0 (all required checks green; 8 = pending, other = failed or gh error).
+ * @param {readonly string[]} words the words after `gh pr merge` @param {number | null} checksExit
+ */
+export function mergeProblem(words, checksExit) {
+  if (usesAdminBypass(words)) return "agents never merge with the admin bypass (--admin); only the human uses it.";
+  if (checksExit === 0) return null;
+  const state = checksExit === 8 ? "still pending" : `not all green (gh pr checks exit ${checksExit})`;
+  return `required checks are ${state}; merge only when every required check passed.`;
+}

@@ -5,8 +5,8 @@ description: Use when the same mistake, review comment or incident has happened 
 # Encode a repeated mistake
 
 First, record that this skill is in use: `node scripts/skill-log.mjs encode-mistake` (Claude Code also logs it
-automatically). The PR gate reads this log: the `pr-policy` check needs the skills of the change's tier
-(AGENTS.md → Workflow).
+automatically). The PR gate reads this log: `gh pr create` and the `pr-policy` check need the skills of
+the change's tier (AGENTS.md → Workflow).
 
 Take the highest rung that works:
 

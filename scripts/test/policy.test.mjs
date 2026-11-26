@@ -9,6 +9,8 @@ import {
   changedPlans,
   declaredTier,
   isApprovedPlan,
+  mergeProblem,
+  mergeTarget,
   missingSkills,
   policyProblems,
   requiredSections,
@@ -158,6 +160,24 @@ test("policy: Enhanced passes with its own approved plan; an unapproved or uncha
   assert.match(policyProblems({ ...input, plans: { "docs/plans/2026-11-26-x.md": "# Plan\n" } }).join("\n"), /its own plan/);
   const linkedOnly = { ...diff(["web/src/lib/pipeline.ts"], 80), body: `${input.body}\nSee docs/plans/2026-11-26-x.md`, plans: {} };
   assert.match(policyProblems(linkedOnly).join("\n"), /its own plan/);
+});
+
+test("merge decision: only with all required checks green, never with --admin", () => {
+  assert.equal(mergeProblem(["8", "--squash"], 0), null);
+  assert.match(mergeProblem(["8", "--squash"], 8) ?? "", /pending/);
+  assert.match(mergeProblem(["8", "--squash"], 1) ?? "", /not all green/);
+  assert.match(mergeProblem(["8", "--squash"], null) ?? "", /not all green/);
+  assert.match(mergeProblem(["8", "--admin", "--squash"], 0) ?? "", /admin/);
+  assert.match(mergeProblem(["8", "--squash", "--admin=true"], 0) ?? "", /admin/);
+  assert.match(mergeProblem(["8", "--admin=1"], 0) ?? "", /admin/);
+});
+
+test("merge target: first positional word, skipping the values of gh pr merge flags; --repo passes through", () => {
+  assert.deepEqual(mergeTarget(["8", "--squash"]), ["8"]);
+  assert.deepEqual(mergeTarget(["--subject", "Fix 8", "--squash", "12"]), ["12"]);
+  assert.deepEqual(mergeTarget(["8", "-R", "other/repo"]), ["8", "--repo", "other/repo"]);
+  assert.deepEqual(mergeTarget(["--repo=other/repo"]), ["--repo", "other/repo"]);
+  assert.deepEqual(mergeTarget(["--squash"]), []);
 });
 
 test("skill log: hook input maps to a skill name; other tools are ignored", () => {

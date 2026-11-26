@@ -128,7 +128,7 @@ def test_score_change_pairs_on_hand_made_arabic_and_english_cases():
         _pair("punct", "Call the customer.", "Call the customer", "cosmetic", "carry_forward"),
     ]
     score = score_change_pairs(pairs, FixtureJudge(), Settings(_env_file=None))
-    assert score.judge == "fixture" and score.needs_review == 0
+    assert score.judge == "fixture" and score.needs_review == 0 and score.prompt_version == "change-judge-v1"
     assert (score.pairs, score.correct) == (6, 4)
     assert score.accuracy == pytest.approx(4 / 6)
     assert (score.material_pairs, score.material_caught, score.material_recall) == (3, 2, pytest.approx(2 / 3))

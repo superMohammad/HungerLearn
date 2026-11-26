@@ -93,15 +93,26 @@ class OpenAICompatJudge:
                 try:
                     r = client.post(self.url, json=body, headers=self.headers)
                     r.raise_for_status()
-                    choice = r.json()["choices"][0]
-                except (httpx.HTTPError, ValueError, KeyError, IndexError) as e:
+                except httpx.HTTPStatusError as e:
+                    code = e.response.status_code
+                    if 400 <= code < 500 and code != 429:  # the request itself is wrong: retrying cannot help
+                        raise RuntimeError(f"change judge ({self.model}) rejected the request for clause "
+                                           f"{new.record_id}: HTTP {code} {e.response.text[:300]}") from e
                     problem = f"request failed: {e}"
                     continue
-                content = choice["message"].get("content") or ""
-                if choice.get("finish_reason") == "length":
-                    problem = (f"answer cut off at max_tokens={self.max_output_tokens} (reasoning_effort="
-                               f"{self.reasoning_effort or 'server default'})")
+                except httpx.HTTPError as e:
+                    problem = f"request failed: {e}"
                     continue
+                try:
+                    choice = r.json()["choices"][0]
+                    content = choice["message"].get("content") or ""
+                except (ValueError, KeyError, IndexError, TypeError, AttributeError) as e:
+                    raise RuntimeError(f"change judge ({self.model}) returned an unexpected response for clause "
+                                       f"{new.record_id}: {r.text[:300]}") from e
+                if choice.get("finish_reason") == "length":  # same request at temperature 0 would be cut again
+                    raise RuntimeError(
+                        f"change judge ({self.model}) answer cut off at max_tokens={self.max_output_tokens} for "
+                        f"clause {new.record_id} (reasoning_effort={self.reasoning_effort or 'server default'})")
                 try:
                     return parse_change_verdict(content)
                 except ValueError as e:  # JSON or schema error: show the model its answer and the error

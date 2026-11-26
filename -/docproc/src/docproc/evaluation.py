@@ -18,7 +18,7 @@ from pydantic import BaseModel, ValidationError
 from docproc.config import OcrEngine
 from docproc.loaders import detect_format
 from docproc.config import Settings
-from docproc.llm.base import ChangeJudge
+from docproc.llm.base import CHANGE_PROMPT_VERSION, ChangeJudge
 from docproc.matching import MATERIAL_KINDS, PairDecision, decide_pair
 from docproc.models import Audience, ClauseChange, ClauseRecord, ComparisonReport, SourceLocation, Status
 from docproc.normalize import clause_body, words
@@ -177,6 +177,7 @@ class GroupScore(BaseModel):
 
 class ChangePairScore(BaseModel):
     judge: str  # the change judge that decided (fixture = docproc's text rules; otherwise the configured LLM)
+    prompt_version: str  # CHANGE_PROMPT_VERSION the judge ran with (results are only comparable within one)
     pairs: int
     correct: int
     accuracy: float
@@ -370,7 +371,7 @@ def score_change_pairs(pairs: list[GoldChangePair], judge: ChangeJudge, settings
                          if not p.material and r.predicted == "regenerate_and_reassess")
     wrong = [r for r in results if r.predicted != r.expected]
     return ChangePairScore(
-        judge=judge.name, pairs=len(results), correct=len(results) - len(wrong), accuracy=(len(results) - len(wrong)) / len(results),
+        judge=judge.name, prompt_version=CHANGE_PROMPT_VERSION, pairs=len(results), correct=len(results) - len(wrong), accuracy=(len(results) - len(wrong)) / len(results),
         material_pairs=len(material), material_caught=caught,
         material_recall=caught / len(material) if material else None, false_material=false_material,
         needs_review=sum(1 for r in results if r.predicted == "needs_review"),

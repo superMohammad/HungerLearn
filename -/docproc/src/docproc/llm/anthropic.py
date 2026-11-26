@@ -48,6 +48,7 @@ class AnthropicJudge:
 
     name = "anthropic"
     MAX_TOKENS = 4096
+    max_output_tokens = MAX_TOKENS  # thinking cannot be turned off on claude-opus-5-5: budget for it
 
     def __init__(self, model: str = "claude-opus-5-5", api_key: str = "", timeout: float = 120.0, max_retries: int = 2):
         import anthropic

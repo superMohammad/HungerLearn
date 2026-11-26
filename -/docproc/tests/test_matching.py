@@ -102,6 +102,7 @@ class ScriptedJudge:
     """Returns a fixed verdict and records every pair it was asked about."""
 
     name = "scripted"
+    max_output_tokens = 512
 
     def __init__(self, kind: str, old_evidence: str = "", new_evidence: str = ""):
         self.verdict = ChangeVerdict(kind=kind, old_evidence=old_evidence, new_evidence=new_evidence,
@@ -155,8 +156,61 @@ def test_evidence_missing_from_the_clause_text_goes_to_review():
 def test_a_pair_too_long_for_the_context_window_goes_to_review_without_a_call():
     o, n = _actor_pair()
     judge = ScriptedJudge("actor", "courier", "dispatcher")
-    tiny = S.model_copy(update={"llm_context_tokens": 600, "change_max_output_tokens": 512})
+    tiny = S.model_copy(update={"llm_context_tokens": 600})
     [r] = match_versions("d", "v2", [o], [n], same_vectors(o, n), tiny, judge)
     assert judge.calls == []
     assert r.status == Status.needs_review and "context" in (r.review_reason or "")
     assert "600" in (r.review_reason or "")
+
+
+def test_a_kept_verdict_on_a_changed_number_or_prohibition_goes_to_review():
+    for kind, old_q, new_q in (("none", "Wait 15 minutes, then call.", "Wait 10 minutes, then call."),
+                               ("cosmetic", "انتظر ١٥ دقيقة ثم اتصل.", "انتظر 10 دقائق ثم اتصل."),
+                               ("none", "Do not cancel the order.", "Cancel the order.")):
+        o, n = rec("v1", 0, old_q, sid="S1"), rec("v2", 0, new_q)
+        [r] = match_versions("d", "v2", [o], [n], same_vectors(o, n), S, ScriptedJudge(kind))
+        assert r.status == Status.needs_review and r.stable_id == "S1"
+        assert kind in (r.review_reason or "")
+
+
+def test_a_material_verdict_needs_evidence_that_actually_differs():
+    o, n = _actor_pair()
+    for judge in (ScriptedJudge("actor"),                               # no evidence at all
+                  ScriptedJudge("actor", "calls the customer", "calls")):  # words present in both clauses
+        [r] = match_versions("d", "v2", [o], [n], same_vectors(o, n), S, judge)
+        assert r.status == Status.needs_review and "evidence" in (r.review_reason or "")
+    # step order: the same words in a new order are legitimate evidence-free changes
+    o2 = rec("v1", 0, "Seal the bag, then label it.", sid="S1")
+    n2 = rec("v2", 0, "Label the bag, then seal it.")
+    [r] = match_versions("d", "v2", [o2], [n2], same_vectors(o2, n2), S, ScriptedJudge("order"))
+    assert r.status == Status.changed and r.reasons == ["order: - -> -"]
+
+
+def test_an_explicit_audience_change_is_kept_when_the_text_also_changed():
+    o = rec("v1", 0, "Staff must complete the training this week.", aud=("employee",), sid="S1")
+    n = rec("v2", 0, "Staff must complete the training this week!", aud=("employee", "partner"))
+    [r] = match_versions("d", "v2", [o], [n], same_vectors(o, n), S, ScriptedJudge("cosmetic"))
+    assert r.status == Status.changed and r.reasons == ["audience: employee -> employee, partner"]
+
+
+class FailingJudge:
+    name = "failing"
+    max_output_tokens = 512
+
+    def judge(self, old, new):
+        raise RuntimeError("change judge (gemma4) failed after 3 attempts: request failed: timed out")
+
+
+def test_a_failed_judge_call_sends_only_that_pair_to_review():
+    o, n = _actor_pair()
+    [r] = match_versions("d", "v2", [o], [n], same_vectors(o, n), S, FailingJudge())
+    assert r.status == Status.needs_review and r.stable_id == "S1"
+    assert "timed out" in (r.review_reason or "")
+
+
+def test_the_context_guard_reserves_the_judge_s_own_answer_budget():
+    o, n = _actor_pair()
+    big = ScriptedJudge("actor", "courier", "dispatcher")
+    big.max_output_tokens = 4096
+    [r] = match_versions("d", "v2", [o], [n], same_vectors(o, n), S, big)  # 4096 context: no room for 4096 out
+    assert big.calls == [] and r.status == Status.needs_review and "4096" in (r.review_reason or "")

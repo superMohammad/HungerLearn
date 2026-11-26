@@ -28,7 +28,7 @@ def make_extractor(settings: Settings) -> ClauseExtractor:
 def make_change_judge(settings: Settings) -> ChangeJudge:
     """The model that decides whether a matched clause pair changed: the same backend as extraction."""
     if settings.llm == "fixture":
-        return FixtureJudge()
+        return FixtureJudge(settings.change_max_output_tokens)
     if settings.llm == "openai_compat":
         from docproc.llm.openai_compat import OpenAICompatJudge
 

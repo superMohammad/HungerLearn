@@ -61,11 +61,11 @@ def test_the_judge_turns_thinking_off_even_when_extraction_thinks():
     assert user == {"heading": "Pickup", "old_quote": OLD.quote, "new_quote": NEW.quote}  # never whole documents
 
 
-def test_a_cut_off_answer_is_rejected_retried_and_then_raised_with_context():
-    server = _Server(*[_reply('{"kind": "act', "length")] * 3)
+def test_a_cut_off_answer_is_raised_at_once_with_context():
+    server = _Server(_reply('{"kind": "act', "length"))
     with pytest.raises(RuntimeError, match=r"cut off.*max_tokens=512"):
         _judge(server, llm_max_retries=2).judge(OLD, NEW)
-    assert len(server.bodies) == 3
+    assert len(server.bodies) == 1  # the same request at temperature 0 would be cut off again
 
 
 def test_an_invalid_answer_is_retried_with_the_error_fed_back():
@@ -82,3 +82,10 @@ def test_the_fixture_judge_and_the_prompt_version_are_available_offline():
     assert FixtureJudge().judge(_rec("Wait 15 minutes."), _rec("Wait 10 minutes.", "v2")).kind == "threshold"
     assert CHANGE_PROMPT_VERSION
     assert estimate_change_tokens(OLD, NEW) > estimate_change_tokens(_rec("a"), _rec("b", "v2"))
+
+
+def test_a_rejected_request_is_not_retried():
+    server = _Server(httpx.Response(400, text="unknown field reasoning_effort"))
+    with pytest.raises(RuntimeError, match=r"rejected.*HTTP 400.*reasoning_effort"):
+        _judge(server, llm_max_retries=2).judge(OLD, NEW)
+    assert len(server.bodies) == 1

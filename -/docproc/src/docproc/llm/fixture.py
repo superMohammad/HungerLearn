@@ -117,6 +117,9 @@ class FixtureJudge:
 
     name = "fixture"
 
+    def __init__(self, max_output_tokens: int = 512):
+        self.max_output_tokens = max_output_tokens  # reserved by the context guard, like a real judge
+
     def judge(self, old: ClauseRecord, new: ClauseRecord) -> ChangeVerdict:
         from docproc.matching import change_reasons  # matching imports the judge protocol from docproc.llm
 

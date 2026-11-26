@@ -19,16 +19,18 @@ Return JSON matching the schema with:
 - kind: exactly one of the kinds below. If several apply, pick the one listed first.
   - threshold: a number, amount, time limit, or comparison changed ("15 minutes" -> "10 minutes"; \
 "at least 10" / "بعد 10 دقائق أو أكثر" -> "more than 10" / «أكثر من 10»).
-  - negation: a prohibition was added or removed ("do not cancel" -> "cancel"; «ولا تلغِ» -> «وألغِ»).
+  - negation: the rule now requires the opposite, because a prohibition or negative was added or removed \
+("do not cancel" -> "cancel"; "with a receipt" -> "without a receipt"; "can" -> "cannot"; \
+«ولا تلغِ» -> «وألغِ»; «داخل الكيس» -> «دون الكيس»).
   - modality: how binding the rule is changed ("must" -> "may" / "should"; «يجب» -> «يمكنك» or «يُفضّل»).
   - actor: a different person or role must do it ("the courier calls" -> "the dispatcher calls"; \
 «المندوب» -> «مسؤول التوزيع»).
-  - condition: when the rule applies changed, or an exception was added or removed ("unless the customer \
-agrees", «إلا إذا»; "after check-in" -> "after pickup").
+  - condition: when the rule applies changed, or an exception or limit was added or removed ("unless the \
+customer agrees", «إلا إذا», «ما لم»; "only when" dropped; "after check-in" -> "after pickup").
   - order: the same steps in a different order.
   - audience: the rule is now for a different group (couriers -> employees).
   - wording: the words changed but what the rule requires is exactly the same.
-  - cosmetic: only punctuation, spacing, diacritics, letter forms, or digit script changed. Arabic-Indic and \
+  - cosmetic: only punctuation, spacing, letter case, diacritics, letter forms, or digit script changed. Arabic-Indic and \
 Latin digits are the same number: «١٠» and "10" is cosmetic, not threshold.
   - none: the texts say the same thing.
 - old_evidence / new_evidence: copy the words that differ, exactly as they appear in the OLD and NEW clause \
@@ -64,6 +66,7 @@ def parse_change_verdict(raw: str) -> ChangeVerdict:
 
 class ChangeJudge(Protocol):
     name: str
+    max_output_tokens: int  # answer budget the context guard reserves (thinking included where it cannot be off)
 
     def judge(self, old: ClauseRecord, new: ClauseRecord) -> ChangeVerdict: ...
 

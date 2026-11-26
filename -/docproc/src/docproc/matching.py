@@ -88,37 +88,70 @@ class PairDecision:
 
 
 def evidence_problem(verdict: ChangeVerdict, old: ClauseRecord, new: ClauseRecord) -> str | None:
-    """The judge's evidence must be words of the clause it cites (LLM output is untrusted). Pure."""
-    for side, evidence, rec in (("old", verdict.old_evidence, old), ("new", verdict.new_evidence, new)):
-        missing = [w for w in words(evidence) if w not in set(words(rec.quote))]
+    """Checks on the judge's answer before it is trusted (LLM output is untrusted). Pure.
+
+    - Cited words must occur in the clause they are cited from.
+    - A material kind other than `order` needs evidence that differs: some cited word must be missing from
+      the other version (step order changes the sequence, not the words).
+    - A kept verdict (none/cosmetic) cannot stand when the numbers or prohibitions differ: digit script is
+      folded, so ١٥ vs 10 is a real difference, and a model calling it cosmetic would carry training over.
+    """
+    old_words, new_words = set(words(old.quote)), set(words(new.quote))
+    for side, evidence, own in (("old", verdict.old_evidence, old_words), ("new", verdict.new_evidence, new_words)):
+        missing = [w for w in words(evidence) if w not in own]
         if missing:
             return f"change judge evidence not found in the {side} clause text: {missing} (kind {verdict.kind})"
+    if verdict.kind in MATERIAL_KINDS and verdict.kind != "order":
+        differs = ([w for w in words(verdict.old_evidence) if w not in new_words]
+                   + [w for w in words(verdict.new_evidence) if w not in old_words])
+        if not differs:
+            return f"change judge evidence does not show a difference between the clauses (kind {verdict.kind})"
+    if verdict.kind in KEPT_KINDS:
+        if numbers(old.quote) != numbers(new.quote):
+            return (f"change judge said {verdict.kind}, but the numbers differ: "
+                    f"{numbers(old.quote)} -> {numbers(new.quote)}")
+        if negations(old.quote) != negations(new.quote):
+            return f"change judge said {verdict.kind}, but a prohibition was added or removed"
     return None
+
+
+def _audience_change(old: ClauseRecord, new: ClauseRecord) -> list[str]:
+    """An audience change both versions state in their text (extraction labels; the judge sees only text)."""
+    return [r for r in change_reasons(old, new) if r.startswith("audience")]
 
 
 def decide_pair(old: ClauseRecord, new: ClauseRecord, judge: ChangeJudge, settings: Settings) -> PairDecision:
     """Status and reasons for a verified pair. The change judge decides; identical text never reaches it.
 
     Only a pair whose rule text differs is sent, and only if it fits the model's context window: a pair that
-    would not fit is sent to review instead of being truncated by the server.
+    would not fit is sent to review instead of being truncated by the server. A failed call, or an answer
+    that fails `evidence_problem`, sends that pair to review with the reason, never the whole comparison.
     """
     location = ["location changed"] if old.location.position_key() != new.location.position_key() else []
+    audience = _audience_change(old, new)
     if _body(old) == _body(new) or same_but_title(old, new):
-        reasons = change_reasons(old, new)  # same text: only an explicit audience or the location can differ
-        return PairDecision(status_for(reasons), reasons)
-    need = estimate_change_tokens(old, new) + settings.change_max_output_tokens
+        if audience:
+            return PairDecision(Status.changed, [*audience, *location])
+        return PairDecision(Status.moved if location else Status.unchanged, location)
+    budget = judge.max_output_tokens
+    need = estimate_change_tokens(old, new) + budget
     if need > settings.llm_context_tokens:
         return PairDecision(Status.needs_review, location, review_reason=(
-            f"clause pair (~{need} tokens incl. {settings.change_max_output_tokens} for the answer) does not fit "
-            f"the model context ({settings.llm_context_tokens}); raise DOCPROC_LLM_CONTEXT_TOKENS if the server allows"))
-    verdict = judge.judge(old, new)
+            f"clause pair (~{need} tokens incl. {budget} for the answer) does not fit the model context "
+            f"({settings.llm_context_tokens}); raise DOCPROC_LLM_CONTEXT_TOKENS if the server allows"))
+    try:
+        verdict = judge.judge(old, new)
+    except RuntimeError as e:  # the adapters raise RuntimeError with the model, clause and cause
+        return PairDecision(Status.needs_review, location, review_reason=str(e))
     problem = evidence_problem(verdict, old, new)
     if problem:
         return PairDecision(Status.needs_review, location, review_reason=problem)
     if verdict.kind in KEPT_KINDS:
+        if audience:
+            return PairDecision(Status.changed, [*audience, *location])
         return PairDecision(Status.moved if location else Status.unchanged, location)
-    return PairDecision(Status.changed,
-                        [f"{verdict.kind}: {verdict.old_evidence or '-'} -> {verdict.new_evidence or '-'}", *location])
+    reason = f"{verdict.kind}: {verdict.old_evidence or '-'} -> {verdict.new_evidence or '-'}"
+    return PairDecision(Status.changed, [reason, *(a for a in audience if verdict.kind != "audience"), *location])
 
 
 def _body(r: ClauseRecord) -> str:

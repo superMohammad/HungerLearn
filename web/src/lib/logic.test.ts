@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { composeQuestion, levelFor, nextStep, type ScreenSpec } from "./compose";
+import { zeroClausesError } from "./docproc-issues";
 import { checkQuestionShape, gradeAgainstKey, repeatedExamFormats, shuffledSteps } from "./question-rules";
 import { DICTIONARIES } from "./i18n";
 import { reasonLabel } from "./reasons";
@@ -124,4 +125,36 @@ test("procedures follow section numbers; every clause lands in exactly one", asy
   assert.equal(sectionKey(clause(0, "2.3", null)), "n:2");
   const groups = groupBySection([clause(0, "1.", "H"), clause(1, "2.1", "H"), clause(2, "2.2", "H"), clause(3, null, "Other")]);
   assert.deepEqual(groups.map((g) => g.map((c) => c.stableId)), [["s0"], ["s1", "s2"], ["s3"]]);
+});
+
+test("zero clauses: OCR failures name the pages and how to enable OCR", () => {
+  const message = zeroClausesError([
+    { kind: "ocr_failed", page: 1, detail: "null: OCR not configured" },
+    { kind: "ocr_failed", page: 2, detail: "null: OCR not configured" },
+    { kind: "quote_not_found", page: 2, detail: "q" },
+  ]);
+  assert.match(message, /pages 1, 2/);
+  assert.match(message, /DOCPROC_OCR=ovis/);
+});
+
+test("zero clauses: a configured OCR engine that fails lists each page instead of advising to enable OCR", () => {
+  const message = zeroClausesError([
+    { kind: "ocr_failed", page: 1, detail: "ATH-MaaS/OvisOCR3: OutOfMemoryError: CUDA out of memory" },
+    { kind: "ocr_failed", page: 2, detail: "ATH-MaaS/OvisOCR3: empty" },
+  ]);
+  assert.doesNotMatch(message, /DOCPROC_OCR/);
+  assert.match(message, /page 1: ATH-MaaS\/OvisOCR3: OutOfMemoryError/);
+  assert.match(message, /page 2: ATH-MaaS\/OvisOCR3: empty/);
+});
+
+test("zero clauses: long issue lists are capped", () => {
+  const many = Array.from({ length: 12 }, (_, n) => ({ kind: "llm_error", page: n + 1, detail: "timeout" }));
+  assert.match(zeroClausesError(many), /\+7 more$/);
+});
+
+test("zero clauses: without OCR failures the docproc issue kinds are listed", () => {
+  const message = zeroClausesError([{ kind: "llm_error", page: null, detail: "timeout" }]);
+  assert.doesNotMatch(message, /DOCPROC_OCR/);
+  assert.match(message, /llm_error page \?: timeout/);
+  assert.match(zeroClausesError([]), /recorded no issues/);
 });

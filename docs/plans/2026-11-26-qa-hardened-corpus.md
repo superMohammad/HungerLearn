@@ -2,7 +2,7 @@
 
 **Tier:** Enhanced · **Owner:** Yasser (@altayariyasser) · **Branch:** `Yasser` · **PR:** #7
 
-**Approval pending:** @superMohammad. Replace this line with `**Approved:** @superMohammad, <date>` to approve the three `held_out/` changes below (AGENTS.md: `held_out/` is human-controlled).
+**Approved:** Mohammad Almalke (`@superMohammad`), 2026-11-26, including the three `held_out/` changes below. In the Claude Code session he said "merge yasser's PR after he finished", then clarified "i meant you finished".
 
 ## Problem
 The evaluation corpus in `data/synthetic_sops/` lacked gold for publication gates and typed change

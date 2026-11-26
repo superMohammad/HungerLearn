@@ -4,6 +4,7 @@ import json
 
 import pytest
 
+from docproc.embeddings import FixtureEmbedder
 from docproc.evaluation import (
     DATASET_DIR,
     GoldClause,
@@ -11,13 +12,20 @@ from docproc.evaluation import (
     GoldDiffClause,
     GoldDocument,
     GoldProcedure,
+    Manifest,
+    ManifestDocument,
     best_coverage,
     coverage,
     run_eval,
     score_extraction,
+    skip_reason,
     word_set,
 )
+from docproc.llm.fixture import FixtureExtractor
 from docproc.models import ClauseRecord, SourceLocation
+from docproc.ocr.base import OCRPageRequest, OCRPageResult
+from docproc.pipeline import App
+from docproc.storage.sqlite import SqliteRepository
 
 
 def _record(quote: str, ordinal: int) -> ClauseRecord:
@@ -71,3 +79,42 @@ def test_run_eval_offline_scores_dev_and_never_reads_held_out(make_app, tmp_path
     assert all(s.document_id.endswith("-scan") for s in report.skipped)
     assert 0.0 <= report.macro_recall <= 1.0 and 0.0 <= report.diff_accuracy <= 1.0
 
+
+class _LiveOCR:
+    """Stands in for OvisOCR on a GPU: every page reads as the same short procedure."""
+
+    name = "ovis"
+
+    def ocr_page(self, req: OCRPageRequest) -> OCRPageResult:
+        return OCRPageResult(ok=True, text="# Waiting\n\n1. Wait 15 minutes, then call the dispatcher.", engine="test")
+
+
+def _dev_scans() -> list[ManifestDocument]:
+    manifest = Manifest.model_validate(json.loads((DATASET_DIR / "manifest.json").read_text(encoding="utf-8")))
+    return [d for d in manifest.documents if d.split == "dev" and d.variant == "scan"]
+
+
+def test_skip_reason_skips_scans_only_without_live_ocr():
+    scans = _dev_scans()
+    assert len(scans) == 3
+    for scan in scans:
+        for engine in ("null", "json_import"):
+            reason = skip_reason(scan, DATASET_DIR, engine)
+            assert reason is not None and "DOCPROC_OCR=ovis" in reason
+        assert skip_reason(scan, DATASET_DIR, "ovis") is None
+
+
+def test_run_eval_with_live_ocr_scores_scans_apart_from_their_originals(make_app, settings, tmp_path):
+    without_ocr = run_eval(make_app(), DATASET_DIR, tmp_path / "pages-null")
+    repo = SqliteRepository(str(tmp_path / "live.sqlite3"))
+    repo.init_schema()
+    live = App(settings.model_copy(update={"ocr": "ovis"}), repo=repo, extractor=FixtureExtractor(),
+               ocr=_LiveOCR(), embedder=FixtureEmbedder())
+    with_ocr = run_eval(live, DATASET_DIR, tmp_path / "pages-live")
+    scan_ids = {d.document_id for d in _dev_scans()}
+    assert with_ocr.skipped == []
+    assert scan_ids <= {e.document_id for e in with_ocr.extraction}
+    # A scan shares family and version with its original v1; scoring it must not overwrite that original.
+    originals = [e for e in with_ocr.extraction if e.document_id not in scan_ids]
+    assert originals == without_ocr.extraction
+    assert with_ocr.diffs == without_ocr.diffs

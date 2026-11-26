@@ -3,6 +3,7 @@ from pathlib import Path
 
 from docproc.models import Status
 from docproc.ocr import JsonImportOCR, OCRPageRequest
+from docproc.ocr.null import NullOCR
 from tests.conftest import find, run_pair
 
 
@@ -36,3 +37,9 @@ def test_standalone_image_records_filename(make_app, fixtures_dir):
     assert st["failed_pages"] == []
     locs = [r.location for r in st["records"]]
     assert locs and all(l.kind == "image" and l.image_name == "page2_scan.png" and l.image_index == 1 for l in locs)
+
+
+def test_null_ocr_error_text_is_what_the_web_app_matches():
+    """web/src/lib/docproc-issues.ts recognises a missing OCR engine by this exact text."""
+    result = NullOCR().ocr_page(OCRPageRequest(document_id="d", version_id="v1", page=1, source_file=Path("scan.pdf")))
+    assert result.ok is False and result.error == "OCR not configured"

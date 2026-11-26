@@ -88,7 +88,7 @@ How OCR works:
 - The runner OCRs **one page at a time** with OvisOCR3. It uses vLLM as on the model card, with a Transformers fallback.
 - If a page fails, the runner writes `{"status": "failed"}` for that page.
 - Locally, OCR sits behind a replaceable adapter: `docproc.ocr.OCRAdapter`, with implementations `json_import`, `ovis`, and `null`.
-- The MX130 (2 GB) cannot comfortably hold OvisOCR3 next to the display, so use `json_import`. `DOCPROC_OCR=ovis` is meant for a machine with a bigger GPU.
+- The MX130 (2 GB) cannot comfortably hold OvisOCR3 next to the display, so use `json_import`. On a machine with a bigger CUDA GPU, `DOCPROC_OCR=ovis` OCRs scans in-process, also for web uploads and `docproc eval --real` (see `AGENTS.md`).
 
 ### PostgreSQL + pgvector (team integration)
 

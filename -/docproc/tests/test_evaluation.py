@@ -98,8 +98,9 @@ def test_skip_reason_skips_scans_only_without_live_ocr():
     scans = _dev_scans()
     assert len(scans) == 3
     for scan in scans:
-        reason = skip_reason(scan, DATASET_DIR, "null")
-        assert reason is not None and "DOCPROC_OCR=ovis" in reason
+        for engine in ("null", "json_import"):
+            reason = skip_reason(scan, DATASET_DIR, engine)
+            assert reason is not None and "DOCPROC_OCR=ovis" in reason
         assert skip_reason(scan, DATASET_DIR, "ovis") is None
 
 

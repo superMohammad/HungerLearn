@@ -1,0 +1,136 @@
+[
+  {
+    "gate_id": "G-01",
+    "role": "courier",
+    "language": "en",
+    "citation": {
+      "document_id": "courier-pickup-wait-v2",
+      "clause_id": "CW-02",
+      "locator": {
+        "section": "٢. تأخر التجهيز",
+        "table_row": 3
+      }
+    },
+    "claim": "If the order is still being prepared 10 minutes after check-in, send a Pickup Delay report to Dispatch.",
+    "reason_code": "supported",
+    "expected_decision": "allow_trainer_review",
+    "reason": "Matches the v2 threshold and operator; it may go to trainer review but is not yet approved."
+  },
+  {
+    "gate_id": "G-02",
+    "role": "courier",
+    "language": "ar",
+    "citation": {
+      "document_id": "courier-pickup-wait-v2",
+      "clause_id": "CW-02",
+      "locator": {
+        "section": "٢. تأخر التجهيز",
+        "table_row": 3
+      }
+    },
+    "claim": "إذا بقي الطلب قيد التجهيز بعد ١٠ دقائق من تسجيل الوصول، أرسل بلاغ «تأخر الاستلام» إلى مسؤول التوزيع.",
+    "reason_code": "supported",
+    "expected_decision": "allow_trainer_review",
+    "reason": "Arabic-Indic ١٠ equals the printed ASCII 10 in v2; a gate must compare values, not glyphs."
+  },
+  {
+    "gate_id": "G-03",
+    "role": "courier",
+    "language": "en",
+    "citation": {
+      "document_id": "courier-pickup-wait-v2",
+      "clause_id": "CW-02",
+      "locator": {
+        "section": "٢. تأخر التجهيز",
+        "table_row": 3
+      }
+    },
+    "claim": "Wait 15 minutes after check-in before reporting a pickup delay to Dispatch.",
+    "reason_code": "threshold_mismatch",
+    "expected_decision": "block_publication",
+    "reason": "Teaches the superseded 15-minute timer against a v2 citation that says 10."
+  },
+  {
+    "gate_id": "G-04",
+    "role": "courier",
+    "language": "en",
+    "citation": {
+      "document_id": "courier-pickup-wait-v2",
+      "clause_id": "CW-02",
+      "locator": {
+        "section": "٢. تأخر التجهيز",
+        "table_row": 3
+      }
+    },
+    "claim": "Report a pickup delay once more than 10 minutes have passed since check-in.",
+    "reason_code": "operator_mismatch",
+    "expected_decision": "block_publication",
+    "reason": "The rule applies at 10 minutes (>=); 'more than 10' tells couriers to keep waiting at exactly 10."
+  },
+  {
+    "gate_id": "G-05",
+    "role": "courier",
+    "language": "ar",
+    "citation": {
+      "document_id": "courier-pickup-wait-v2",
+      "clause_id": "CW-02",
+      "locator": {
+        "section": "٢. تأخر التجهيز",
+        "table_row": 3
+      }
+    },
+    "claim": "أرسل بلاغ «تأخر الاستلام» إذا مرّ أكثر من 10 دقائق على تسجيل الوصول.",
+    "reason_code": "operator_mismatch",
+    "expected_decision": "block_publication",
+    "reason": "«أكثر من 10» excludes the 10-minute mark at which the v2 rule already applies."
+  },
+  {
+    "gate_id": "G-06",
+    "role": "courier",
+    "language": "en",
+    "citation": {
+      "document_id": "courier-pickup-wait-v1",
+      "clause_id": "CW-02",
+      "locator": {
+        "section": "٢. تأخر التجهيز",
+        "table_row": 3
+      }
+    },
+    "claim": "Report a pickup delay to Dispatch 15 minutes after check-in.",
+    "reason_code": "superseded_version",
+    "expected_decision": "block_publication",
+    "reason": "Faithful to v1, but v1 is superseded by courier-pickup-wait-v2; new training must cite the current version."
+  },
+  {
+    "gate_id": "G-07",
+    "role": "partner",
+    "language": "en",
+    "citation": {
+      "document_id": "partner-item-substitution-v1",
+      "clause_id": "PS-03",
+      "locator": {
+        "section": "3. Close an unanswered request"
+      }
+    },
+    "claim": "If the customer has not answered 5 minutes after you send the request, mark the item unavailable.",
+    "reason_code": "threshold_mismatch",
+    "expected_decision": "block_publication",
+    "reason": "PS-03 allows 7 minutes for the customer to answer."
+  },
+  {
+    "gate_id": "G-08",
+    "role": "partner",
+    "language": "en",
+    "citation": {
+      "document_id": "partner-item-substitution-v1",
+      "clause_id": "PS-03",
+      "locator": {
+        "section": "3. Close an unanswered request"
+      }
+    },
+    "claim": "If the customer has not answered 7 minutes after you send the request, mark the item unavailable and notify Partner Support.",
+    "reason_code": "supported",
+    "expected_decision": "allow_trainer_review",
+    "reason": "Matches the PS-03 threshold, start event and action."
+  }
+]

@@ -1,0 +1,6 @@
+CAUGHT loop  1 wrong_branch: manifest branch disagrees with the branch printed in the SOP header
+         -> FAIL: Visible header disagrees with manifest organization, branch, or version: courier-failed-handoff-v1
+CAUGHT loop  1 wrong_branch_local: Arabic branch name in the manifest disagrees with the Arabic header
+         -> FAIL: Visible header disagrees with manifest organization, branch, or version: courier-damaged-package-v1
+
+2/2 seeded errors caught

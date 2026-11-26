@@ -1,0 +1,2 @@
+# Each pair re-checked under all 8 labels, with the most favourable evidence for the wrong labels.
+106/106 pairs accept ONLY their own label

@@ -1,0 +1,4 @@
+MISSED loop  3 digit_glyph_loss: Arabic-Indic digits silently rewritten as ASCII in source and quote (glyph loss)
+         -> validator PASSED the corrupted data
+
+0/1 seeded errors caught

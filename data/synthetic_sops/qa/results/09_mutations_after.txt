@@ -1,0 +1,44 @@
+CAUGHT loop  1 wrong_branch: manifest branch disagrees with the branch printed in the SOP header
+         -> FAIL: Visible header disagrees with manifest organization, branch, or version: courier-failed-handoff-v1
+CAUGHT loop  1 wrong_branch_local: Arabic branch name in the manifest disagrees with the Arabic header
+         -> FAIL: Visible header disagrees with manifest organization, branch, or version: courier-damaged-package-v1
+CAUGHT loop  2 unanchored_timer: a wait threshold that never says when its timer starts (source and gold consistent)
+         -> FAIL: Deadline or wait has no stated start event: partner-item-substitution-v1/PS-03
+CAUGHT loop  3 digit_glyph_loss: Arabic-Indic digits silently rewritten as ASCII in source and quote (glyph loss)
+         -> FAIL: Malformed numeric threshold: employee-duplicate-charge-v1/EC-02
+CAUGHT loop  4 copied_facts: a facts label copied verbatim (in Arabic) from the quote instead of normalized
+         -> FAIL: Fact 'trigger' restates the source instead of a normalized label: employee-duplicate-charge-v1/EC-15
+CAUGHT loop  4 dangling_exception: an exception that points at a clause the document does not contain
+         -> FAIL: exception_to names a missing clause: employee-complaint-escalation-v1/EG-14
+CAUGHT loop  4 dropped_negation: an explicit prohibition (ولا ترفع طلب استرداد ثانياً) dropped from the facts
+         -> FAIL: Explicit prohibition missing from facts: employee-duplicate-charge-v1/EC-13
+CAUGHT loop  5 low_resolution_scan: scan downsampled to ~118 dpi (still >=1000 px, too coarse for reliable OCR)
+         -> FAIL: Scan resolution below 150 dpi: employee-delayed-order-v1-scan-en.png
+CAUGHT loop  5 exif_hidden_text: PNG scan carrying hidden text in an EXIF block instead of a tEXt chunk
+         -> FAIL: PNG carries EXIF, XMP, or comment metadata that could hide text: employee-delayed-order-v1-scan-en.png
+CAUGHT loop  6 missing_version_distractor: a v2-scoped query that no longer lists the identical v1 rule, so the version filter goes untested
+         -> FAIL: Missing other-version distractor courier-pickup-wait-v1/CW-03: dev-courier-03
+CAUGHT loop  6 stale_retrieval_target: a retrieval target pointing at the superseded version (stale-version label)
+         -> FAIL: Retrieval scope mismatch: dev-courier-01
+CAUGHT loop  7 wrong_threshold_change: CW-02 change recorded with the wrong new threshold (15 -> 15 instead of 15 -> 10)
+         -> FAIL: changed_facts disagree with the extraction labels: courier-pickup-wait-v2/CW-02
+CAUGHT loop  7 overstated_match_basis: low-similarity PP-02 rewrite labelled as an easy text match
+         -> FAIL: Diff match_basis should be same_section_low_similarity: partner-packing-sealing-v2/PP-02
+CAUGHT loop  7 missed_rule_change: changed rule (CW-02) mislabelled unchanged, so nobody is reassessed
+         -> FAIL: Incorrect diff label: CW-02
+CAUGHT loop  8 scenario_below_threshold: scenario no longer reaches the cited threshold (4 minutes on a 6-minute rule)
+         -> FAIL: Scenario never reaches the CH-02 threshold: A-C2
+CAUGHT loop  8 incomplete_remediation: remediation skips a rule the wrong answer breaks (door drop without authorization)
+         -> FAIL: Remediation does not match the rules the wrong answer violates: A-C2
+CAUGHT loop  8 non_discriminating_case: CW-02 case set at 16 minutes, so v1 and v2 give the same answer and the update is untested
+         -> FAIL: Scenario triggers CW-02 under the superseded threshold too, so it cannot test the update: A-C1
+CAUGHT loop  9 strict_operator_allowed: 'more than 10 minutes' draft (excludes the 10-minute mark) allowed through the gate
+         -> FAIL: Gate G-04 should be operator_mismatch, labelled supported
+CAUGHT loop  9 superseded_citation_allowed: draft citing the superseded v1 rule allowed through the gate
+         -> FAIL: Gate G-06 should be superseded_version, labelled supported
+CAUGHT loop  9 out_of_branch_reassessed: learner who mastered the same family at another branch is sent to reassessment
+         -> FAIL: Wrong learner routing: courier-pickup-wait-v2/HL-105
+CAUGHT loop  9 routing_gap: partner update loses its only in-progress learner, so assignment repointing goes untested
+         -> FAIL: Update must exercise every routing outcome, missing ['update_in_progress_assignment']: partner-packing-sealing-v2
+
+21/21 seeded errors caught

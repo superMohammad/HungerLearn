@@ -18,9 +18,22 @@ the change's tier (AGENTS.md → Workflow).
    `.verify/<branch>/`. If you change one of these flows, extend its spec in the same PR.
 4. Rows that need the LLM (F03 upload, F04 generation and video, F05 learner flow with generated
    items, F06 text-to-SQL, F07 v2): if the LLM endpoint is unreachable, say so and verify the non-LLM parts only;
-   never add a fallback to get around it. Walk them with the Playwright browser tools (MCP in both tools),
-   sign in with the seeded demo accounts (the user gives you `DEMO_PASSWORD`; never read `.env*` files),
-   and save one screenshot per row and language (`.verify/<branch>/F03-ar.png`). Video renders work only on
+   never add a fallback to get around it. Walk them with the Playwright browser tools (MCP in both tools).
+   Never ask for `DEMO_PASSWORD` and never read `.env*` files (`scripts/verify-app.mjs` reads `DEMO_PASSWORD`
+   itself for the scripted rows).
+   - Admin: in the Playwright browser, use its admin session, or tap the seeded admin's quick-fill chip on
+     `/signin` and sign in (the page fills the password field; never read that field's value or the page source).
+     Only if no chip is shown, ask the engineer to sign in there themselves; never ask them to type the password in
+     the chat.
+   - Learner: sign up one verify learner per branch through the app (F02): email
+     `verify-<slug>@verify.hungerlearn.test` (`<slug>` = the branch name lower-cased, with every character outside
+     `[a-z0-9-]` replaced by `-`; this domain stays out of the sign-in page's demo quick-fill), name starting `verify-`, and the
+     fixed throwaway password `verify-learner-local` (a local test account, not a secret). If it already exists,
+     sign in with that password. For F05 pick the role and branch of the training you published in F04, or `/learn`
+     is empty. These learners stay in the local database (and in F06 readiness) until the database is reset
+     (`pnpm db:seed` does not remove them).
+
+   Save one screenshot per row and language (`.verify/<branch>/F03-ar.png`). Video renders work only on
    the project owner's GPU machine; elsewhere, say video was not verified.
 5. Look at the screenshots, not only the pass/fail: a green test whose screenshot shows a spinner or an
    error proves nothing. Check RTL/LTR direction and that no UI string is hard-coded in one language.

@@ -1,0 +1,5 @@
+dev/uploads/courier-pickup-wait-v1-ar.docx: 0 error(s), 30 warning(s); digits {'arabic_indic': 15, 'ascii': 4}
+dev/uploads/courier-pickup-wait-v2-ar.docx: 0 error(s), 30 warning(s); digits {'arabic_indic': 13, 'ascii': 6}
+dev/uploads/employee-duplicate-charge-v1-ar.docx: 0 error(s), 26 warning(s); digits {'arabic_indic': 13, 'ascii': 4}
+dev/uploads/partner-packing-sealing-v1-ar.docx: 0 error(s), 28 warning(s); digits {'arabic_indic': 11, 'ascii': 4}
+held_out/uploads/partner-counter-verification-v1-ar.docx: 0 error(s), 28 warning(s); digits {'arabic_indic': 12, 'ascii': 4}

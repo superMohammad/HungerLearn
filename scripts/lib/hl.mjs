@@ -88,10 +88,14 @@ export function changedFiles(base) {
   return [...new Set([...lines(git(["diff", "--name-only", "--no-renames", base])), ...untrackedFiles()])].sort();
 }
 
+/** True when the repo-relative path is a regular file (not missing, not a symlink, not a directory). @param {string} file */
+export function isRegularFile(file) {
+  return lstatSync(path.join(REPO, file), { throwIfNoEntry: false })?.isFile() === true;
+}
+
 /** @param {string} file repo-relative */
 function untrackedText(file) {
-  const full = path.join(REPO, file);
-  return lstatSync(full).isFile() ? readFileSync(full, "utf8") : "";
+  return isRegularFile(file) ? readFileSync(path.join(REPO, file), "utf8") : "";
 }
 
 /** Added plus deleted lines since `base`, untracked files included (binary files count 0). @param {string} base */

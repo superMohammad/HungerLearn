@@ -26,10 +26,15 @@ const NAMES: Record<string, string> = {
   "HL-101": "فهد العتيبي",
   "HL-102": "سارة القحطاني",
   "HL-103": "ناصر الدوسري",
+  "HL-104": "خالد الغامدي",
+  "HL-105": "هيا الزهراني",
   "HL-201": "نورة الشمري",
   "HL-202": "عبدالله المطيري",
+  "HL-203": "منيرة السبيعي",
   "HL-301": "مطعم ليمونة",
   "HL-302": "متجر الريحان",
+  "HL-303": "مخبز السنبلة",
+  "HL-304": "مقهى الهيل",
 };
 
 /** Demo sign-in emails (reserved .test domain). */
@@ -37,10 +42,15 @@ const EMAILS: Record<string, string> = {
   "HL-101": "fahad@hungerlearn.test",
   "HL-102": "sara@hungerlearn.test",
   "HL-103": "nasser@hungerlearn.test",
+  "HL-104": "khalid@hungerlearn.test",
+  "HL-105": "haya@hungerlearn.test",
   "HL-201": "noura@hungerlearn.test",
   "HL-202": "abdullah@hungerlearn.test",
+  "HL-203": "munira@hungerlearn.test",
   "HL-301": "laymouna@hungerlearn.test",
   "HL-302": "alrayhan@hungerlearn.test",
+  "HL-303": "alsunbula@hungerlearn.test",
+  "HL-304": "alhail@hungerlearn.test",
 };
 const ADMIN = { email: "admin@hungerlearn.test", name: "ريم الحربي" };
 

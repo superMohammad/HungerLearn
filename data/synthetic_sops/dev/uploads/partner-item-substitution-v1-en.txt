@@ -12,10 +12,10 @@ If the customer selected No substitutions, mark the item unavailable and notify 
 When substitutions are allowed, send one replacement of equal or lower price through the order screen. Pack it only after the customer approves it there.
 
 [ ] 3. Close an unanswered request
-If the customer has not answered after 7 minutes, mark the item unavailable and notify Partner Support. Keep any remaining items in preparation.
+If the customer has not answered 7 minutes after you send the request, mark the item unavailable and notify Partner Support. Keep any remaining items in preparation.
 
 [ ] 4. Confirm shelf availability
-Before offering a replacement, check available stock and tell the prep station to hold one unit until the request is resolved.
+Before offering a replacement, check available stock and tell the prep station to hold the quantity you will offer until the request is resolved.
 
 [ ] 5. Match the requested quantity
 If a customer ordered several units, offer a replacement only when you can supply the full requested quantity at the allowed price.
@@ -33,4 +33,4 @@ If the approved replacement costs less, record the lower price in the order scre
 After packing an approved replacement, mark the preparation slip with the actual item and retain the approval in the order record.
 
 [ ] 10. Stop a cancelled order
-If the entire order is cancelled while an offer is pending, release the held unit and stop preparing that order.
+If the entire order is cancelled while an offer is pending, release the held stock and stop preparing that order.

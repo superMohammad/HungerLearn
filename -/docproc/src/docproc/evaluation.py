@@ -13,6 +13,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from docproc.config import OcrEngine
 from docproc.loaders import detect_format
 from docproc.models import ClauseChange, ClauseRecord, ComparisonReport, Status
 from docproc.normalize import clause_body, words
@@ -24,7 +25,6 @@ SPLIT = "dev"
 COVERAGE_THRESHOLD = 0.8
 
 GoldChange = Literal["added", "changed", "removed", "unchanged"]
-OcrEngine = Literal["json_import", "ovis", "null"]  # mirrors Settings.ocr
 
 
 class ManifestDocument(BaseModel):
@@ -217,7 +217,7 @@ def skip_reason(doc: ManifestDocument, dataset_dir: Path, ocr_engine: OcrEngine)
     Scans are scored only with a live OCR engine (`ovis`); `json_import` has no per-run JSON here.
     """
     if doc.variant == "scan" and ocr_engine != "ovis":
-        return f"scan: needs a live OCR engine (DOCPROC_OCR=ovis on a GPU machine), configured ocr={ocr_engine}"
+        return f"scan: needs a live OCR engine (DOCPROC_OCR=ovis on a GPU machine); this run's OCR is {ocr_engine}"
     try:
         detect_format(dataset_dir / doc.path)
     except ValueError as e:
@@ -235,7 +235,7 @@ def _load_json(path: Path) -> object:
 
 
 def run_eval(app: App, dataset_dir: Path, work_dir: Path) -> EvalReport:
-    """Ingest every scorable dev upload as `<family>/v<version>`, compare v2 with v1, and score both stages."""
+    """Ingest every scorable dev upload as `<family>/v<version>` (scans as `<family>-scan`), compare v2 with v1, and score both stages."""
     manifest = Manifest.model_validate(_load_json(dataset_dir / "manifest.json"))
     gold_docs = {g.document_id: g for g in
                  (GoldDocument.model_validate(x) for x in _load_json(dataset_dir / SPLIT / "gold" / "extraction.json"))}

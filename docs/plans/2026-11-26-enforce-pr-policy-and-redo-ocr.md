@@ -74,13 +74,13 @@ Feature-map rows: none; there are no app changes in this PR.
    - **A1 (#9):** `pr-policy`, the skill log and the rules.
    - **A2, stacked on A1:** the agent guard hardening, meaning the shell lexer and the `gh pr create`/merge gates (criteria 6–7).
    The reviews (`/security-review` and three `reviewer` passes) covered the combined change before the split.
-2. **PR B, revert #8** (Enhanced: multi-package): `git revert 679f666`. Evidence: `check.mjs`, and the dev eval skips scans again.
+2. **PR B, revert #8** (High-risk: touches `-/docproc/AGENTS.md`; multi-package): `git revert 679f666`. Evidence: `check.mjs`, and the dev eval skips scans again.
 3. **PR C, rebuild local OvisOCR3** (High-risk if it touches `-/docproc/AGENTS.md`, as #8 did; otherwise Enhanced), through every skill:
    - `plan-change`;
    - tests first (`fix-bug` style);
    - implementation;
    - `docproc eval --real` before and after;
-   - `verify-app` for F03 (scan upload) and a walk of all feature-map rows in AR and EN, in the Playwright MCP browser, with the **DEMO_PASSWORD you give me** (never read from `.env*`);
+   - `verify-app` for F03 (scan upload) and a walk of all feature-map rows in AR and EN, in the Playwright MCP browser, as the admin signed in there plus a reused per-branch verify learner, as the verify-app skill says (Mohammad, 2026-11-26: never ask for DEMO_PASSWORD; never read `.env*`);
    - `reviewer` plus a second `review-change` pass;
    - `pr-ready`;
    - merge when all green and Mohammad says so.

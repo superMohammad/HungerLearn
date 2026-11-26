@@ -1,0 +1,6 @@
+CAUGHT loop 10 label_leak_in_text: a gold clause ID leaked into an upload's visible text (intro line)
+         -> FAIL: Document scope differs from source: employee-delayed-order-v2
+MISSED loop 10 label_leak_in_metadata: a gold label hidden in DOCX document properties
+         -> validator PASSED the corrupted data
+
+1/2 seeded errors caught

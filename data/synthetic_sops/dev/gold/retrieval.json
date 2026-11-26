@@ -20,6 +20,11 @@
         "document_id": "courier-pickup-wait-v1",
         "clause_id": "CW-02",
         "reason": "obsolete 15-minute threshold"
+      },
+      {
+        "document_id": "courier-pickup-wait-v2",
+        "clause_id": "CW-03",
+        "reason": "closed-counter exception skips the wait; it does not set the preparation-delay threshold"
       }
     ],
     "cross_language": true
@@ -70,6 +75,11 @@
         "document_id": "courier-pickup-wait-v2",
         "clause_id": "CW-02",
         "reason": "normal waiting rule does not cover a closed counter"
+      },
+      {
+        "document_id": "courier-pickup-wait-v1",
+        "clause_id": "CW-03",
+        "reason": "identical rule in superseded v1; only the version filter excludes it"
       }
     ],
     "cross_language": true
@@ -95,6 +105,11 @@
         "document_id": "courier-failed-handoff-v1",
         "clause_id": "CH-01",
         "reason": "timer for customer handoff starts at a different event"
+      },
+      {
+        "document_id": "courier-pickup-wait-v1",
+        "clause_id": "CW-01",
+        "reason": "identical rule in superseded v1; only the version filter excludes it"
       }
     ],
     "cross_language": false
@@ -145,6 +160,11 @@
         "document_id": "courier-failed-handoff-v1",
         "clause_id": "CH-02",
         "reason": "unreachable customer does not authorize a doorstep drop"
+      },
+      {
+        "document_id": "courier-failed-handoff-v1",
+        "clause_id": "CH-13",
+        "reason": "lobby drop requested by building staff is a different authorization from a doorstep drop"
       }
     ],
     "cross_language": true
@@ -195,6 +215,16 @@
         "document_id": "employee-delayed-order-v2",
         "clause_id": "ED-02",
         "reason": "the support desk escalation has no rule authorizing courier departure"
+      },
+      {
+        "document_id": "courier-pickup-wait-v1",
+        "clause_id": "CW-04",
+        "reason": "same rule in superseded v1 under the old section ٤. قبل المغادرة; current citation is ٤. إنهاء الانتظار"
+      },
+      {
+        "document_id": "courier-pickup-wait-v2",
+        "clause_id": "CW-16",
+        "reason": "mentions the delay report but covers recording pickup time in it, not leaving the branch"
       }
     ],
     "cross_language": false
@@ -270,6 +300,11 @@
         "document_id": "courier-pickup-wait-v2",
         "clause_id": "CW-02",
         "reason": "courier timer is measured from branch check-in"
+      },
+      {
+        "document_id": "employee-delayed-order-v1",
+        "clause_id": "ED-01",
+        "reason": "identical rule in superseded v1; only the version filter excludes it"
       }
     ],
     "cross_language": true
@@ -295,6 +330,11 @@
         "document_id": "employee-delayed-order-v2",
         "clause_id": "ED-02",
         "reason": "internal escalation does not authorize a customer promise"
+      },
+      {
+        "document_id": "employee-delayed-order-v1",
+        "clause_id": "ED-03",
+        "reason": "identical rule in superseded v1; only the version filter excludes it"
       }
     ],
     "cross_language": false
@@ -445,6 +485,11 @@
         "document_id": "courier-pickup-wait-v2",
         "clause_id": "CW-04",
         "reason": "courier departure rule does not authorize partner handover"
+      },
+      {
+        "document_id": "partner-packing-sealing-v1",
+        "clause_id": "PP-03",
+        "reason": "identical rule in superseded v1; only the version filter excludes it"
       }
     ],
     "cross_language": true
@@ -595,6 +640,11 @@
         "document_id": "partner-packing-sealing-v2",
         "clause_id": "PP-04",
         "reason": "bag count does not resolve a mismatched label"
+      },
+      {
+        "document_id": "partner-packing-sealing-v1",
+        "clause_id": "PP-01",
+        "reason": "identical rule in superseded v1; only the version filter excludes it"
       }
     ],
     "cross_language": false
@@ -620,6 +670,11 @@
         "document_id": "courier-pickup-wait-v2",
         "clause_id": "CW-01",
         "reason": "The ordinary in-app check-in presumes the app works."
+      },
+      {
+        "document_id": "courier-pickup-wait-v1",
+        "clause_id": "CW-10",
+        "reason": "identical rule in superseded v1, cited by table row instead of the v2 section"
       }
     ],
     "cross_language": true
@@ -670,6 +725,11 @@
         "document_id": "employee-delayed-order-v2",
         "clause_id": "ED-01",
         "reason": "The opening procedure applies when there is no existing case to reuse."
+      },
+      {
+        "document_id": "employee-delayed-order-v1",
+        "clause_id": "ED-10",
+        "reason": "identical rule in superseded v1, cited with a page locator"
       }
     ],
     "cross_language": true
@@ -720,6 +780,11 @@
         "document_id": "partner-packing-sealing-v2",
         "clause_id": "PP-02",
         "reason": "The outer-bag exception concerns paper that cannot take a seal."
+      },
+      {
+        "document_id": "partner-packing-sealing-v1",
+        "clause_id": "PP-11",
+        "reason": "identical rule in superseded v1; only the version filter excludes it"
       }
     ],
     "cross_language": true

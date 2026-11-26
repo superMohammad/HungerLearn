@@ -13,6 +13,7 @@
       "organization": "MadarFig Dispatch",
       "organization_local": "مدار التين للتوصيل",
       "branch": "Fig Gate",
+      "branch_local": "بوابة التين",
       "split": "dev",
       "variant": "original",
       "procedure_count": 11
@@ -28,6 +29,7 @@
       "organization": "MadarFig Dispatch",
       "organization_local": "مدار التين للتوصيل",
       "branch": "Fig Gate",
+      "branch_local": "بوابة التين",
       "split": "dev",
       "variant": "original",
       "procedure_count": 11
@@ -43,6 +45,7 @@
       "organization": "MadarFig Dispatch",
       "organization_local": "MadarFig Dispatch",
       "branch": "Fig Gate",
+      "branch_local": "Fig Gate",
       "split": "dev",
       "variant": "original",
       "procedure_count": 10
@@ -58,6 +61,7 @@
       "organization": "MadarFig Dispatch",
       "organization_local": "مدار التين للتوصيل",
       "branch": "Fig Gate",
+      "branch_local": "بوابة التين",
       "split": "held_out",
       "variant": "original",
       "procedure_count": 10
@@ -73,6 +77,7 @@
       "organization": "SidrDesk Operations",
       "organization_local": "SidrDesk Operations",
       "branch": "Sidr Square",
+      "branch_local": "Sidr Square",
       "split": "dev",
       "variant": "original",
       "procedure_count": 11
@@ -88,6 +93,7 @@
       "organization": "SidrDesk Operations",
       "organization_local": "SidrDesk Operations",
       "branch": "Sidr Square",
+      "branch_local": "Sidr Square",
       "split": "dev",
       "variant": "original",
       "procedure_count": 10
@@ -103,6 +109,7 @@
       "organization": "SidrDesk Operations",
       "organization_local": "مكتب السدر للعمليات",
       "branch": "Sidr Square",
+      "branch_local": "ساحة السدر",
       "split": "dev",
       "variant": "original",
       "procedure_count": 10
@@ -118,6 +125,7 @@
       "organization": "SidrDesk Operations",
       "organization_local": "SidrDesk Operations",
       "branch": "Sidr Square",
+      "branch_local": "Sidr Square",
       "split": "held_out",
       "variant": "original",
       "procedure_count": 10
@@ -133,6 +141,7 @@
       "organization": "Copper Olive Kitchen",
       "organization_local": "مطبخ الزيتونة النحاسية",
       "branch": "Olive Lane",
+      "branch_local": "ممر الزيتون",
       "split": "dev",
       "variant": "original",
       "procedure_count": 10
@@ -148,6 +157,7 @@
       "organization": "Copper Olive Kitchen",
       "organization_local": "مطبخ الزيتونة النحاسية",
       "branch": "Olive Lane",
+      "branch_local": "ممر الزيتون",
       "split": "dev",
       "variant": "original",
       "procedure_count": 11
@@ -163,6 +173,7 @@
       "organization": "Copper Olive Kitchen",
       "organization_local": "Copper Olive Kitchen",
       "branch": "Olive Lane",
+      "branch_local": "Olive Lane",
       "split": "dev",
       "variant": "original",
       "procedure_count": 10
@@ -178,6 +189,7 @@
       "organization": "Copper Olive Kitchen",
       "organization_local": "مطبخ الزيتونة النحاسية",
       "branch": "Olive Lane",
+      "branch_local": "ممر الزيتون",
       "split": "held_out",
       "variant": "original",
       "procedure_count": 10
@@ -193,6 +205,7 @@
       "organization": "MadarFig Dispatch",
       "organization_local": "مدار التين للتوصيل",
       "branch": "Fig Gate",
+      "branch_local": "بوابة التين",
       "split": "dev",
       "variant": "scan",
       "source_document_id": "courier-pickup-wait-v1",
@@ -213,6 +226,7 @@
       "organization": "SidrDesk Operations",
       "organization_local": "SidrDesk Operations",
       "branch": "Sidr Square",
+      "branch_local": "Sidr Square",
       "split": "dev",
       "variant": "scan",
       "source_document_id": "employee-delayed-order-v1",
@@ -233,6 +247,7 @@
       "organization": "Copper Olive Kitchen",
       "organization_local": "مطبخ الزيتونة النحاسية",
       "branch": "Olive Lane",
+      "branch_local": "ممر الزيتون",
       "split": "dev",
       "variant": "scan",
       "source_document_id": "partner-packing-sealing-v1",

@@ -4,6 +4,10 @@ description: Use when reviewing a Hunger Learn change you did not write (fresh-c
 ---
 # Review a change
 
+First, record that this skill is in use: `node scripts/skill-log.mjs review-change` (Claude Code also logs it
+automatically). The PR gate reads this log: the `pr-policy` check needs the skills of the change's tier
+(AGENTS.md → Workflow).
+
 Inputs: the issue or task text, `git diff origin/main...HEAD` (plus `git diff` for uncommitted work),
 evidence in `.verify/<branch>/` and the PR description. Ignore how the change was produced.
 

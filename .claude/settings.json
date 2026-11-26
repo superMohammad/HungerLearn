@@ -27,6 +27,14 @@
         ]
       }
     ],
+    "PostToolUse": [
+      {
+        "matcher": "Skill|Agent",
+        "hooks": [
+          { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/scripts/agent-skill-log-hook.mjs\"", "timeout": 10 }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [

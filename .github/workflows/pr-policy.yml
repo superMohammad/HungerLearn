@@ -1,0 +1,28 @@
+# Required check: the PR description follows the workflow in AGENTS.md (tier vs diff, checklist, evidence,
+# approved plan for Enhanced+, skills used). Its own workflow so that editing the description re-runs only this.
+# The description is passed as data through an environment variable, never interpolated into the script.
+name: pr-policy
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+permissions:
+  contents: read
+concurrency:
+  group: pr-policy-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  pr-policy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: PR description follows the workflow
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          printf '%s' "$PR_BODY" > "$RUNNER_TEMP/pr-body.md"
+          node scripts/pr-policy.mjs "$RUNNER_TEMP/pr-body.md"

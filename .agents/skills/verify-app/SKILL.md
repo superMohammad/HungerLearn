@@ -4,6 +4,10 @@ description: Use after changing anything a user sees or a flow in the Hunger Lea
 ---
 # Verify the app at runtime
 
+First, record that this skill is in use: `node scripts/skill-log.mjs verify-app` (Claude Code also logs it
+automatically). The PR gate reads this log: the `pr-policy` check needs the skills of the change's tier
+(AGENTS.md → Workflow).
+
 1. Read `docs/feature-map.md` and pick the rows your change touches. If your change adds or changes a
    user-visible feature, update its row in the same PR.
 2. Make sure the app runs: Postgres up (`docker compose up -d`), database migrated and seeded

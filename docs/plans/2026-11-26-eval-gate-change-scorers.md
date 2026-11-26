@@ -2,7 +2,13 @@
 
 **Tier:** Enhanced (docproc eval scorers over corpus gold; stacked on PR #7) · **Owner:** Yasser (@altayariyasser) · **Branch:** `feat/eval-gate-change-scorers` (based on `Yasser`, rebased onto `main` once #7 merges)
 
-**Approval pending:** @superMohammad. Replace this line with `**Approved:** @superMohammad, <date>` to approve, or answer the open questions first.
+**Approved:** @superMohammad, 2026-11-26
+
+**Decisions (Mohammad, 2026-11-26):**
+1. **Gate:** wait for vGolden25's publication gate and score it. Don't build a second gate in docproc. Ship the scorer and the decisions contract now, and report `not scored` until the gate lands.
+2. **Mapping:** approved as written, and `audience` → `regenerate_and_reassess`.
+
+**Before the PR:** rebase this branch onto `main`. #7 was squash-merged, so the old `Yasser` commits must not come along.
 
 ## Problem
 PR #7 adds two gold files that nothing scores yet:

@@ -2,7 +2,14 @@
 
 **Tier:** High-risk (adds `web/db/migrations/003_ai_call_scope.sql`) · **Owner:** Yasser (@altayariyasser) · **Branch:** `feat/ai-call-scope` (from `main`)
 
-**Approval pending:** @superMohammad. Replace this line with `**Approved:** @superMohammad, <date>` to approve, or answer the open questions first.
+**Approved:** @superMohammad, 2026-11-26
+
+**Decisions (Mohammad, 2026-11-26):**
+1. **docproc's LLM calls:** logging them goes in a separate PR.
+2. **Foreign key:** a foreign key to `hl_documents` is OK.
+3. **Setting:** `LLM_PRICES_USD_PER_MTOK` (JSON) is OK.
+
+**Also in this PR:** add `LLM_PRICES_USD_PER_MTOK` to the env file the `web-e2e` job writes in `.github/workflows/ci.yml`. It is required, so that job fails without it. That file is High-risk, so mention it in the PR.
 
 ## Problem
 `ai_calls` logs purpose, model, prompt version, tokens and duration, but not which document or version a call was for. So the architecture's "cost per document" and "time per document" metrics (section 5) cannot be computed. Model prices exist nowhere, so a token count cannot become dollars.

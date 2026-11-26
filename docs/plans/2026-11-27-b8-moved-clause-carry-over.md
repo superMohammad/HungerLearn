@@ -1,7 +1,7 @@
 # B8 — Keep training when a clause moves
 
 **Risk tier:** Enhanced because the refactor touches web/src/lib/pipeline.ts.
-**Approval status:** Pending Mohammed’s review.
+**Approved:** @superMohammad, 2026-11-27
 
 ## Scope
 

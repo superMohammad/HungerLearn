@@ -4,7 +4,7 @@
  * Plain Node (no dependencies) so the same scripts run on Linux, macOS and Windows.
  */
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, lstatSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -79,9 +79,50 @@ export function baseRev() {
   return (hasOriginMain ? git(["merge-base", "HEAD", "origin/main"]) : git(["rev-parse", "HEAD"])).trim();
 }
 
-/** Files changed since `base`, including uncommitted and untracked files (repo-relative, forward slashes). @param {string} base */
+/**
+ * Files changed since `base`, including uncommitted and untracked files (repo-relative, forward slashes).
+ * Renames are listed as delete + add, so moving a file out of a High-risk path still names that path.
+ * @param {string} base
+ */
 export function changedFiles(base) {
-  return [...new Set([...lines(git(["diff", "--name-only", base])), ...untrackedFiles()])].sort();
+  return [...new Set([...lines(git(["diff", "--name-only", "--no-renames", base])), ...untrackedFiles()])].sort();
+}
+
+/** @param {string} file repo-relative */
+function untrackedText(file) {
+  const full = path.join(REPO, file);
+  return lstatSync(full).isFile() ? readFileSync(full, "utf8") : "";
+}
+
+/** Added plus deleted lines since `base`, untracked files included (binary files count 0). @param {string} base */
+export function changedLineCount(base) {
+  const tracked = lines(git(["diff", "--numstat", "--no-renames", base]))
+    .map((l) => l.split("\t"))
+    .reduce((sum, [added, deleted]) => sum + (Number(added) || 0) + (Number(deleted) || 0), 0);
+  return untrackedFiles().reduce((sum, f) => sum + lines(untrackedText(f)).length, tracked);
+}
+
+/** The read-only text-to-SQL surface (AGENTS.md → High-risk: anything touching hl_readonly / readiness_v). */
+const READONLY_SURFACE = /hl_readonly|readiness_v/;
+
+/** Files whose added or removed lines (or untracked content) mention the read-only SQL surface. @param {string} base */
+export function readonlySurfaceFiles(base) {
+  /** @type {Set<string>} */
+  const found = new Set();
+  let file = "";
+  // Header lines (`--- a/x`, `+++ b/x`) come between `diff --git` and the first `@@`; inside a hunk, a removed
+  // SQL comment (`-- …`) starts with `--- ` too, so only the hunk state tells them apart.
+  let inHunk = false;
+  for (const line of git(["diff", "--no-color", "--no-ext-diff", "--no-renames", "--src-prefix=a/", "--dst-prefix=b/", "-U0", base]).split("\n")) {
+    const header = /^diff --git a\/.* b\/(.*)$/.exec(line);
+    if (header !== null) {
+      file = header[1];
+      inHunk = false;
+    } else if (line.startsWith("@@")) inHunk = true;
+    else if (inHunk && (line.startsWith("+") || line.startsWith("-")) && READONLY_SURFACE.test(line)) found.add(file);
+  }
+  for (const f of untrackedFiles()) if (READONLY_SURFACE.test(untrackedText(f))) found.add(f);
+  return [...found].sort();
 }
 
 export function untrackedFiles() {

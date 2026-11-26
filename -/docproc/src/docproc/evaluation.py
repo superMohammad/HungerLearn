@@ -2,7 +2,9 @@
 
 Reads `data/synthetic_sops/manifest.json` and `dev/gold/{extraction,version_diffs}.json`, runs the
 configured pipeline on a fresh SQLite database, and matches the output against the gold labels by
-word coverage of the source quotes. `held_out/` is never read: held-out evaluation needs a frozen
+word coverage of the source quotes. It also scores docproc's matcher on the typed edits of
+`dev/gold/change_pairs.json`, and a publication gate's decisions (when given) on
+`dev/gold/publication_gates.json`. `held_out/` is never read: held-out evaluation needs a frozen
 configuration and is a separate, deliberate run.
 """
 from __future__ import annotations
@@ -15,7 +17,8 @@ from pydantic import BaseModel
 
 from docproc.config import OcrEngine
 from docproc.loaders import detect_format
-from docproc.models import ClauseChange, ClauseRecord, ComparisonReport, Status
+from docproc.matching import change_reasons, status_for
+from docproc.models import Audience, ClauseChange, ClauseRecord, ComparisonReport, SourceLocation, Status
 from docproc.normalize import clause_body, words
 from docproc.pipeline import App
 
@@ -25,6 +28,12 @@ SPLIT = "dev"
 COVERAGE_THRESHOLD = 0.8
 
 GoldChange = Literal["added", "changed", "removed", "unchanged"]
+ChangeHandling = Literal["carry_forward", "refresh_text", "regenerate_and_reassess"]
+GateDecision = Literal["allow_trainer_review", "block_publication"]
+# Matcher reasons that change what a rule requires: training must be regenerated and learners reassessed.
+MATERIAL_REASONS = ("numbers", "negation", "modality", "audience")
+GATES_NOT_SCORED = ("no publication gate implementation to score yet (vGolden25's web gate); "
+                    "pass its decisions with `docproc eval --gate-decisions FILE`")
 
 
 class ManifestDocument(BaseModel):
@@ -74,6 +83,45 @@ class GoldDiff(BaseModel):
     clauses: list[GoldDiffClause]
 
 
+class GoldClauseRef(BaseModel):
+    document_id: str
+    clause_id: str
+
+
+class GoldChangePair(BaseModel):
+    """One typed edit of one gold clause (`dev/gold/change_pairs.json`)."""
+
+    pair_id: str
+    language: Literal["ar", "en"]
+    role: Literal["courier", "employee", "partner"]
+    base: GoldClauseRef
+    before: str
+    after: str
+    change_type: str
+    material: bool
+    expected_handling: ChangeHandling
+
+
+class GoldGate(BaseModel):
+    """One draft claim and the gate decision it must get (`dev/gold/publication_gates.json`)."""
+
+    gate_id: str
+    role: Literal["courier", "employee", "partner"]
+    language: Literal["ar", "en"]
+    citation: GoldClauseRef
+    claim: str
+    reason_code: str
+    expected_decision: GateDecision
+
+
+class GateDecisionRecord(BaseModel):
+    """What a publication gate decided for one gold claim: the contract a gate implementation writes."""
+
+    gate_id: str
+    decision: GateDecision
+    reason_code: str
+
+
 class SkippedDocument(BaseModel):
     document_id: str
     reason: str
@@ -109,6 +157,59 @@ class DiffScore(BaseModel):
     wrong: list[DiffClauseResult]
 
 
+class ChangePairResult(BaseModel):
+    pair_id: str
+    change_type: str
+    language: str
+    expected: ChangeHandling
+    predicted: ChangeHandling
+    reasons: list[str]
+
+
+class GroupScore(BaseModel):
+    pairs: int
+    correct: int
+
+
+class ChangePairScore(BaseModel):
+    pairs: int
+    correct: int
+    accuracy: float
+    material_pairs: int
+    material_caught: int
+    material_recall: float | None  # None when no pair is material
+    false_material: int  # non-material pairs that would send learners to reassessment
+    by_change_type: dict[str, GroupScore]
+    by_language: dict[str, GroupScore]
+    wrong: list[ChangePairResult]
+
+
+class GateResult(BaseModel):
+    gate_id: str
+    expected: GateDecision
+    predicted: GateDecision
+    expected_reason: str
+    predicted_reason: str
+
+
+class GateScore(BaseModel):
+    gates: int
+    correct: int
+    accuracy: float
+    must_block: int
+    unsafe_allows: int  # claims that must be blocked but were allowed (target 0)
+    wrongly_blocked: int  # supported claims that were blocked
+    reason_agreement: int  # decisions whose reason code equals the gold one
+    wrong: list[GateResult]
+
+
+class GateEval(BaseModel):
+    status: Literal["scored", "not_scored"]
+    reason: str | None
+    gates: int
+    score: GateScore | None
+
+
 class EvalReport(BaseModel):
     split: str
     llm: str
@@ -121,6 +222,8 @@ class EvalReport(BaseModel):
     macro_recall: float
     macro_precision: float
     diff_accuracy: float
+    change_pairs: ChangePairScore
+    publication_gates: GateEval
 
 
 def word_set(text: str) -> frozenset[str]:
@@ -211,6 +314,86 @@ def score_diff(gold: GoldDiff, before: GoldDocument, after: GoldDocument, report
     )
 
 
+def predicted_handling(reasons: list[str]) -> ChangeHandling:
+    """What the update flow would do with a clause given docproc's change reasons. Pure."""
+    if any(r.startswith(MATERIAL_REASONS) for r in reasons):
+        return "regenerate_and_reassess"
+    return "refresh_text" if status_for(reasons) == Status.changed else "carry_forward"
+
+
+def _pair_record(text: str, pair: GoldChangePair) -> ClauseRecord:
+    """A clause record that differs from its pair partner only in text, so only the edit is judged."""
+    return ClauseRecord(
+        record_id=pair.pair_id, document_id=pair.base.document_id, version_id="pair", ordinal=0, quote=text,
+        statement=text, audiences=[Audience(pair.role)], audience_source="inherited",
+        location=SourceLocation(kind="text", block_index=0), content_hash=pair.pair_id,
+    )
+
+
+def _group(results: list[ChangePairResult], key: str) -> dict[str, GroupScore]:
+    groups: dict[str, GroupScore] = {}
+    for r in results:
+        g = groups.setdefault(getattr(r, key), GroupScore(pairs=0, correct=0))
+        g.pairs += 1
+        g.correct += r.predicted == r.expected
+    return dict(sorted(groups.items()))
+
+
+def score_change_pairs(pairs: list[GoldChangePair]) -> ChangePairScore:
+    """Run docproc's own matcher (`matching.change_reasons`) on each typed edit and score its handling. Pure."""
+    if not pairs:
+        raise ValueError("no change pairs to score")
+    results = []
+    for p in pairs:
+        reasons = change_reasons(_pair_record(p.before, p), _pair_record(p.after, p))
+        results.append(ChangePairResult(pair_id=p.pair_id, change_type=p.change_type, language=p.language,
+                                        expected=p.expected_handling, predicted=predicted_handling(reasons),
+                                        reasons=reasons))
+    material = [r for r, p in zip(results, pairs, strict=True) if p.material]
+    caught = sum(1 for r in material if r.predicted == "regenerate_and_reassess")
+    false_material = sum(1 for r, p in zip(results, pairs, strict=True)
+                         if not p.material and r.predicted == "regenerate_and_reassess")
+    wrong = [r for r in results if r.predicted != r.expected]
+    return ChangePairScore(
+        pairs=len(results), correct=len(results) - len(wrong), accuracy=(len(results) - len(wrong)) / len(results),
+        material_pairs=len(material), material_caught=caught,
+        material_recall=caught / len(material) if material else None, false_material=false_material,
+        by_change_type=_group(results, "change_type"), by_language=_group(results, "language"), wrong=wrong,
+    )
+
+
+def score_gates(gold: list[GoldGate], decisions: list[GateDecisionRecord]) -> GateScore:
+    """Score a gate's decisions against the gold claims; each gold claim needs exactly one decision. Pure."""
+    by_id: dict[str, GateDecisionRecord] = {}
+    for d in decisions:
+        if d.gate_id in by_id:
+            raise ValueError(f"gate decisions: {d.gate_id} is decided more than once")
+        by_id[d.gate_id] = d
+    gold_ids = {g.gate_id for g in gold}
+    missing = sorted(gold_ids - by_id.keys())
+    unknown = sorted(by_id.keys() - gold_ids)
+    if missing or unknown:
+        raise ValueError(f"gate decisions do not match the gold claims: missing {missing}, unknown {unknown}")
+    results = [GateResult(gate_id=g.gate_id, expected=g.expected_decision, predicted=by_id[g.gate_id].decision,
+                          expected_reason=g.reason_code, predicted_reason=by_id[g.gate_id].reason_code) for g in gold]
+    wrong = [r for r in results if r.predicted != r.expected]
+    return GateScore(
+        gates=len(results), correct=len(results) - len(wrong), accuracy=(len(results) - len(wrong)) / len(results),
+        must_block=sum(1 for r in results if r.expected == "block_publication"),
+        unsafe_allows=sum(1 for r in wrong if r.expected == "block_publication"),
+        wrongly_blocked=sum(1 for r in wrong if r.expected == "allow_trainer_review"),
+        reason_agreement=sum(1 for r in results if r.predicted_reason == r.expected_reason), wrong=wrong,
+    )
+
+
+def load_gate_decisions(path: Path) -> list[GateDecisionRecord]:
+    """Read a gate implementation's decisions file: a JSON list of {gate_id, decision, reason_code}."""
+    data = _load_json(path)
+    if not isinstance(data, list):
+        raise ValueError(f"{path}: expected a JSON list of gate decisions, got {type(data).__name__}")
+    return [GateDecisionRecord.model_validate(x) for x in data]
+
+
 def skip_reason(doc: ManifestDocument, dataset_dir: Path, ocr_engine: OcrEngine) -> str | None:
     """Why docproc cannot score this upload in an eval run, or None. Pure apart from reading the suffix.
 
@@ -234,7 +417,7 @@ def _load_json(path: Path) -> object:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def run_eval(app: App, dataset_dir: Path, work_dir: Path) -> EvalReport:
+def run_eval(app: App, dataset_dir: Path, work_dir: Path, gate_decisions: Path | None = None) -> EvalReport:
     """Ingest every scorable dev upload as `<family>/v<version>` (scans as `<family>-scan`), compare v2 with v1, and score both stages."""
     manifest = Manifest.model_validate(_load_json(dataset_dir / "manifest.json"))
     gold_docs = {g.document_id: g for g in
@@ -274,10 +457,18 @@ def run_eval(app: App, dataset_dir: Path, work_dir: Path) -> EvalReport:
     if not extraction:
         raise RuntimeError(f"no {SPLIT} upload could be scored; skipped: {[s.model_dump() for s in skipped]}")
     total_diff_clauses = sum(d.clauses for d in diffs)
+    gold_dir = dataset_dir / SPLIT / "gold"
+    pairs = [GoldChangePair.model_validate(x) for x in _load_json(gold_dir / "change_pairs.json")]
+    gates = [GoldGate.model_validate(x) for x in _load_json(gold_dir / "publication_gates.json")]
+    gate_eval = (GateEval(status="not_scored", reason=GATES_NOT_SCORED, gates=len(gates), score=None)
+                 if gate_decisions is None else
+                 GateEval(status="scored", reason=None, gates=len(gates),
+                          score=score_gates(gates, load_gate_decisions(gate_decisions))))
     return EvalReport(
         split=SPLIT, llm=app.settings.llm, llm_model=app.settings.llm_model, embedding_model=app.embedder.model_id,
         coverage_threshold=COVERAGE_THRESHOLD, extraction=extraction, diffs=diffs, skipped=skipped,
         macro_recall=sum(e.recall for e in extraction) / len(extraction),
         macro_precision=sum(e.precision for e in extraction) / len(extraction),
         diff_accuracy=sum(d.correct for d in diffs) / total_diff_clauses if total_diff_clauses else 0.0,
+        change_pairs=score_change_pairs(pairs), publication_gates=gate_eval,
     )

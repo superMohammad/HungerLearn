@@ -1,6 +1,6 @@
 # A4 · Scorers for publication gates and change pairs
 
-**Tier:** Enhanced (docproc eval scorers over corpus gold; stacked on PR #7) · **Owner:** Yasser (@altayariyasser) · **Branch:** `feat/eval-gate-change-scorers` (based on `Yasser`, rebased onto `main` once #7 merges)
+**Tier:** Enhanced (docproc eval scorers over corpus gold; stacked on PR #7) · **Owner:** Yasser (@altayariyasser) · **Branch:** `feat/a4-eval-scorers` (fresh from `main` after #7's squash merge, with the two plan commits cherry-picked; replaces `feat/eval-gate-change-scorers`, because the team rules forbid the force-push a rebase would need)
 
 **Approved:** @superMohammad, 2026-11-26
 

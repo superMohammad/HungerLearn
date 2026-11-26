@@ -1,7 +1,8 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { sql } from "@/lib/db";
-import { getComparison, listClauses, runDocproc, type ComparisonReport } from "@/lib/docproc";
+import { getComparison, listClauses, listVersionIssues, runDocproc, type ComparisonReport } from "@/lib/docproc";
+import { zeroClausesError } from "@/lib/docproc-issues";
 import { buildPackage, groupProcedures } from "@/lib/generation";
 import { copyLessonVideo, queueLessonVideo } from "@/lib/media";
 import { DICTIONARIES, type Dict } from "@/lib/i18n";
@@ -196,7 +197,7 @@ export async function runUploadPipeline(documentId: string, versionId: string, f
   const clauses = await listClauses(documentId, versionId);
   if (clauses.length === 0) {
     await withJob(documentId, versionId, "understand", async () => {
-      throw new Error("docproc extracted 0 clauses; check the file and docproc issues before generating training");
+      throw new Error(zeroClausesError(await listVersionIssues(documentId, versionId)));
     });
     return;
   }

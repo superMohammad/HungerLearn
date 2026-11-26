@@ -13,6 +13,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from docproc.config import OcrEngine
 from docproc.loaders import detect_format
 from docproc.models import ClauseChange, ClauseRecord, ComparisonReport, Status
 from docproc.normalize import clause_body, words
@@ -210,10 +211,13 @@ def score_diff(gold: GoldDiff, before: GoldDocument, after: GoldDocument, report
     )
 
 
-def skip_reason(doc: ManifestDocument, dataset_dir: Path) -> str | None:
-    """Why docproc cannot score this upload in an eval run, or None. Pure apart from reading the suffix."""
-    if doc.variant == "scan":
-        return "scan: needs OCR JSON from colab/ovis_ocr_runner (docproc export-ocr-pages); not part of this run"
+def skip_reason(doc: ManifestDocument, dataset_dir: Path, ocr_engine: OcrEngine) -> str | None:
+    """Why docproc cannot score this upload in an eval run, or None. Pure apart from reading the suffix.
+
+    Scans are scored only with a live OCR engine (`ovis`); `json_import` has no per-run JSON here.
+    """
+    if doc.variant == "scan" and ocr_engine != "ovis":
+        return f"scan: needs a live OCR engine (DOCPROC_OCR=ovis on a GPU machine); this run's OCR is {ocr_engine}"
     try:
         detect_format(dataset_dir / doc.path)
     except ValueError as e:
@@ -221,12 +225,17 @@ def skip_reason(doc: ManifestDocument, dataset_dir: Path) -> str | None:
     return None
 
 
+def ingest_key(doc: ManifestDocument) -> str:
+    """docproc document ID for an upload: a scan shares family and version with its original, so it gets its own."""
+    return f"{doc.document_family}-scan" if doc.variant == "scan" else doc.document_family
+
+
 def _load_json(path: Path) -> object:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
 def run_eval(app: App, dataset_dir: Path, work_dir: Path) -> EvalReport:
-    """Ingest every scorable dev upload as `<family>/v<version>`, compare v2 with v1, and score both stages."""
+    """Ingest every scorable dev upload as `<family>/v<version>` (scans as `<family>-scan`), compare v2 with v1, and score both stages."""
     manifest = Manifest.model_validate(_load_json(dataset_dir / "manifest.json"))
     gold_docs = {g.document_id: g for g in
                  (GoldDocument.model_validate(x) for x in _load_json(dataset_dir / SPLIT / "gold" / "extraction.json"))}
@@ -237,18 +246,18 @@ def run_eval(app: App, dataset_dir: Path, work_dir: Path) -> EvalReport:
     extraction: list[ExtractionScore] = []
     ingested: set[str] = set()
     for doc in docs:
-        reason = skip_reason(doc, dataset_dir)
+        reason = skip_reason(doc, dataset_dir, app.settings.ocr)
         if reason is not None:
             skipped.append(SkippedDocument(document_id=doc.document_id, reason=reason))
             continue
-        version_id = f"v{doc.version}"
-        app.ingest(dataset_dir / doc.path, doc.document_family, version_id, work_dir=work_dir)
-        info = app.repo.get_version(doc.document_family, version_id)
+        key, version_id = ingest_key(doc), f"v{doc.version}"
+        app.ingest(dataset_dir / doc.path, key, version_id, work_dir=work_dir)
+        info = app.repo.get_version(key, version_id)
         if info is None:
-            raise RuntimeError(f"docproc stored no version for {doc.document_id} ({doc.document_family} {version_id})")
+            raise RuntimeError(f"docproc stored no version for {doc.document_id} ({key} {version_id})")
         if doc.version == 1:
-            app.compare(doc.document_family, version_id)
-        records = app.repo.get_records(doc.document_family, version_id)
+            app.compare(key, version_id)
+        records = app.repo.get_records(key, version_id)
         extraction.append(score_extraction(gold_docs[doc.document_id], records, [i.kind for i in info.issues],
                                            sum(1 for i in info.issues if i.blocking)))
         ingested.add(doc.document_id)
@@ -259,7 +268,7 @@ def run_eval(app: App, dataset_dir: Path, work_dir: Path) -> EvalReport:
         if gold.from_document_id not in ingested or gold.to_document_id not in ingested:
             continue
         after = by_id[gold.to_document_id]
-        report = app.compare(after.document_family, f"v{after.version}")
+        report = app.compare(ingest_key(after), f"v{after.version}")
         diffs.append(score_diff(gold, gold_docs[gold.from_document_id], gold_docs[gold.to_document_id], report))
 
     if not extraction:

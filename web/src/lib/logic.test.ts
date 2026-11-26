@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { composeQuestion, levelFor, nextStep, type ScreenSpec } from "./compose";
-import { zeroClausesError } from "./docproc-issues";
+import { parseDocprocIssues, zeroClausesError } from "./docproc-issues";
 import { checkQuestionShape, gradeAgainstKey, repeatedExamFormats, shuffledSteps } from "./question-rules";
 import { DICTIONARIES } from "./i18n";
 import { reasonLabel } from "./reasons";
@@ -148,7 +148,7 @@ test("zero clauses: a configured OCR engine that fails lists each page instead o
 });
 
 test("zero clauses: long issue lists are capped", () => {
-  const many = Array.from({ length: 12 }, (_, n) => ({ kind: "llm_error", page: n + 1, detail: "timeout" }));
+  const many = Array.from({ length: 12 }, (_, n) => ({ kind: "llm_error" as const, page: n + 1, detail: "timeout" }));
   assert.match(zeroClausesError(many), /\+7 more$/);
 });
 
@@ -157,4 +157,27 @@ test("zero clauses: without OCR failures the docproc issue kinds are listed", ()
   assert.doesNotMatch(message, /DOCPROC_OCR/);
   assert.match(message, /llm_error page \?: timeout/);
   assert.match(zeroClausesError([]), /recorded no issues/);
+});
+
+test("zero clauses: issues besides the missing OCR engine are listed too", () => {
+  const message = zeroClausesError([
+    { kind: "ocr_failed", page: 1, detail: "null: OCR not configured" },
+    { kind: "llm_error", page: 2, detail: "timeout" },
+  ]);
+  assert.match(message, /DOCPROC_OCR=ovis/);
+  assert.match(message, /llm_error page 2: timeout/);
+});
+
+test("zero clauses: each issue detail is shortened so every listed page fits", () => {
+  const message = zeroClausesError([{ kind: "ocr_failed", page: 1, detail: `engine: ${"x".repeat(500)}` }]);
+  assert.ok(message.length < 300, `message is ${message.length} chars`);
+  assert.match(message, /…/);
+});
+
+test("docproc issues: the stored JSONB is validated; a missing page becomes null, an unknown kind is refused", () => {
+  assert.deepEqual(parseDocprocIssues([{ kind: "ocr_failed", detail: "d", section_id: null, blocking: true }]), [
+    { kind: "ocr_failed", page: null, detail: "d" },
+  ]);
+  assert.deepEqual(parseDocprocIssues(null), []);
+  assert.throws(() => parseDocprocIssues([{ kind: "made_up", detail: "d" }]));
 });

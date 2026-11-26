@@ -8,7 +8,7 @@
  */
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { baseRev, changedFiles, changedLineCount, CheckFailed, readonlySurfaceFiles, REPO, runMain } from "./lib/hl.mjs";
+import { baseRev, changedFiles, changedLineCount, CheckFailed, isRegularFile, readonlySurfaceFiles, REPO, runMain } from "./lib/hl.mjs";
 import { changedPlans, policyProblems, requiredTier } from "./lib/policy.mjs";
 
 runMain(() => {
@@ -19,7 +19,11 @@ runMain(() => {
   const diff = { files: changedFiles(base), changedLines: changedLineCount(base), readonlySurface: readonlySurfaceFiles(base) };
   /** @type {Record<string, string>} */
   const plans = {};
-  for (const plan of changedPlans(diff.files)) plans[plan] = readFileSync(path.join(REPO, plan), "utf8");
+  // changedFiles lists deletions too (they still count for the tier); a plan this PR deletes cannot be its plan,
+  // and neither can a symlink or directory.
+  for (const plan of changedPlans(diff.files).filter(isRegularFile)) {
+    plans[plan] = readFileSync(path.join(REPO, plan), "utf8");
+  }
   const needed = requiredTier(diff);
   console.log(`pr-policy: ${diff.files.length} files, ${diff.changedLines} changed lines since ${base.slice(0, 12)}; the diff needs ${needed.tier}.`);
   const problems = policyProblems({ ...diff, body, plans });

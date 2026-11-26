@@ -7,6 +7,9 @@ from typing import Literal
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+OcrEngine = Literal["json_import", "ovis", "null"]
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="DOCPROC_", env_file=".env", extra="ignore")
 
@@ -35,7 +38,7 @@ class Settings(BaseSettings):
     ollama_url: str = "http://localhost:11434"
 
     # OCR
-    ocr: Literal["json_import", "ovis", "null"] = "json_import"
+    ocr: OcrEngine = "json_import"
     ocr_json: str = ""  # path to OCR JSON (keyed by version_id -> page number)
     ovis_model: str = "ATH-MaaS/OvisOCR3"
 

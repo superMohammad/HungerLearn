@@ -2,7 +2,7 @@ import "server-only";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { sql } from "@/lib/db";
-import type { DocprocIssue } from "@/lib/docproc-issues";
+import { parseDocprocIssues, type DocprocIssue } from "@/lib/docproc-issues";
 import { serverEnv } from "@/lib/env";
 import type { Clause, ClauseStatus } from "@/lib/types";
 
@@ -67,10 +67,10 @@ export async function listClauses(documentId: string, versionId: string): Promis
 
 /** Extraction issues docproc recorded for a version (OCR failures, invalid extractions, ...). */
 export async function listVersionIssues(documentId: string, versionId: string): Promise<DocprocIssue[]> {
-  const rows = await sql()<{ issues: DocprocIssue[] | null }[]>`
+  const rows = await sql()<{ issues: unknown }[]>`
     SELECT issues FROM document_versions WHERE document_id = ${documentId} AND version_id = ${versionId}`;
   if (rows.length === 0) throw new Error(`docproc stored no version for document=${documentId} version=${versionId}`);
-  return (rows[0].issues ?? []).map((i) => ({ kind: i.kind, page: i.page ?? null, detail: i.detail }));
+  return parseDocprocIssues(rows[0].issues);
 }
 
 export type VersionSummary = { versionId: string; seq: number; sourceFile: string; createdAt: Date };

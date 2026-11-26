@@ -33,5 +33,20 @@
 4. **No regression on dev:** `docproc eval --real` stays at recall 1.00, precision 1.00 and diff 1.00 (baseline `.verify/fix-title-line-evidence/eval-before.log`).
 5. **The PR C case is fixed:** with this fix under PR C, the eval with scans gives employee-delayed-order 11/11. Shown in PR C's evidence.
 
+## Files
+- `-/docproc/src/docproc/graphs/understand.py`: `_with_numbered_title_line`, `_block_at`, and the two-pass locate in `validate_clauses`.
+- `-/docproc/tests/test_understand_graph.py`: 5 tests.
+
+## Feature-map rows
+None directly. This is docproc-only, with no UI change. It steadies F07 (v2 comparison) for documents whose versions differ in layout.
+
+## Evidence
+- `.verify/fix-title-line-evidence/eval-after.log`: no regression, with everything at 1.00 and 11/11. It ran before the stacked-title guard was added, and that guard only narrows when widening applies.
+- `.verify/feat-scan-ocr-rebuild/eval-after-final.log`: the final code with PR C on top. All 9 originals and 3 scans are at 1.00, every diff is 11/11, and v2's quotes keep their title lines.
+
+## Out of scope
+- **Two drafts, one span:** a draft quoting `1. Title\nrule` and another quoting only `rule` still give two records with a non-blocking `duplicate_hash`. This predates the change.
+- **Location:** the title's block now supplies `location` (page, block), the same as when the model copies the title itself.
+
 ## Rollback
 Revert the PR. There are no data or schema changes, and re-processing a version restores the old spans.

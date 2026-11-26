@@ -29,7 +29,8 @@ class Settings(BaseSettings):
     llm_max_retries: int = 2
     # Context window of the LLM server. Must match it (e.g. OLLAMA_CONTEXT_LENGTH / the model's num_ctx):
     # Ollama silently truncates longer prompts, so pairs that would not fit are sent to review instead.
-    llm_context_tokens: int = 4096
+    # Default: the owner's gemma4 server (32768). A smaller server sets DOCPROC_LLM_CONTEXT_TOKENS to match.
+    llm_context_tokens: int = 32768
 
     # Change judge: decides whether a matched v1/v2 clause pair changed (one call per reworded pair)
     change_max_output_tokens: int = 512

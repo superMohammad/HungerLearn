@@ -4,11 +4,13 @@
 
 **Approved:** @superMohammad, 2026-11-27
 
-**Decisions (Mohammad, 2026-11-27, sent to Yasser on WhatsApp):**
-1. **Context:** keep `llm_context_tokens=4096` as the default. His gemma4 runs with 32768 (Ollama picks it automatically), so he sets `DOCPROC_LLM_CONTEXT_TOKENS=32768` on his machine.
-2. **Cost:** 3–11 calls per v2 document is OK until the separate PR adds logging.
-3. **Condition:** gemma4 thinks by default, and thinking tokens count against `change_max_output_tokens=512`, so answers would be cut off. **Turn thinking off for the judge call** (or budget for it), and add a test for that. Implemented as a separate `change_reasoning_effort` setting (default `none`) that the judge always sends, independent of `llm_reasoning_effort` for extraction.
-4. The one-line `-/docproc/AGENTS.md` note is Mohammad's, in a separate PR.
+Decisions on the open questions (@superMohammad):
+1. The owner's gemma4 runs with a 32768-token context (Ollama picks it automatically; `OLLAMA_CONTEXT_LENGTH` is not set). Set the default `llm_context_tokens=32768`. A teammate whose server has a smaller context sets `DOCPROC_LLM_CONTEXT_TOKENS` to match it (Ollama silently truncates).
+2. About 3 to 11 judge calls per v2 document is OK until the separate PR logs docproc calls in `ai_calls`.
+
+Condition: gemma4 thinks by default and its thinking tokens count against `change_max_output_tokens=512`, so answers would be cut off. The judge call turns thinking off (or budgets for it), with a test. The one-line `-/docproc/AGENTS.md` note stays out of this PR; Mohammad adds it separately.
+
+Implemented as: a separate `change_reasoning_effort` setting (default `none`) that the openai_compat judge sends on every call, independent of `llm_reasoning_effort` for extraction (test: `test_the_judge_turns_thinking_off_even_when_extraction_thinks`). Claude Opus 5.5 cannot turn thinking off, so the Anthropic judge uses low effort and reserves 4096 tokens for its answer.
 
 ## Problem
 The A4 change-pair scorer (closed PR #16, carried here) runs docproc's fixed rules (`matching.change_reasons`) on the 82 typed edits in `dev/gold/change_pairs.json`:
@@ -32,7 +34,7 @@ The **model alone** decides whether a matched pair changed and how. The fixed ru
    - `make_change_judge(settings)`. `App.change_judge` is passed through `CompareDeps` to the `Matcher`.
 3. **Context window** (`config.py`):
    - Only matched pairs whose normalized text differs are sent to the model, one call each with just `heading`, `old_quote` and `new_quote`. Identical, moved or hash-matched pairs cost nothing.
-   - New settings: `llm_context_tokens` (default 4096; must match the server, e.g. `OLLAMA_CONTEXT_LENGTH`, because Ollama silently truncates) and `change_max_output_tokens` (default 512).
+   - New settings: `llm_context_tokens` (default 32768, the owner's gemma4 server; must match the server, e.g. `OLLAMA_CONTEXT_LENGTH`, because Ollama silently truncates) and `change_max_output_tokens` (default 512).
    - A conservative estimate (`ceil(utf8_bytes / 2)`) plus the output budget must fit. Otherwise there is no call and no truncation: the pair becomes `needs_review` with the token numbers in the reason.
 4. **Matching** (`matching.py`; rules stay only here): in `assign()`, identical body or `same_but_title` → unchanged/moved without a call. Otherwise: guard, then `judge`, then **evidence check** (each evidence string must occur in its quote, else `needs_review`). Then `reasons = ["<kind>: <old> -> <new>"]` plus `location changed`. `CONTENT_REASONS` and `status_for` use the kinds; `change_reasons` becomes `rule_change_reasons`, used only by `FixtureJudge`.
 5. **Scorer** (`evaluation.py`): `score_change_pairs(pairs, judge)` follows the same path as `assign()`. `run_eval` uses `app.change_judge`. `needs_review` counts as not caught.

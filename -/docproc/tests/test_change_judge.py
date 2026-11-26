@@ -81,6 +81,7 @@ def test_the_fixture_judge_and_the_prompt_version_are_available_offline():
     assert make_change_judge(Settings(_env_file=None, llm="fixture")).name == "fixture"
     assert FixtureJudge().judge(_rec("Wait 15 minutes."), _rec("Wait 10 minutes.", "v2")).kind == "threshold"
     assert CHANGE_PROMPT_VERSION
+    assert Settings(_env_file=None).llm_context_tokens == 32768  # the owner's gemma4 (Mohammad's decision)
     assert estimate_change_tokens(OLD, NEW) > estimate_change_tokens(_rec("a"), _rec("b", "v2"))
 
 

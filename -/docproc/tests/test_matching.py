@@ -212,5 +212,6 @@ def test_the_context_guard_reserves_the_judge_s_own_answer_budget():
     o, n = _actor_pair()
     big = ScriptedJudge("actor", "courier", "dispatcher")
     big.max_output_tokens = 4096
-    [r] = match_versions("d", "v2", [o], [n], same_vectors(o, n), S, big)  # 4096 context: no room for 4096 out
+    small = S.model_copy(update={"llm_context_tokens": 4096})  # a teammate's smaller server
+    [r] = match_versions("d", "v2", [o], [n], same_vectors(o, n), small, big)  # no room for 4096 out
     assert big.calls == [] and r.status == Status.needs_review and "4096" in (r.review_reason or "")

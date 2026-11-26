@@ -74,7 +74,7 @@ Feature-map rows: none; there are no app changes in this PR.
    - **A1 (#9):** `pr-policy`, the skill log and the rules.
    - **A2, stacked on A1:** the agent guard hardening, meaning the shell lexer and the `gh pr create`/merge gates (criteria 6–7).
    The reviews (`/security-review` and three `reviewer` passes) covered the combined change before the split.
-2. **PR B, revert #8** (Enhanced: multi-package): `git revert 679f666`. Evidence: `check.mjs`, and the dev eval skips scans again.
+2. **PR B, revert #8** (High-risk: touches `-/docproc/AGENTS.md`; multi-package): `git revert 679f666`. Evidence: `check.mjs`, and the dev eval skips scans again.
 3. **PR C, rebuild local OvisOCR3** (High-risk if it touches `-/docproc/AGENTS.md`, as #8 did; otherwise Enhanced), through every skill:
    - `plan-change`;
    - tests first (`fix-bug` style);

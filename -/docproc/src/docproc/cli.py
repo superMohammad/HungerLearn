@@ -208,7 +208,7 @@ def demo(
 
 @app.command("eval")
 def eval_dev(
-    real: bool = typer.Option(False, help="Use the configured LLM and embeddings (and OCR if DOCPROC_OCR=ovis) instead of fixtures"),
+    real: bool = typer.Option(False, help="Use the configured LLM/embeddings instead of fixtures"),
     out_dir: Path = typer.Option(Path("out")),
 ) -> None:
     """Score clause extraction and v1 -> v2 comparison on data/synthetic_sops/dev; writes out/eval_dev[_real].json."""
@@ -218,13 +218,10 @@ def eval_dev(
     suffix = "real" if real else "fixture"
     db = out_dir / f"eval_dev_{suffix}.sqlite3"
     db.unlink(missing_ok=True)
-    settings = get_settings()
-    # Only a live engine (ovis) OCRs eval pages: an imported OCR JSON is keyed by version ID only and would leak in.
-    over: dict[str, str] = {"backend": "sqlite", "sqlite_path": str(db),
-                            "ocr": "ovis" if real and settings.ocr == "ovis" else "null"}
+    over: dict[str, str] = {"backend": "sqlite", "sqlite_path": str(db), "ocr": "null"}
     if not real:
         over.update(llm="fixture", embeddings="fixture")
-    a = _app(settings.model_copy(update=over))
+    a = _app(get_settings().model_copy(update=over))
     a.repo.init_schema()
     rep = run_eval(a, DATASET_DIR, out_dir / "eval_pages")
     out = out_dir / f"eval_dev_{suffix}.json"

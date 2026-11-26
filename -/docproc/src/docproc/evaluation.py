@@ -17,7 +17,7 @@ from pydantic import BaseModel
 
 from docproc.config import OcrEngine
 from docproc.loaders import detect_format
-from docproc.matching import change_reasons, status_for
+from docproc.matching import CONTENT_REASONS, change_reasons, status_for
 from docproc.models import Audience, ClauseChange, ClauseRecord, ComparisonReport, SourceLocation, Status
 from docproc.normalize import clause_body, words
 from docproc.pipeline import App
@@ -30,8 +30,10 @@ COVERAGE_THRESHOLD = 0.8
 GoldChange = Literal["added", "changed", "removed", "unchanged"]
 ChangeHandling = Literal["carry_forward", "refresh_text", "regenerate_and_reassess"]
 GateDecision = Literal["allow_trainer_review", "block_publication"]
-# Matcher reasons that change what a rule requires: training must be regenerated and learners reassessed.
-MATERIAL_REASONS = ("numbers", "negation", "modality", "audience")
+ChangeType = Literal["cosmetic", "wording", "threshold", "negation", "modality", "actor", "condition", "order"]
+# Matcher content reasons that change what a rule requires (all but wording): training must be regenerated and
+# learners reassessed. Derived from matching.py, so a new content reason there counts as material here too.
+MATERIAL_REASONS = tuple(r for r in CONTENT_REASONS if r != "wording")
 GATES_NOT_SCORED = ("no publication gate implementation to score yet (vGolden25's web gate); "
                     "pass its decisions with `docproc eval --gate-decisions FILE`")
 
@@ -97,7 +99,7 @@ class GoldChangePair(BaseModel):
     base: GoldClauseRef
     before: str
     after: str
-    change_type: str
+    change_type: ChangeType
     material: bool
     expected_handling: ChangeHandling
 
@@ -321,12 +323,12 @@ def predicted_handling(reasons: list[str]) -> ChangeHandling:
     return "refresh_text" if status_for(reasons) == Status.changed else "carry_forward"
 
 
-def _pair_record(text: str, pair: GoldChangePair) -> ClauseRecord:
+def _pair_record(text: str, pair: GoldChangePair, side: Literal["before", "after"]) -> ClauseRecord:
     """A clause record that differs from its pair partner only in text, so only the edit is judged."""
     return ClauseRecord(
-        record_id=pair.pair_id, document_id=pair.base.document_id, version_id="pair", ordinal=0, quote=text,
-        statement=text, audiences=[Audience(pair.role)], audience_source="inherited",
-        location=SourceLocation(kind="text", block_index=0), content_hash=pair.pair_id,
+        record_id=f"{pair.pair_id}:{side}", document_id=pair.base.document_id, version_id=side, ordinal=0,
+        quote=text, statement=text, audiences=[Audience(pair.role)], audience_source="inherited",
+        location=SourceLocation(kind="text", block_index=0), content_hash=f"{pair.pair_id}:{side}",
     )
 
 
@@ -340,12 +342,17 @@ def _group(results: list[ChangePairResult], key: str) -> dict[str, GroupScore]:
 
 
 def score_change_pairs(pairs: list[GoldChangePair]) -> ChangePairScore:
-    """Run docproc's own matcher (`matching.change_reasons`) on each typed edit and score its handling. Pure."""
+    """Run docproc's own matcher (`matching.change_reasons`) on each typed edit and score its handling. Pure.
+
+    This judges how an edit is classified once the two versions are correctly paired. It skips candidate
+    search and one-to-one assignment, so a large rewrite that a full run would split into removed + added
+    (or needs_review) still counts here as a paired edit; the v1 -> v2 diff score covers pairing.
+    """
     if not pairs:
         raise ValueError("no change pairs to score")
     results = []
     for p in pairs:
-        reasons = change_reasons(_pair_record(p.before, p), _pair_record(p.after, p))
+        reasons = change_reasons(_pair_record(p.before, p, "before"), _pair_record(p.after, p, "after"))
         results.append(ChangePairResult(pair_id=p.pair_id, change_type=p.change_type, language=p.language,
                                         expected=p.expected_handling, predicted=predicted_handling(reasons),
                                         reasons=reasons))

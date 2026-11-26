@@ -1,0 +1,476 @@
+[
+  {
+    "pair_id": "CP-HO-T01",
+    "language": "ar",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-damaged-package-v1",
+      "clause_id": "CD-02"
+    },
+    "before": "أرسل إلى مسؤول التوزيع صورة واحدة للغلاف الخارجي مع رقم الطلب، مثل TF-729، خلال ٤ دقائق من ملاحظة التلف. لا تفتح الطرد للتصوير.",
+    "after": "أرسل إلى مسؤول التوزيع صورة واحدة للغلاف الخارجي مع رقم الطلب، مثل TF-729، خلال ٣ دقائق من ملاحظة التلف. لا تفتح الطرد للتصوير.",
+    "change_type": "threshold",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "٤",
+      "after": "٣"
+    },
+    "note": "Photo deadline 4 -> 3 minutes."
+  },
+  {
+    "pair_id": "CP-HO-T02",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-complaint-escalation-v1",
+      "clause_id": "EG-02"
+    },
+    "before": "If the customer reports a threat, mark the case Urgent and route it to the duty supervisor within 5 minutes of opening it.",
+    "after": "If the customer reports a threat, mark the case Urgent and route it to the duty supervisor within 10 minutes of opening it.",
+    "change_type": "threshold",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "5",
+      "after": "10"
+    },
+    "note": "Urgent routing 5 -> 10 minutes."
+  },
+  {
+    "pair_id": "CP-HO-T03",
+    "language": "ar",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-counter-verification-v1",
+      "clause_id": "PV-01"
+    },
+    "before": "اطلب من المندوب عرض رمز الاستلام المكوّن من ٤ أرقام في التطبيق. طابق الرمز مع شاشة الفرع قبل تسليم الأكياس.",
+    "after": "اطلب من المندوب عرض رمز الاستلام المكوّن من ٦ أرقام في التطبيق. طابق الرمز مع شاشة الفرع قبل تسليم الأكياس.",
+    "change_type": "threshold",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "٤",
+      "after": "٦"
+    },
+    "note": "Pickup code 4 -> 6 digits."
+  },
+  {
+    "pair_id": "CP-HO-C01",
+    "language": "ar",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-damaged-package-v1",
+      "clause_id": "CD-02"
+    },
+    "before": "أرسل إلى مسؤول التوزيع صورة واحدة للغلاف الخارجي مع رقم الطلب، مثل TF-729، خلال ٤ دقائق من ملاحظة التلف. لا تفتح الطرد للتصوير.",
+    "after": "أرسل إلى مسؤول التوزيع صورة واحدة للغلاف الخارجي مع رقم الطلب، مثل TF-729، خلال 4 دقائق من ملاحظة التلف. لا تفتح الطرد للتصوير.",
+    "change_type": "cosmetic",
+    "material": false,
+    "safety_tag": false,
+    "severity": "none",
+    "expected_handling": "carry_forward",
+    "evidence": {
+      "kind": "digit_glyph"
+    },
+    "note": "Same value, ASCII digits."
+  },
+  {
+    "pair_id": "CP-HO-C02",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-complaint-escalation-v1",
+      "clause_id": "EG-02"
+    },
+    "before": "If the customer reports a threat, mark the case Urgent and route it to the duty supervisor within 5 minutes of opening it.",
+    "after": "If the customer reports a threat, mark the case urgent and route it to the duty supervisor within 5 minutes of opening it.",
+    "change_type": "cosmetic",
+    "material": false,
+    "safety_tag": false,
+    "severity": "none",
+    "expected_handling": "carry_forward",
+    "evidence": {
+      "kind": "case"
+    },
+    "note": "Lower-cased status name."
+  },
+  {
+    "pair_id": "CP-HO-C03",
+    "language": "ar",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-counter-verification-v1",
+      "clause_id": "PV-16"
+    },
+    "before": "إذا ظهرت حالة «تم الاستلام» والأكياس ما زالت خلف النقطة، أبلغ المشرف ليصحح الحالة قبل أي محاولة تسليم.",
+    "after": "إذا ظهرت حالة \"تم الاستلام\" والأكياس ما زالت خلف النقطة، أبلغ المشرف ليصحح الحالة قبل أي محاولة تسليم.",
+    "change_type": "cosmetic",
+    "material": false,
+    "safety_tag": false,
+    "severity": "none",
+    "expected_handling": "carry_forward",
+    "evidence": {
+      "kind": "quotes"
+    },
+    "note": "Guillemets replaced by straight quotes."
+  },
+  {
+    "pair_id": "CP-HO-N01",
+    "language": "ar",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-damaged-package-v1",
+      "clause_id": "CD-16"
+    },
+    "before": "إذا أبلغك العميل بتلف بعد تسجيل التسليم، حوّل البلاغ إلى مسؤول التوزيع وأبقِ حالة التسليم كما هي.",
+    "after": "إذا أبلغك العميل بتلف بعد تسجيل التسليم، حوّل البلاغ إلى مسؤول التوزيع ولا تُبقِ حالة التسليم كما هي.",
+    "change_type": "negation",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "added"
+    },
+    "note": "Delivery status is no longer kept."
+  },
+  {
+    "pair_id": "CP-HO-N02",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-complaint-escalation-v1",
+      "clause_id": "EG-03"
+    },
+    "before": "For a complaint about tone with no reported threat, assign the case to the service quality queue. Do not contact the courier from the case.",
+    "after": "For a complaint about tone with no reported threat, assign the case to the service quality queue. Contact the courier from the case.",
+    "change_type": "negation",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "removed"
+    },
+    "note": "Agent now contacts the courier."
+  },
+  {
+    "pair_id": "CP-HO-N03",
+    "language": "ar",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-counter-verification-v1",
+      "clause_id": "PV-02"
+    },
+    "before": "إذا لم يتطابق رمز الاستلام، أبقِ الأكياس خلف نقطة الاستلام وأبلغ مشرف الفرع. لا تسلّم الطلب بناءً على اسم العميل وحده.",
+    "after": "إذا لم يتطابق رمز الاستلام، أبقِ الأكياس خلف نقطة الاستلام وأبلغ مشرف الفرع. سلّم الطلب بناءً على اسم العميل وحده.",
+    "change_type": "negation",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "removed"
+    },
+    "note": "Handover on the customer name alone."
+  },
+  {
+    "pair_id": "CP-HO-M01",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-complaint-escalation-v1",
+      "clause_id": "EG-15"
+    },
+    "before": "If the customer asks to be called back, record their preferred time and assign the callback to the case owner.",
+    "after": "If the customer asks to be called back, record their preferred time and you may assign the callback to the case owner.",
+    "change_type": "modality",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "weakened"
+    },
+    "note": "Callback assignment becomes optional."
+  },
+  {
+    "pair_id": "CP-HO-M02",
+    "language": "ar",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-counter-verification-v1",
+      "clause_id": "PV-10"
+    },
+    "before": "إذا ظهر أكثر من كيس على طلب واحد، طابق عدد الأكياس المعروضة مع سجل التجهيز قبل بدء التسليم.",
+    "after": "إذا ظهر أكثر من كيس على طلب واحد، يُفضّل أن تطابق عدد الأكياس المعروضة مع سجل التجهيز قبل بدء التسليم.",
+    "change_type": "modality",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "weakened"
+    },
+    "note": "Bag-count check becomes a preference."
+  },
+  {
+    "pair_id": "CP-HO-M03",
+    "language": "ar",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-damaged-package-v1",
+      "clause_id": "CD-12"
+    },
+    "before": "إذا ظهر اسم العميل أو عنوانه في الصورة، أعد تصوير موضع التلف من زاوية تخفي تلك البيانات.",
+    "after": "إذا ظهر اسم العميل أو عنوانه في الصورة، يمكنك إعادة تصوير موضع التلف من زاوية تخفي تلك البيانات.",
+    "change_type": "modality",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "weakened"
+    },
+    "note": "Privacy retake becomes optional."
+  },
+  {
+    "pair_id": "CP-HO-A01",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-complaint-escalation-v1",
+      "clause_id": "EG-14"
+    },
+    "before": "If an Urgent case is routed and the duty supervisor is unavailable, notify the on-call backup using the same case ID.",
+    "after": "If an Urgent case is routed and the duty supervisor is unavailable, notify the duty lead using the same case ID.",
+    "change_type": "actor",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "on-call backup",
+      "after": "duty lead"
+    },
+    "note": "Duty lead replaces the backup."
+  },
+  {
+    "pair_id": "CP-HO-A02",
+    "language": "ar",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-counter-verification-v1",
+      "clause_id": "PV-13"
+    },
+    "before": "إذا تغيّر المندوب المعيّن قبل الاستلام، حدّث العرض في شاشة الفرع واطلب الرمز من المندوب المعيّن حالياً.",
+    "after": "إذا تغيّر المندوب المعيّن قبل الاستلام، حدّث العرض في شاشة الفرع واطلب الرمز من مشرف الفرع.",
+    "change_type": "actor",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "المندوب",
+      "after": "مشرف الفرع"
+    },
+    "note": "Supervisor supplies the code."
+  },
+  {
+    "pair_id": "CP-HO-A03",
+    "language": "ar",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-damaged-package-v1",
+      "clause_id": "CD-15"
+    },
+    "before": "إذا وجّهك مسؤول التوزيع لإرجاع الطرد، سلّمه لمشرف الفرع وسجّل رقم إيصال المرتجع في البلاغ.",
+    "after": "إذا وجّهك مسؤول التوزيع لإرجاع الطرد، سلّمه لموظف الاستقبال وسجّل رقم إيصال المرتجع في البلاغ.",
+    "change_type": "actor",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "مشرف الفرع",
+      "after": "موظف الاستقبال"
+    },
+    "note": "Returns go to reception."
+  },
+  {
+    "pair_id": "CP-HO-K01",
+    "language": "ar",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-damaged-package-v1",
+      "clause_id": "CD-03"
+    },
+    "before": "إذا اقتصر الأثر على خدش جاف وبقي ختم الإغلاق سليماً، سجّل ملاحظة في التطبيق وتابع التوصيل.",
+    "after": "إذا اقتصر الأثر على خدش جاف وبقي ختم الإغلاق سليماً، سجّل ملاحظة في التطبيق وتابع التوصيل ما لم يطلب العميل فحص الطرد.",
+    "change_type": "condition",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "added"
+    },
+    "note": "Customer inspection exception."
+  },
+  {
+    "pair_id": "CP-HO-K02",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-complaint-escalation-v1",
+      "clause_id": "EG-10"
+    },
+    "before": "If the customer declines to give a name, file the complaint under the order ID and record that the name was withheld.",
+    "after": "If the customer declines to give a name, file the complaint under the order ID and record that the name was withheld unless the order ID is missing.",
+    "change_type": "condition",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "added"
+    },
+    "note": "Exception when no order ID."
+  },
+  {
+    "pair_id": "CP-HO-K03",
+    "language": "ar",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-counter-verification-v1",
+      "clause_id": "PV-14"
+    },
+    "before": "إذا لم يكن الطلب المعروض جاهزاً، اطلب من المندوب الانتظار خارج المسار وسجّل رقم الطلب في قائمة الانتظار.",
+    "after": "إذا لم يكن الطلب المعروض جاهزاً، اطلب من المندوب الانتظار خارج المسار وسجّل رقم الطلب في قائمة الانتظار إلا إذا كان الطلب سيجهز خلال دقائق.",
+    "change_type": "condition",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "added"
+    },
+    "note": "Exception for nearly ready orders."
+  },
+  {
+    "pair_id": "CP-HO-O01",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-complaint-escalation-v1",
+      "clause_id": "EG-13"
+    },
+    "before": "If a screenshot shows an unrelated person's phone number, mask that number in the review copy before sharing it with the queue.",
+    "after": "If a screenshot shows an unrelated person's phone number, mask that number in the review copy after sharing it with the queue.",
+    "change_type": "order",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {},
+    "note": "Masking moves after sharing."
+  },
+  {
+    "pair_id": "CP-HO-O02",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-complaint-escalation-v1",
+      "clause_id": "EG-16"
+    },
+    "before": "After the assigned queue records its decision, log the outcome and send the approved response before closing the complaint.",
+    "after": "After the assigned queue records its decision, log the outcome, close the complaint, and then send the approved response.",
+    "change_type": "order",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {},
+    "note": "Close before responding."
+  },
+  {
+    "pair_id": "CP-HO-O03",
+    "language": "ar",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-counter-verification-v1",
+      "clause_id": "PV-15"
+    },
+    "before": "بعد أن يتسلم المندوب جميع الأكياس المطابقة، حدّث حالة الطلب إلى «تم الاستلام» وسجّل وقت خروجه من النقطة.",
+    "after": "قبل أن يتسلم المندوب جميع الأكياس المطابقة، حدّث حالة الطلب إلى «تم الاستلام» وسجّل وقت خروجه من النقطة.",
+    "change_type": "order",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {},
+    "note": "Status updated before handover."
+  },
+  {
+    "pair_id": "CP-HO-W01",
+    "language": "ar",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-damaged-package-v1",
+      "clause_id": "CD-10"
+    },
+    "before": "إذا كان الطلب موزعاً على أكثر من كيس، سجّل رمز الكيس المتضرر في البلاغ وبيّن أي الأكياس بقي سليماً.",
+    "after": "إذا توزع الطلب على عدة أكياس، سجّل رمز الكيس المتضرر في البلاغ ووضّح الأكياس التي بقيت سليمة.",
+    "change_type": "wording",
+    "material": false,
+    "safety_tag": false,
+    "severity": "low",
+    "expected_handling": "refresh_text",
+    "evidence": {},
+    "note": "Paraphrase."
+  },
+  {
+    "pair_id": "CP-HO-W02",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-complaint-escalation-v1",
+      "clause_id": "EG-11"
+    },
+    "before": "If the customer calls again about the same incident, add the update to the original case and preserve its opening time.",
+    "after": "If the customer calls again about the same incident, add the update to the original case and keep its opening time unchanged.",
+    "change_type": "wording",
+    "material": false,
+    "safety_tag": false,
+    "severity": "low",
+    "expected_handling": "refresh_text",
+    "evidence": {},
+    "note": "Paraphrase."
+  },
+  {
+    "pair_id": "CP-HO-W03",
+    "language": "ar",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-counter-verification-v1",
+      "clause_id": "PV-12"
+    },
+    "before": "إذا ظهر الرمز نفسه على طلبين في الشاشة، أوقف تسليمهما واطلب من المشرف المطابقة برقم الطلب وتعيين المندوب.",
+    "after": "إذا ظهر رمز واحد على طلبين في الشاشة، أوقف تسليم الطلبين واطلب من المشرف المطابقة برقم الطلب وتعيين المندوب.",
+    "change_type": "wording",
+    "material": false,
+    "safety_tag": false,
+    "severity": "low",
+    "expected_handling": "refresh_text",
+    "evidence": {},
+    "note": "Paraphrase."
+  }
+]

@@ -1,0 +1,6 @@
+MISSED loop  5 low_resolution_scan: scan downsampled to ~118 dpi (still >=1000 px, too coarse for reliable OCR)
+         -> validator PASSED the corrupted data
+MISSED loop  5 exif_hidden_text: PNG scan carrying hidden text in an EXIF block instead of a tEXt chunk
+         -> validator PASSED the corrupted data
+
+0/2 seeded errors caught

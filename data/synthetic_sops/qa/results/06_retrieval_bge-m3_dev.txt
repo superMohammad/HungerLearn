@@ -1,0 +1,1 @@
+NOT RUN: BAAI/bge-m3 is not in the local Hugging Face cache (LocalEntryNotFoundError).

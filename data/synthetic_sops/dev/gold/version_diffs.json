@@ -21,6 +21,7 @@
           "table_row": 2
         },
         "moved": false,
+        "match_basis": "identical_text",
         "reason": "Rule text and section are unchanged.",
         "training_item": {
           "item_id": "training-cw-01",
@@ -41,6 +42,23 @@
           "table_row": 3
         },
         "moved": false,
+        "match_basis": "similar_text",
+        "changed_facts": {
+          "threshold": {
+            "before": {
+              "value": 15,
+              "printed_value": "١٥",
+              "unit": "minute",
+              "operator": ">="
+            },
+            "after": {
+              "value": 10,
+              "printed_value": "10",
+              "unit": "minute",
+              "operator": ">="
+            }
+          }
+        },
         "reason": "Pickup escalation timer changes from 15 to 10 minutes.",
         "training_item": {
           "item_id": "training-cw-02",
@@ -63,6 +81,7 @@
           "table_row": 4
         },
         "moved": false,
+        "match_basis": "identical_text",
         "reason": "Rule text and section are unchanged.",
         "training_item": {
           "item_id": "training-cw-03",
@@ -82,6 +101,7 @@
           "section": "٤. إنهاء الانتظار"
         },
         "moved": true,
+        "match_basis": "identical_text",
         "reason": "Same departure rule now appears in the End Wait section.",
         "training_item": {
           "item_id": "training-cw-04",
@@ -107,7 +127,8 @@
         "after": {
           "section": "٥. تعذّر تسجيل الوصول"
         },
-        "moved": false
+        "moved": false,
+        "match_basis": "identical_text"
       },
       {
         "clause_id": "CW-11",
@@ -126,7 +147,8 @@
         "after": {
           "section": "٦. استلام أكثر من طلب"
         },
-        "moved": false
+        "moved": false,
+        "match_basis": "identical_text"
       },
       {
         "clause_id": "CW-12",
@@ -145,7 +167,8 @@
         "after": {
           "section": "٧. الدخول من الباب الصحيح"
         },
-        "moved": false
+        "moved": false,
+        "match_basis": "identical_text"
       },
       {
         "clause_id": "CW-13",
@@ -164,7 +187,8 @@
         "after": {
           "section": "٨. طلب معلّم بأنه جاهز"
         },
-        "moved": false
+        "moved": false,
+        "match_basis": "identical_text"
       },
       {
         "clause_id": "CW-14",
@@ -183,7 +207,8 @@
         "after": {
           "section": "٩. اختلاف ملصق الاستلام"
         },
-        "moved": false
+        "moved": false,
+        "match_basis": "identical_text"
       },
       {
         "clause_id": "CW-15",
@@ -202,7 +227,8 @@
         "after": {
           "section": "١٠. طلب الإلغاء من الفرع"
         },
-        "moved": false
+        "moved": false,
+        "match_basis": "identical_text"
       },
       {
         "clause_id": "CW-16",
@@ -221,7 +247,8 @@
         "after": {
           "section": "١١. إغلاق بلاغ الانتظار"
         },
-        "moved": false
+        "moved": false,
+        "match_basis": "identical_text"
       }
     ],
     "learner_impacts": [
@@ -238,6 +265,14 @@
         "expected_action": "update_in_progress_assignment"
       },
       {
+        "learner_id": "HL-104",
+        "expected_action": "unaffected_no_assignment"
+      },
+      {
+        "learner_id": "HL-105",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
         "learner_id": "HL-201",
         "expected_action": "unaffected_out_of_scope"
       },
@@ -246,11 +281,23 @@
         "expected_action": "unaffected_out_of_scope"
       },
       {
+        "learner_id": "HL-203",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
         "learner_id": "HL-301",
         "expected_action": "unaffected_out_of_scope"
       },
       {
         "learner_id": "HL-302",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-303",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-304",
         "expected_action": "unaffected_out_of_scope"
       }
     ],
@@ -279,6 +326,7 @@
           "section": "1. Open the delay case"
         },
         "moved": false,
+        "match_basis": "identical_text",
         "reason": "Rule text and section are unchanged.",
         "training_item": {
           "item_id": "training-ed-01",
@@ -298,6 +346,17 @@
           "section": "2. Escalate a stalled status"
         },
         "moved": false,
+        "match_basis": "similar_text",
+        "changed_facts": {
+          "action": {
+            "before": "page dispatch directly",
+            "after": "support routes case to duty lead, who pages dispatch"
+          },
+          "actor": {
+            "before": "support agent",
+            "after": "support agent and duty lead"
+          }
+        },
         "reason": "The duty lead pages Dispatch after receiving the case from support.",
         "training_item": {
           "item_id": "training-ed-02",
@@ -319,6 +378,7 @@
           "section": "3. Message the customer"
         },
         "moved": false,
+        "match_basis": "identical_text",
         "reason": "Rule text and section are unchanged.",
         "training_item": {
           "item_id": "training-ed-03",
@@ -344,7 +404,8 @@
         "after": {
           "section": "4. Reuse an open case"
         },
-        "moved": false
+        "moved": false,
+        "match_basis": "identical_text"
       },
       {
         "clause_id": "ED-11",
@@ -363,7 +424,8 @@
         "after": {
           "section": "5. Handle a missing estimate"
         },
-        "moved": false
+        "moved": false,
+        "match_basis": "identical_text"
       },
       {
         "clause_id": "ED-12",
@@ -382,7 +444,8 @@
         "after": {
           "section": "6. Transfer a misrouted case"
         },
-        "moved": false
+        "moved": false,
+        "match_basis": "identical_text"
       },
       {
         "clause_id": "ED-13",
@@ -401,7 +464,8 @@
         "after": {
           "section": "7. Route a cancellation request"
         },
-        "moved": false
+        "moved": false,
+        "match_basis": "identical_text"
       },
       {
         "clause_id": "ED-14",
@@ -420,7 +484,8 @@
         "after": {
           "section": "8. Track related delays"
         },
-        "moved": false
+        "moved": false,
+        "match_basis": "identical_text"
       },
       {
         "clause_id": "ED-15",
@@ -439,7 +504,8 @@
         "after": {
           "section": "9. Handle restored tracking"
         },
-        "moved": false
+        "moved": false,
+        "match_basis": "identical_text"
       },
       {
         "clause_id": "ED-16",
@@ -458,7 +524,8 @@
         "after": {
           "section": "10. Close a recovered delivery"
         },
-        "moved": false
+        "moved": false,
+        "match_basis": "identical_text"
       },
       {
         "clause_id": "ED-04",
@@ -469,6 +536,7 @@
         },
         "after": null,
         "moved": false,
+        "match_basis": "none",
         "reason": "The end-of-shift email step is removed.",
         "training_item": {
           "item_id": "training-ed-04",
@@ -492,6 +560,14 @@
         "expected_action": "unaffected_out_of_scope"
       },
       {
+        "learner_id": "HL-104",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-105",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
         "learner_id": "HL-201",
         "expected_action": "reassess"
       },
@@ -500,11 +576,23 @@
         "expected_action": "unaffected_no_assignment"
       },
       {
+        "learner_id": "HL-203",
+        "expected_action": "update_in_progress_assignment"
+      },
+      {
         "learner_id": "HL-301",
         "expected_action": "unaffected_out_of_scope"
       },
       {
         "learner_id": "HL-302",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-303",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-304",
         "expected_action": "unaffected_out_of_scope"
       }
     ],
@@ -533,6 +621,7 @@
           "section": "١. مطابقة الملصق"
         },
         "moved": false,
+        "match_basis": "identical_text",
         "reason": "Rule text and section are unchanged.",
         "training_item": {
           "item_id": "training-pp-01",
@@ -552,6 +641,17 @@
           "section": "٢. إغلاق الأكياس"
         },
         "moved": false,
+        "match_basis": "same_section_low_similarity",
+        "changed_facts": {
+          "exceptions": {
+            "before": [
+              "use packing-station tape for a paper bag that cannot take the seal"
+            ],
+            "after": [
+              "place a paper bag that cannot take the seal in an outer bag and seal the outer bag"
+            ]
+          }
+        },
         "reason": "A paper bag that cannot take the seal goes in a sealed outer bag.",
         "training_item": {
           "item_id": "training-pp-02",
@@ -573,6 +673,7 @@
           "section": "٣. فحص الختم"
         },
         "moved": false,
+        "match_basis": "identical_text",
         "reason": "Rule text and section are unchanged.",
         "training_item": {
           "item_id": "training-pp-03",
@@ -598,7 +699,8 @@
         "after": {
           "section": "٤. مطابقة محتوى الطلب"
         },
-        "moved": false
+        "moved": false,
+        "match_basis": "identical_text"
       },
       {
         "clause_id": "PP-11",
@@ -617,7 +719,8 @@
         "after": {
           "section": "٥. فصل البارد عن الساخن"
         },
-        "moved": false
+        "moved": false,
+        "match_basis": "identical_text"
       },
       {
         "clause_id": "PP-12",
@@ -636,7 +739,8 @@
         "after": {
           "section": "٦. تثبيت المشروبات"
         },
-        "moved": false
+        "moved": false,
+        "match_basis": "identical_text"
       },
       {
         "clause_id": "PP-13",
@@ -655,7 +759,8 @@
         "after": {
           "section": "٧. التعامل مع ملاحظة الحساسية"
         },
-        "moved": false
+        "moved": false,
+        "match_basis": "identical_text"
       },
       {
         "clause_id": "PP-14",
@@ -674,7 +779,8 @@
         "after": {
           "section": "٨. استبدال كيس مبتل"
         },
-        "moved": false
+        "moved": false,
+        "match_basis": "identical_text"
       },
       {
         "clause_id": "PP-15",
@@ -693,7 +799,8 @@
         "after": {
           "section": "٩. وسم العبوات الهشة"
         },
-        "moved": false
+        "moved": false,
+        "match_basis": "identical_text"
       },
       {
         "clause_id": "PP-16",
@@ -712,7 +819,8 @@
         "after": {
           "section": "١٠. اختيار رف التجهيز"
         },
-        "moved": false
+        "moved": false,
+        "match_basis": "identical_text"
       },
       {
         "clause_id": "PP-04",
@@ -722,6 +830,7 @@
           "section": "١١. تسجيل العبوات"
         },
         "moved": false,
+        "match_basis": "none",
         "reason": "Record the bag count before moving orders with at least two bags.",
         "training_item": {
           "item_id": "training-pp-04",
@@ -745,11 +854,23 @@
         "expected_action": "unaffected_out_of_scope"
       },
       {
+        "learner_id": "HL-104",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-105",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
         "learner_id": "HL-201",
         "expected_action": "unaffected_out_of_scope"
       },
       {
         "learner_id": "HL-202",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-203",
         "expected_action": "unaffected_out_of_scope"
       },
       {
@@ -759,6 +880,14 @@
       {
         "learner_id": "HL-302",
         "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-303",
+        "expected_action": "update_in_progress_assignment"
+      },
+      {
+        "learner_id": "HL-304",
+        "expected_action": "unaffected_no_assignment"
       }
     ],
     "reassessment_clause_ids": [

@@ -152,6 +152,7 @@
           "action": "notify dispatch",
           "threshold": {
             "value": 15,
+            "printed_value": "١٥",
             "unit": "minute",
             "operator": ">="
           },
@@ -198,8 +199,9 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا تعذّر تسجيل الوصول في التطبيق",
-          "action": "أبلغ مسؤول التوزيع بوقت وصولك الفعلي واطلب منه تسجيله في البلاغ."
+          "trigger": "app check-in fails",
+          "action": "tell dispatch the actual arrival time and ask them to log it in the report",
+          "exception_to": "CW-01"
         }
       },
       {
@@ -211,8 +213,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا عُيّنت لك عدة طلبات من الفرع نفسه",
-          "action": "تابع وقت الانتظار لكل طلب على حدة وسجّل وصولك لكل طلب مفتوح."
+          "trigger": "several orders assigned from the same branch",
+          "action": "track the wait separately for each order and check in for every open order"
         }
       },
       {
@@ -224,8 +226,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا وجدت مدخل الخدمة مغلقاً والمدخل العام مفتوحاً",
-          "action": "اسأل موظف الاستقبال عن نقطة الاستلام المخصصة للمندوبين."
+          "trigger": "service entrance closed while the public entrance is open",
+          "action": "ask reception where the courier pickup point is"
         }
       },
       {
@@ -237,8 +239,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا ظهر الطلب جاهزاً ولم تجده على رف الاستلام",
-          "action": "اطلب من موظف الفرع تحديد مكانه برقم الطلب قبل تحديث حالته."
+          "trigger": "order shows ready but is missing from the pickup shelf",
+          "action": "have branch staff locate it by order number before its status is updated"
         }
       },
       {
@@ -250,8 +252,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا عرض عليك الموظف كيساً يحمل رقم طلب مختلفاً",
-          "action": "اتركه عند نقطة الاستلام واطلب الكيس المطابق."
+          "trigger": "staff offer a bag with a different order number",
+          "action": "leave that bag at the pickup point and ask for the matching bag"
         }
       },
       {
@@ -263,9 +265,9 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا طلب منك موظف الفرع إلغاء الطلب أثناء الانتظار",
-          "action": "انقل السبب إلى مسؤول التوزيع ولا تلغِ الطلب من حسابك.",
-          "negation": "لا تلغِ الطلب من حسابك"
+          "trigger": "branch staff ask the courier to cancel the order while waiting",
+          "action": "relay the reason to dispatch",
+          "negation": "do not cancel the order from the courier account"
         }
       },
       {
@@ -277,8 +279,9 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "عند استلام طلب سبق أن رفعت عنه بلاغ تأخير",
-          "action": "سجّل وقت الاستلام في البلاغ نفسه ليغلقه مسؤول التوزيع."
+          "trigger": "collecting an order that already has a delay report",
+          "action": "record the pickup time in that same report",
+          "actor": "dispatch closes the report"
         }
       }
     ]
@@ -428,6 +431,7 @@
           "action": "notify dispatch",
           "threshold": {
             "value": 10,
+            "printed_value": "10",
             "unit": "minute",
             "operator": ">="
           },
@@ -472,8 +476,9 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا تعذّر تسجيل الوصول في التطبيق",
-          "action": "أبلغ مسؤول التوزيع بوقت وصولك الفعلي واطلب منه تسجيله في البلاغ."
+          "trigger": "app check-in fails",
+          "action": "tell dispatch the actual arrival time and ask them to log it in the report",
+          "exception_to": "CW-01"
         }
       },
       {
@@ -484,8 +489,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا عُيّنت لك عدة طلبات من الفرع نفسه",
-          "action": "تابع وقت الانتظار لكل طلب على حدة وسجّل وصولك لكل طلب مفتوح."
+          "trigger": "several orders assigned from the same branch",
+          "action": "track the wait separately for each order and check in for every open order"
         }
       },
       {
@@ -496,8 +501,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا وجدت مدخل الخدمة مغلقاً والمدخل العام مفتوحاً",
-          "action": "اسأل موظف الاستقبال عن نقطة الاستلام المخصصة للمندوبين."
+          "trigger": "service entrance closed while the public entrance is open",
+          "action": "ask reception where the courier pickup point is"
         }
       },
       {
@@ -508,8 +513,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا ظهر الطلب جاهزاً ولم تجده على رف الاستلام",
-          "action": "اطلب من موظف الفرع تحديد مكانه برقم الطلب قبل تحديث حالته."
+          "trigger": "order shows ready but is missing from the pickup shelf",
+          "action": "have branch staff locate it by order number before its status is updated"
         }
       },
       {
@@ -520,8 +525,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا عرض عليك الموظف كيساً يحمل رقم طلب مختلفاً",
-          "action": "اتركه عند نقطة الاستلام واطلب الكيس المطابق."
+          "trigger": "staff offer a bag with a different order number",
+          "action": "leave that bag at the pickup point and ask for the matching bag"
         }
       },
       {
@@ -532,9 +537,9 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا طلب منك موظف الفرع إلغاء الطلب أثناء الانتظار",
-          "action": "انقل السبب إلى مسؤول التوزيع ولا تلغِ الطلب من حسابك.",
-          "negation": "لا تلغِ الطلب من حسابك"
+          "trigger": "branch staff ask the courier to cancel the order while waiting",
+          "action": "relay the reason to dispatch",
+          "negation": "do not cancel the order from the courier account"
         }
       },
       {
@@ -545,8 +550,9 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "عند استلام طلب سبق أن رفعت عنه بلاغ تأخير",
-          "action": "سجّل وقت الاستلام في البلاغ نفسه ليغلقه مسؤول التوزيع."
+          "trigger": "collecting an order that already has a delay report",
+          "action": "record the pickup time in that same report",
+          "actor": "dispatch closes the report"
         }
       }
     ]
@@ -670,14 +676,15 @@
     "clauses": [
       {
         "clause_id": "CH-01",
-        "quote": "For an unanswered handoff, place one in-app call and send one chat message. Start the handoff timer after sending the message.",
+        "quote": "If the customer does not answer when you reach the delivery address, place one in-app call and send one chat message. Start the handoff timer after sending the message.",
         "locator": {
           "section": "1. Attempt contact",
           "page": 1
         },
         "facts": {
           "responsible_role": "courier",
-          "action": "call once and send one message",
+          "trigger": "customer does not answer at the delivery address",
+          "action": "place one in-app call and send one chat message, then start the handoff timer",
           "threshold": {
             "value": 1,
             "unit": "call",
@@ -698,6 +705,7 @@
           "action": "open Failed Handoff ticket",
           "threshold": {
             "value": 6,
+            "printed_value": "6",
             "unit": "minute",
             "operator": ">="
           },
@@ -728,8 +736,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "If a locked gate blocks the listed address",
-          "action": "ask the customer for access through the order chat. Stay outside the gate while waiting."
+          "trigger": "locked gate blocks the listed address",
+          "action": "request access from the customer in the order chat and wait outside the gate"
         }
       },
       {
@@ -741,8 +749,9 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "If the customer sends a different address in chat",
-          "action": "note it in the order record and wait for Dispatch to confirm the route before moving."
+          "trigger": "customer sends a different address in chat",
+          "action": "note the new address in the order record and wait for dispatch to confirm the route",
+          "negation": "do not move before dispatch confirms the route"
         }
       },
       {
@@ -754,8 +763,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "If someone else offers to take the order",
-          "action": "hand it over only when the app lists that person as an alternate recipient.",
+          "trigger": "someone other than the customer offers to take the order",
+          "action": "hand over only to a person the app lists as an alternate recipient",
           "exceptions": [
             "the app lists the person as an alternate recipient"
           ]
@@ -770,10 +779,10 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "If building staff ask you to leave the order in the lobby",
-          "action": "keep it with you unless the app authorizes that drop-off and accepts a proof photo.",
+          "trigger": "building staff ask for a lobby drop",
+          "action": "keep the order",
           "exceptions": [
-            "the app authorizes the drop-off and accepts a proof photo"
+            "app authorizes the lobby drop-off and accepts a proof photo"
           ]
         }
       },
@@ -786,8 +795,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "If the app stops responding during handoff",
-          "action": "relay the order ID and contact attempts to Dispatch by phone and keep the order with you."
+          "trigger": "app stops responding during handoff",
+          "action": "phone dispatch with the order ID and contact attempts and keep the order"
         }
       },
       {
@@ -799,8 +808,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "If Dispatch directs a return",
-          "action": "give the order to the branch lead and record the branch's receipt code in the Failed Handoff ticket."
+          "trigger": "dispatch directs a return",
+          "action": "give the order to the branch lead and log the branch receipt code in the Failed Handoff ticket"
         }
       },
       {
@@ -812,8 +821,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "If the customer responds after a Failed Handoff ticket opens",
-          "action": "add their reply to the ticket and follow the next instruction from Dispatch."
+          "trigger": "customer replies after a Failed Handoff ticket is opened",
+          "action": "add the reply to the ticket and follow the next dispatch instruction"
         }
       }
     ]
@@ -958,6 +967,7 @@
           "action": "open Delay case and record order ID and last status time",
           "threshold": {
             "value": 12,
+            "printed_value": "12",
             "unit": "minute",
             "operator": ">="
           }
@@ -976,6 +986,7 @@
           "action": "page dispatch directly",
           "threshold": {
             "value": 8,
+            "printed_value": "8",
             "unit": "minute",
             "operator": ">="
           }
@@ -1006,8 +1017,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If the same order already has an open Delay case",
-          "action": "add the customer's latest message there and keep its original opening time.",
+          "trigger": "order already has an open Delay case",
+          "action": "add the latest customer message to that case and keep its original opening time",
           "exception_to": "ED-01"
         }
       },
@@ -1020,8 +1031,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If the order timeline shows no delivery estimate",
-          "action": "request the last confirmed status from Dispatch and record that the estimate is unavailable."
+          "trigger": "order timeline shows no delivery estimate",
+          "action": "request the last confirmed status from dispatch and record that no estimate is available"
         }
       },
       {
@@ -1033,8 +1044,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If the order belongs to another branch queue",
-          "action": "transfer the existing case to that queue with the status history attached."
+          "trigger": "order belongs to another branch queue",
+          "action": "transfer the existing case to that queue with its status history"
         }
       },
       {
@@ -1046,8 +1057,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If the customer asks to cancel a late order",
-          "action": "link a Cancellation Request and route it to the cancellations desk."
+          "trigger": "customer asks to cancel a late order",
+          "action": "link a Cancellation Request and send it to the cancellations desk"
         }
       },
       {
@@ -1059,8 +1070,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If several late orders share one dispatch incident",
-          "action": "keep a case for each order and add the shared incident ID to each case."
+          "trigger": "several late orders share one dispatch incident",
+          "action": "keep one case per order and add the shared incident ID to every case"
         }
       },
       {
@@ -1072,8 +1083,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If tracking resumes during an open Delay case",
-          "action": "record the fresh status and notify the case owner that the stalled-tracking alert can be cleared."
+          "trigger": "tracking resumes while a Delay case is open",
+          "action": "record the new status and tell the case owner the stalled-tracking alert can be cleared"
         }
       },
       {
@@ -1085,8 +1096,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "When the timeline confirms delivery",
-          "action": "send the customer a closure message and record the confirmation time before closing the case."
+          "trigger": "timeline confirms delivery",
+          "action": "send a closure message and record the confirmation time before closing the case"
         }
       },
       {
@@ -1221,6 +1232,7 @@
           "action": "open Delay case and record order ID and last status time",
           "threshold": {
             "value": 12,
+            "printed_value": "12",
             "unit": "minute",
             "operator": ">="
           }
@@ -1238,6 +1250,7 @@
           "action": "support routes case to duty lead, who pages dispatch",
           "threshold": {
             "value": 8,
+            "printed_value": "8",
             "unit": "minute",
             "operator": ">="
           }
@@ -1266,8 +1279,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If the same order already has an open Delay case",
-          "action": "add the customer's latest message there and keep its original opening time.",
+          "trigger": "order already has an open Delay case",
+          "action": "add the latest customer message to that case and keep its original opening time",
           "exception_to": "ED-01"
         }
       },
@@ -1279,8 +1292,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If the order timeline shows no delivery estimate",
-          "action": "request the last confirmed status from Dispatch and record that the estimate is unavailable."
+          "trigger": "order timeline shows no delivery estimate",
+          "action": "request the last confirmed status from dispatch and record that no estimate is available"
         }
       },
       {
@@ -1291,8 +1304,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If the order belongs to another branch queue",
-          "action": "transfer the existing case to that queue with the status history attached."
+          "trigger": "order belongs to another branch queue",
+          "action": "transfer the existing case to that queue with its status history"
         }
       },
       {
@@ -1303,8 +1316,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If the customer asks to cancel a late order",
-          "action": "link a Cancellation Request and route it to the cancellations desk."
+          "trigger": "customer asks to cancel a late order",
+          "action": "link a Cancellation Request and send it to the cancellations desk"
         }
       },
       {
@@ -1315,8 +1328,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If several late orders share one dispatch incident",
-          "action": "keep a case for each order and add the shared incident ID to each case."
+          "trigger": "several late orders share one dispatch incident",
+          "action": "keep one case per order and add the shared incident ID to every case"
         }
       },
       {
@@ -1327,8 +1340,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If tracking resumes during an open Delay case",
-          "action": "record the fresh status and notify the case owner that the stalled-tracking alert can be cleared."
+          "trigger": "tracking resumes while a Delay case is open",
+          "action": "record the new status and tell the case owner the stalled-tracking alert can be cleared"
         }
       },
       {
@@ -1339,8 +1352,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "When the timeline confirms delivery",
-          "action": "send the customer a closure message and record the confirmation time before closing the case."
+          "trigger": "timeline confirms delivery",
+          "action": "send a closure message and record the confirmation time before closing the case"
         }
       }
     ]
@@ -1476,6 +1489,7 @@
           "action": "open follow-up",
           "threshold": {
             "value": 24,
+            "printed_value": "٢٤",
             "unit": "hour",
             "operator": "="
           },
@@ -1502,8 +1516,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "إذا عرض السجل توقيت العمليتين بمنطقتين زمنيتين مختلفتين",
-          "action": "حوّل التوقيتين إلى توقيت الفرع قبل ترتيب الأحداث في البلاغ."
+          "trigger": "the two transactions show different time zones",
+          "action": "convert both times to branch time before ordering events in the report"
         }
       },
       {
@@ -1514,21 +1528,21 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "إذا تكرر بلاغ العميل عن العمليتين نفسيهما",
-          "action": "أضف الرسالة الجديدة إلى البلاغ المفتوح وأغلق البلاغ الثاني بوصفه مكرراً."
+          "trigger": "customer reports the same two transactions again",
+          "action": "add the new message to the open report and close the second report as a duplicate"
         }
       },
       {
         "clause_id": "EC-12",
-        "quote": "إذا ظهرت إحدى العمليتين مرفوضة في سجل المدفوعات، وثّق رمز الرفض ولا تسجلها كخصم مكتمل.",
+        "quote": "إذا ظهرت إحدى العمليتين مرفوضة في سجل المدفوعات، وثّق رمز الرفض ولا تسجّلها خصماً مكتملاً.",
         "locator": {
           "section": "٦. التمييز بين الرفض والخصم"
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "إذا ظهرت إحدى العمليتين مرفوضة في سجل المدفوعات",
-          "action": "وثّق رمز الرفض ولا تسجلها كخصم مكتمل.",
-          "negation": "لا تسجلها كخصم مكتمل"
+          "trigger": "one transaction shows as declined",
+          "action": "record the decline code",
+          "negation": "do not record it as a completed charge"
         }
       },
       {
@@ -1539,22 +1553,22 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "إذا ظهر استرداد مكتمل لإحدى العمليتين",
-          "action": "أبلغ العميل برقم مرجع الاسترداد ولا ترفع طلب استرداد ثانياً.",
-          "negation": "لا ترفع طلب استرداد ثانياً"
+          "trigger": "one transaction already has a completed refund",
+          "action": "give the customer the refund reference number",
+          "negation": "do not raise a second refund request"
         }
       },
       {
         "clause_id": "EC-14",
-        "quote": "إذا غاب رقم العملية من البلاغ، اطلب المرجع الظاهر في الإيصال ولا تطلب رقم البطاقة كاملاً.",
+        "quote": "إذا غاب رقم العملية عن البلاغ، اطلب المرجع الظاهر في الإيصال ولا تطلب رقم البطاقة كاملاً.",
         "locator": {
           "section": "٨. استكمال البيانات الناقصة"
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "إذا غاب رقم العملية من البلاغ",
-          "action": "اطلب المرجع الظاهر في الإيصال ولا تطلب رقم البطاقة كاملاً.",
-          "negation": "لا تطلب رقم البطاقة كاملاً"
+          "trigger": "report lacks the transaction number",
+          "action": "ask for the reference printed on the receipt",
+          "negation": "do not ask for the full card number"
         }
       },
       {
@@ -1565,8 +1579,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "إذا أظهر السجل دفعة نقدية وأخرى إلكترونية للطلب نفسه",
-          "action": "أحل الحالة إلى فريق تسوية الطلبات مع الإيصالين."
+          "trigger": "one cash and one electronic payment for the same order",
+          "action": "route the case to the order reconciliation team with both receipts"
         }
       },
       {
@@ -1577,8 +1591,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "إذا اختلفت عملة العمليتين",
-          "action": "وثّق القيمتين كما ظهرتا وأحل الحالة إلى مراجع المدفوعات للتحقق من التحويل."
+          "trigger": "the two transactions are in different currencies",
+          "action": "record both amounts as shown and route the case to the payments reviewer to check the conversion"
         }
       }
     ]
@@ -1749,8 +1763,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "قبل إغلاق الكيس",
-          "action": "طابق كل صنف وكميته مع شاشة التجهيز. أعد الطلب الناقص إلى محطة التحضير لاستكماله."
+          "trigger": "before closing a bag",
+          "action": "check every item and quantity against the prep screen and send an incomplete order back to the prep station"
         }
       },
       {
@@ -1762,8 +1776,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "إذا جمع الطلب أصنافاً ساخنة وباردة",
-          "action": "ضع كل مجموعة في كيس مستقل وألصق رقم الطلب على الكيسين."
+          "trigger": "order combines hot and cold items",
+          "action": "pack each group in its own bag and label both bags with the order number"
         }
       },
       {
@@ -1775,8 +1789,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "إذا تضمن الطلب مشروباً",
-          "action": "ثبّت الكوب في حامل عمودي داخل كيس منفصل وتأكد من إحكام الغطاء قبل الإغلاق."
+          "trigger": "order includes a drink",
+          "action": "secure the cup upright in a holder inside a separate bag and check the lid before closing"
         }
       },
       {
@@ -1788,8 +1802,9 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "إذا ظهرت ملاحظة حساسية على الطلب",
-          "action": "اعرضها على مشرف التحضير قبل الإغلاق وانتظر تأكيده لمطابقة المحتوى."
+          "trigger": "order carries an allergy note",
+          "action": "show the note to the prep supervisor before closing and wait for their confirmation",
+          "actor": "prep supervisor confirms the contents"
         }
       },
       {
@@ -1801,8 +1816,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "إذا ابتل الكيس أثناء التعبئة",
-          "action": "افحص العبوات الداخلية واستبدل الكيس قبل الختم. أبلغ المشرف إذا تضررت عبوة داخلية."
+          "trigger": "bag gets wet during packing",
+          "action": "inspect the inner containers, replace the bag before sealing, and tell the supervisor about any damaged container"
         }
       },
       {
@@ -1814,8 +1829,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "إذا احتوى الكيس على عبوة هشة",
-          "action": "ألصق علامة المناولة على وجه الكيس الظاهر لموظف نقطة الاستلام."
+          "trigger": "bag holds a fragile container",
+          "action": "put the handling label on the bag face that pickup staff can see"
         }
       },
       {
@@ -1827,8 +1842,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "بعد ختم الأكياس",
-          "action": "ضع الطلب في رف الفئة المبيّنة على شاشة التجهيز واجعل ملصق الرقم ظاهراً من جهة الممر."
+          "trigger": "bags are sealed",
+          "action": "place the order on the category shelf shown on the prep screen with its number label facing the aisle"
         }
       }
     ]
@@ -1995,8 +2010,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "قبل إغلاق الكيس",
-          "action": "طابق كل صنف وكميته مع شاشة التجهيز. أعد الطلب الناقص إلى محطة التحضير لاستكماله."
+          "trigger": "before closing a bag",
+          "action": "check every item and quantity against the prep screen and send an incomplete order back to the prep station"
         }
       },
       {
@@ -2007,8 +2022,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "إذا جمع الطلب أصنافاً ساخنة وباردة",
-          "action": "ضع كل مجموعة في كيس مستقل وألصق رقم الطلب على الكيسين."
+          "trigger": "order combines hot and cold items",
+          "action": "pack each group in its own bag and label both bags with the order number"
         }
       },
       {
@@ -2019,8 +2034,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "إذا تضمن الطلب مشروباً",
-          "action": "ثبّت الكوب في حامل عمودي داخل كيس منفصل وتأكد من إحكام الغطاء قبل الإغلاق."
+          "trigger": "order includes a drink",
+          "action": "secure the cup upright in a holder inside a separate bag and check the lid before closing"
         }
       },
       {
@@ -2031,8 +2046,9 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "إذا ظهرت ملاحظة حساسية على الطلب",
-          "action": "اعرضها على مشرف التحضير قبل الإغلاق وانتظر تأكيده لمطابقة المحتوى."
+          "trigger": "order carries an allergy note",
+          "action": "show the note to the prep supervisor before closing and wait for their confirmation",
+          "actor": "prep supervisor confirms the contents"
         }
       },
       {
@@ -2043,8 +2059,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "إذا ابتل الكيس أثناء التعبئة",
-          "action": "افحص العبوات الداخلية واستبدل الكيس قبل الختم. أبلغ المشرف إذا تضررت عبوة داخلية."
+          "trigger": "bag gets wet during packing",
+          "action": "inspect the inner containers, replace the bag before sealing, and tell the supervisor about any damaged container"
         }
       },
       {
@@ -2055,8 +2071,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "إذا احتوى الكيس على عبوة هشة",
-          "action": "ألصق علامة المناولة على وجه الكيس الظاهر لموظف نقطة الاستلام."
+          "trigger": "bag holds a fragile container",
+          "action": "put the handling label on the bag face that pickup staff can see"
         }
       },
       {
@@ -2067,8 +2083,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "بعد ختم الأكياس",
-          "action": "ضع الطلب في رف الفئة المبيّنة على شاشة التجهيز واجعل ملصق الرقم ظاهراً من جهة الممر."
+          "trigger": "bags are sealed",
+          "action": "place the order on the category shelf shown on the prep screen with its number label facing the aisle"
         }
       },
       {
@@ -2229,7 +2245,7 @@
       },
       {
         "clause_id": "PS-03",
-        "quote": "If the customer has not answered after 7 minutes, mark the item unavailable and notify Partner Support. Keep any remaining items in preparation.",
+        "quote": "If the customer has not answered 7 minutes after you send the request, mark the item unavailable and notify Partner Support. Keep any remaining items in preparation.",
         "locator": {
           "section": "3. Close an unanswered request"
         },
@@ -2238,27 +2254,23 @@
           "action": "mark unavailable, notify Partner Support and continue other items",
           "threshold": {
             "value": 7,
+            "printed_value": "7",
             "unit": "minute",
             "operator": ">="
-          }
+          },
+          "trigger": "no customer answer since the substitution request was sent"
         }
       },
       {
         "clause_id": "PS-10",
-        "quote": "Before offering a replacement, check available stock and tell the prep station to hold one unit until the request is resolved.",
+        "quote": "Before offering a replacement, check available stock and tell the prep station to hold the quantity you will offer until the request is resolved.",
         "locator": {
           "section": "4. Confirm shelf availability"
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "Before offering a replacement",
-          "action": "check available stock and tell the prep station to hold one unit until the request is resolved.",
-          "threshold": {
-            "value": 1,
-            "unit": "unit",
-            "operator": "=",
-            "source_value": "one"
-          }
+          "trigger": "about to offer a replacement",
+          "action": "check stock and have the prep station hold the quantity to be offered until the request is resolved"
         }
       },
       {
@@ -2269,8 +2281,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "If a customer ordered several units",
-          "action": "offer a replacement only when you can supply the full requested quantity at the allowed price."
+          "trigger": "customer ordered several units",
+          "action": "offer a replacement only if the full quantity is available at the allowed price"
         }
       },
       {
@@ -2281,8 +2293,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "If the customer rejects the offer",
-          "action": "mark that item unavailable and send Partner Support the rejection recorded in the order screen."
+          "trigger": "customer rejects the offer",
+          "action": "mark the item unavailable and forward the recorded rejection to Partner Support"
         }
       },
       {
@@ -2293,8 +2305,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "If an approved replacement sells out before packing",
-          "action": "report it to Partner Support and leave the item unpacked pending instructions."
+          "trigger": "approved replacement sells out before packing",
+          "action": "report it to Partner Support and leave the item unpacked until instructed"
         }
       },
       {
@@ -2305,8 +2317,9 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "If the approved replacement costs less",
-          "action": "record the lower price in the order screen and leave any payment adjustment to Partner Support."
+          "trigger": "approved replacement costs less",
+          "action": "record the lower price in the order screen",
+          "actor": "Partner Support handles any payment adjustment"
         }
       },
       {
@@ -2317,20 +2330,20 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "After packing an approved replacement",
-          "action": "mark the preparation slip with the actual item and retain the approval in the order record."
+          "trigger": "approved replacement has been packed",
+          "action": "write the actual item on the preparation slip and keep the approval in the order record"
         }
       },
       {
         "clause_id": "PS-16",
-        "quote": "If the entire order is cancelled while an offer is pending, release the held unit and stop preparing that order.",
+        "quote": "If the entire order is cancelled while an offer is pending, release the held stock and stop preparing that order.",
         "locator": {
           "section": "10. Stop a cancelled order"
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "If the entire order is cancelled while an offer is pending",
-          "action": "release the held unit and stop preparing that order."
+          "trigger": "whole order cancelled while a substitution offer is pending",
+          "action": "release the held stock and stop preparing the order"
         }
       }
     ]
@@ -2501,6 +2514,7 @@
           "action": "notify dispatch",
           "threshold": {
             "value": 15,
+            "printed_value": "١٥",
             "unit": "minute",
             "operator": ">="
           },
@@ -2550,8 +2564,9 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا تعذّر تسجيل الوصول في التطبيق",
-          "action": "أبلغ مسؤول التوزيع بوقت وصولك الفعلي واطلب منه تسجيله في البلاغ."
+          "trigger": "app check-in fails",
+          "action": "tell dispatch the actual arrival time and ask them to log it in the report",
+          "exception_to": "CW-01"
         }
       },
       {
@@ -2564,8 +2579,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا عُيّنت لك عدة طلبات من الفرع نفسه",
-          "action": "تابع وقت الانتظار لكل طلب على حدة وسجّل وصولك لكل طلب مفتوح."
+          "trigger": "several orders assigned from the same branch",
+          "action": "track the wait separately for each order and check in for every open order"
         }
       },
       {
@@ -2578,8 +2593,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا وجدت مدخل الخدمة مغلقاً والمدخل العام مفتوحاً",
-          "action": "اسأل موظف الاستقبال عن نقطة الاستلام المخصصة للمندوبين."
+          "trigger": "service entrance closed while the public entrance is open",
+          "action": "ask reception where the courier pickup point is"
         }
       },
       {
@@ -2592,8 +2607,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا ظهر الطلب جاهزاً ولم تجده على رف الاستلام",
-          "action": "اطلب من موظف الفرع تحديد مكانه برقم الطلب قبل تحديث حالته."
+          "trigger": "order shows ready but is missing from the pickup shelf",
+          "action": "have branch staff locate it by order number before its status is updated"
         }
       },
       {
@@ -2606,8 +2621,8 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا عرض عليك الموظف كيساً يحمل رقم طلب مختلفاً",
-          "action": "اتركه عند نقطة الاستلام واطلب الكيس المطابق."
+          "trigger": "staff offer a bag with a different order number",
+          "action": "leave that bag at the pickup point and ask for the matching bag"
         }
       },
       {
@@ -2620,9 +2635,9 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "إذا طلب منك موظف الفرع إلغاء الطلب أثناء الانتظار",
-          "action": "انقل السبب إلى مسؤول التوزيع ولا تلغِ الطلب من حسابك.",
-          "negation": "لا تلغِ الطلب من حسابك"
+          "trigger": "branch staff ask the courier to cancel the order while waiting",
+          "action": "relay the reason to dispatch",
+          "negation": "do not cancel the order from the courier account"
         }
       },
       {
@@ -2635,8 +2650,9 @@
         },
         "facts": {
           "responsible_role": "courier",
-          "trigger": "عند استلام طلب سبق أن رفعت عنه بلاغ تأخير",
-          "action": "سجّل وقت الاستلام في البلاغ نفسه ليغلقه مسؤول التوزيع."
+          "trigger": "collecting an order that already has a delay report",
+          "action": "record the pickup time in that same report",
+          "actor": "dispatch closes the report"
         }
       }
     ]
@@ -2781,6 +2797,7 @@
           "action": "open Delay case and record order ID and last status time",
           "threshold": {
             "value": 12,
+            "printed_value": "12",
             "unit": "minute",
             "operator": ">="
           }
@@ -2799,6 +2816,7 @@
           "action": "page dispatch directly",
           "threshold": {
             "value": 8,
+            "printed_value": "8",
             "unit": "minute",
             "operator": ">="
           }
@@ -2829,8 +2847,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If the same order already has an open Delay case",
-          "action": "add the customer's latest message there and keep its original opening time.",
+          "trigger": "order already has an open Delay case",
+          "action": "add the latest customer message to that case and keep its original opening time",
           "exception_to": "ED-01"
         }
       },
@@ -2843,8 +2861,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If the order timeline shows no delivery estimate",
-          "action": "request the last confirmed status from Dispatch and record that the estimate is unavailable."
+          "trigger": "order timeline shows no delivery estimate",
+          "action": "request the last confirmed status from dispatch and record that no estimate is available"
         }
       },
       {
@@ -2856,8 +2874,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If the order belongs to another branch queue",
-          "action": "transfer the existing case to that queue with the status history attached."
+          "trigger": "order belongs to another branch queue",
+          "action": "transfer the existing case to that queue with its status history"
         }
       },
       {
@@ -2869,8 +2887,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If the customer asks to cancel a late order",
-          "action": "link a Cancellation Request and route it to the cancellations desk."
+          "trigger": "customer asks to cancel a late order",
+          "action": "link a Cancellation Request and send it to the cancellations desk"
         }
       },
       {
@@ -2882,8 +2900,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If several late orders share one dispatch incident",
-          "action": "keep a case for each order and add the shared incident ID to each case."
+          "trigger": "several late orders share one dispatch incident",
+          "action": "keep one case per order and add the shared incident ID to every case"
         }
       },
       {
@@ -2895,8 +2913,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "If tracking resumes during an open Delay case",
-          "action": "record the fresh status and notify the case owner that the stalled-tracking alert can be cleared."
+          "trigger": "tracking resumes while a Delay case is open",
+          "action": "record the new status and tell the case owner the stalled-tracking alert can be cleared"
         }
       },
       {
@@ -2908,8 +2926,8 @@
         },
         "facts": {
           "responsible_role": "employee",
-          "trigger": "When the timeline confirms delivery",
-          "action": "send the customer a closure message and record the confirmation time before closing the case."
+          "trigger": "timeline confirms delivery",
+          "action": "send a closure message and record the confirmation time before closing the case"
         }
       },
       {
@@ -3106,8 +3124,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "قبل إغلاق الكيس",
-          "action": "طابق كل صنف وكميته مع شاشة التجهيز. أعد الطلب الناقص إلى محطة التحضير لاستكماله."
+          "trigger": "before closing a bag",
+          "action": "check every item and quantity against the prep screen and send an incomplete order back to the prep station"
         }
       },
       {
@@ -3120,8 +3138,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "إذا جمع الطلب أصنافاً ساخنة وباردة",
-          "action": "ضع كل مجموعة في كيس مستقل وألصق رقم الطلب على الكيسين."
+          "trigger": "order combines hot and cold items",
+          "action": "pack each group in its own bag and label both bags with the order number"
         }
       },
       {
@@ -3134,8 +3152,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "إذا تضمن الطلب مشروباً",
-          "action": "ثبّت الكوب في حامل عمودي داخل كيس منفصل وتأكد من إحكام الغطاء قبل الإغلاق."
+          "trigger": "order includes a drink",
+          "action": "secure the cup upright in a holder inside a separate bag and check the lid before closing"
         }
       },
       {
@@ -3148,8 +3166,9 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "إذا ظهرت ملاحظة حساسية على الطلب",
-          "action": "اعرضها على مشرف التحضير قبل الإغلاق وانتظر تأكيده لمطابقة المحتوى."
+          "trigger": "order carries an allergy note",
+          "action": "show the note to the prep supervisor before closing and wait for their confirmation",
+          "actor": "prep supervisor confirms the contents"
         }
       },
       {
@@ -3162,8 +3181,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "إذا ابتل الكيس أثناء التعبئة",
-          "action": "افحص العبوات الداخلية واستبدل الكيس قبل الختم. أبلغ المشرف إذا تضررت عبوة داخلية."
+          "trigger": "bag gets wet during packing",
+          "action": "inspect the inner containers, replace the bag before sealing, and tell the supervisor about any damaged container"
         }
       },
       {
@@ -3176,8 +3195,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "إذا احتوى الكيس على عبوة هشة",
-          "action": "ألصق علامة المناولة على وجه الكيس الظاهر لموظف نقطة الاستلام."
+          "trigger": "bag holds a fragile container",
+          "action": "put the handling label on the bag face that pickup staff can see"
         }
       },
       {
@@ -3190,8 +3209,8 @@
         },
         "facts": {
           "responsible_role": "partner",
-          "trigger": "بعد ختم الأكياس",
-          "action": "ضع الطلب في رف الفئة المبيّنة على شاشة التجهيز واجعل ملصق الرقم ظاهراً من جهة الممر."
+          "trigger": "bags are sealed",
+          "action": "place the order on the category shelf shown on the prep screen with its number label facing the aisle"
         }
       }
     ]

@@ -1,0 +1,17 @@
+ok       courier-pickup-wait-v1             branch_in_header='بوابة التين' manifest_branch='Fig Gate' branch_local='بوابة التين' version=1 audience_ok=True
+ok       courier-pickup-wait-v2             branch_in_header='بوابة التين' manifest_branch='Fig Gate' branch_local='بوابة التين' version=2 audience_ok=True
+ok       courier-failed-handoff-v1          branch_in_header='Fig Gate' manifest_branch='Fig Gate' branch_local='Fig Gate' version=1 audience_ok=True
+ok       courier-damaged-package-v1         branch_in_header='بوابة التين' manifest_branch='Fig Gate' branch_local='بوابة التين' version=1 audience_ok=True
+ok       employee-delayed-order-v1          branch_in_header='Sidr Square' manifest_branch='Sidr Square' branch_local='Sidr Square' version=1 audience_ok=True
+ok       employee-delayed-order-v2          branch_in_header='Sidr Square' manifest_branch='Sidr Square' branch_local='Sidr Square' version=2 audience_ok=True
+ok       employee-duplicate-charge-v1       branch_in_header='ساحة السدر' manifest_branch='Sidr Square' branch_local='ساحة السدر' version=1 audience_ok=True
+ok       employee-complaint-escalation-v1   branch_in_header='Sidr Square' manifest_branch='Sidr Square' branch_local='Sidr Square' version=1 audience_ok=True
+ok       partner-packing-sealing-v1         branch_in_header='ممر الزيتون' manifest_branch='Olive Lane' branch_local='ممر الزيتون' version=1 audience_ok=True
+ok       partner-packing-sealing-v2         branch_in_header='ممر الزيتون' manifest_branch='Olive Lane' branch_local='ممر الزيتون' version=2 audience_ok=True
+ok       partner-item-substitution-v1       branch_in_header='Olive Lane' manifest_branch='Olive Lane' branch_local='Olive Lane' version=1 audience_ok=True
+ok       partner-counter-verification-v1    branch_in_header='ممر الزيتون' manifest_branch='Olive Lane' branch_local='ممر الزيتون' version=1 audience_ok=True
+ok       courier-pickup-wait-v1-scan        branch_in_header='بوابة التين' manifest_branch='Fig Gate' branch_local='بوابة التين' version=1 audience_ok=True
+ok       employee-delayed-order-v1-scan     branch_in_header='Sidr Square' manifest_branch='Sidr Square' branch_local='Sidr Square' version=1 audience_ok=True
+ok       partner-packing-sealing-v1-scan    branch_in_header='ممر الزيتون' manifest_branch='Olive Lane' branch_local='ممر الزيتون' version=1 audience_ok=True
+
+0 mismatch(es); 0 Arabic header branch(es) cannot be checked against the manifest (no branch_local).

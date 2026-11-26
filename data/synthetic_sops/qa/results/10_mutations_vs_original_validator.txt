@@ -1,0 +1,49 @@
+MISSED loop  1 wrong_branch: manifest branch disagrees with the branch printed in the SOP header
+         -> validator PASSED the corrupted data
+MISSED loop  1 wrong_branch_local: Arabic branch name in the manifest disagrees with the Arabic header
+         -> validator PASSED the corrupted data
+MISSED loop  2 unanchored_timer: a wait threshold that never says when its timer starts (source and gold consistent)
+         -> validator PASSED the corrupted data
+MISSED loop  3 digit_glyph_loss: Arabic-Indic digits silently rewritten as ASCII in source and quote (glyph loss)
+         -> validator PASSED the corrupted data
+MISSED loop  4 copied_facts: a facts label copied verbatim (in Arabic) from the quote instead of normalized
+         -> validator PASSED the corrupted data
+MISSED loop  4 dangling_exception: an exception that points at a clause the document does not contain
+         -> validator PASSED the corrupted data
+MISSED loop  4 dropped_negation: an explicit prohibition (ولا ترفع طلب استرداد ثانياً) dropped from the facts
+         -> validator PASSED the corrupted data
+MISSED loop  5 low_resolution_scan: scan downsampled to ~118 dpi (still >=1000 px, too coarse for reliable OCR)
+         -> validator PASSED the corrupted data
+MISSED loop  5 exif_hidden_text: PNG scan carrying hidden text in an EXIF block instead of a tEXt chunk
+         -> validator PASSED the corrupted data
+MISSED loop  6 missing_version_distractor: a v2-scoped query that no longer lists the identical v1 rule, so the version filter goes untested
+         -> validator PASSED the corrupted data
+CAUGHT loop  6 stale_retrieval_target: a retrieval target pointing at the superseded version (stale-version label)
+         -> FAIL: Retrieval scope mismatch: dev-courier-01
+MISSED loop  7 wrong_threshold_change: CW-02 change recorded with the wrong new threshold (15 -> 15 instead of 15 -> 10)
+         -> validator PASSED the corrupted data
+MISSED loop  7 overstated_match_basis: low-similarity PP-02 rewrite labelled as an easy text match
+         -> validator PASSED the corrupted data
+CAUGHT loop  7 missed_rule_change: changed rule (CW-02) mislabelled unchanged, so nobody is reassessed
+         -> FAIL: Incorrect diff label: CW-02
+MISSED loop  8 scenario_below_threshold: scenario no longer reaches the cited threshold (4 minutes on a 6-minute rule)
+         -> validator PASSED the corrupted data
+MISSED loop  8 incomplete_remediation: remediation skips a rule the wrong answer breaks (door drop without authorization)
+         -> validator PASSED the corrupted data
+MISSED loop  8 non_discriminating_case: CW-02 case set at 16 minutes, so v1 and v2 give the same answer and the update is untested
+         -> validator PASSED the corrupted data
+MISSED loop  9 strict_operator_allowed: 'more than 10 minutes' draft (excludes the 10-minute mark) allowed through the gate
+         -> validator PASSED the corrupted data
+MISSED loop  9 superseded_citation_allowed: draft citing the superseded v1 rule allowed through the gate
+         -> validator PASSED the corrupted data
+CAUGHT loop  9 out_of_branch_reassessed: learner who mastered the same family at another branch is sent to reassessment
+         -> FAIL: Wrong learner routing: courier-pickup-wait-v2/HL-105
+MISSED loop  9 routing_gap: partner update loses its only in-progress learner, so assignment repointing goes untested
+         -> validator PASSED the corrupted data
+MISSED loop 10 label_leak_in_text: a gold clause ID leaked into an upload's audience line (no quote or scope check covers it)
+         -> validator PASSED the corrupted data
+MISSED loop 10 label_leak_in_metadata: a gold label hidden in DOCX document properties
+         -> validator PASSED the corrupted data
+SKIP     freeze_tamper: dataset is not frozen yet (run qa/freeze.py)
+
+3/23 seeded errors caught (1 skipped)

@@ -1,0 +1,1622 @@
+[
+  {
+    "pair_id": "CP-DEV-T01",
+    "language": "ar",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-pickup-wait-v1",
+      "clause_id": "CW-02"
+    },
+    "before": "إذا بقي الطلب قيد التجهيز بعد ١٥ دقيقة من تسجيل الوصول، أرسل بلاغ «تأخر الاستلام» إلى مسؤول التوزيع.",
+    "after": "إذا بقي الطلب قيد التجهيز بعد ٢٠ دقيقة من تسجيل الوصول، أرسل بلاغ «تأخر الاستلام» إلى مسؤول التوزيع.",
+    "change_type": "threshold",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "١٥",
+      "after": "٢٠"
+    },
+    "note": "Pickup delay limit 15 -> 20 minutes (v1 text, Arabic-Indic digits)."
+  },
+  {
+    "pair_id": "CP-DEV-T02",
+    "language": "ar",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-pickup-wait-v2",
+      "clause_id": "CW-02"
+    },
+    "before": "إذا بقي الطلب قيد التجهيز بعد 10 دقائق من تسجيل الوصول، أرسل بلاغ «تأخر الاستلام» إلى مسؤول التوزيع.",
+    "after": "إذا بقي الطلب قيد التجهيز بعد 5 دقائق من تسجيل الوصول، أرسل بلاغ «تأخر الاستلام» إلى مسؤول التوزيع.",
+    "change_type": "threshold",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "10",
+      "after": "5"
+    },
+    "note": "Pickup delay limit 10 -> 5 minutes (v2 text, ASCII digits)."
+  },
+  {
+    "pair_id": "CP-DEV-T03",
+    "language": "ar",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-duplicate-charge-v1",
+      "clause_id": "EC-02"
+    },
+    "before": "إذا كانت إحدى العمليتين معلّقة والأخرى مكتملة، افتح متابعة لمدة ٢٤ ساعة ولا تطلب استرداداً للمبلغ المعلّق.",
+    "after": "إذا كانت إحدى العمليتين معلّقة والأخرى مكتملة، افتح متابعة لمدة ٤٨ ساعة ولا تطلب استرداداً للمبلغ المعلّق.",
+    "change_type": "threshold",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "٢٤",
+      "after": "٤٨"
+    },
+    "note": "Follow-up window 24 -> 48 hours."
+  },
+  {
+    "pair_id": "CP-DEV-T04",
+    "language": "ar",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-duplicate-charge-v1",
+      "clause_id": "EC-02"
+    },
+    "before": "إذا كانت إحدى العمليتين معلّقة والأخرى مكتملة، افتح متابعة لمدة ٢٤ ساعة ولا تطلب استرداداً للمبلغ المعلّق.",
+    "after": "إذا كانت إحدى العمليتين معلّقة والأخرى مكتملة، افتح متابعة لمدة ١٢ ساعة ولا تطلب استرداداً للمبلغ المعلّق.",
+    "change_type": "threshold",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "٢٤",
+      "after": "١٢"
+    },
+    "note": "Follow-up window 24 -> 12 hours."
+  },
+  {
+    "pair_id": "CP-DEV-T05",
+    "language": "en",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-failed-handoff-v1",
+      "clause_id": "CH-02"
+    },
+    "before": "If the customer is still unreachable after 6 minutes on the handoff timer, open a Failed Handoff ticket with Dispatch. Do not mark the order delivered.",
+    "after": "If the customer is still unreachable after 4 minutes on the handoff timer, open a Failed Handoff ticket with Dispatch. Do not mark the order delivered.",
+    "change_type": "threshold",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "6",
+      "after": "4"
+    },
+    "note": "Handoff timer 6 -> 4 minutes."
+  },
+  {
+    "pair_id": "CP-DEV-T06",
+    "language": "en",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-failed-handoff-v1",
+      "clause_id": "CH-02"
+    },
+    "before": "If the customer is still unreachable after 6 minutes on the handoff timer, open a Failed Handoff ticket with Dispatch. Do not mark the order delivered.",
+    "after": "If the customer is still unreachable after 10 minutes on the handoff timer, open a Failed Handoff ticket with Dispatch. Do not mark the order delivered.",
+    "change_type": "threshold",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "6",
+      "after": "10"
+    },
+    "note": "Handoff timer 6 -> 10 minutes."
+  },
+  {
+    "pair_id": "CP-DEV-T07",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-delayed-order-v2",
+      "clause_id": "ED-01"
+    },
+    "before": "When the displayed delivery estimate is at least 12 minutes past, open a Delay case and record the order ID and last status timestamp.",
+    "after": "When the displayed delivery estimate is at least 15 minutes past, open a Delay case and record the order ID and last status timestamp.",
+    "change_type": "threshold",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "12",
+      "after": "15"
+    },
+    "note": "Delay-case trigger 12 -> 15 minutes."
+  },
+  {
+    "pair_id": "CP-DEV-T08",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-delayed-order-v2",
+      "clause_id": "ED-01"
+    },
+    "before": "When the displayed delivery estimate is at least 12 minutes past, open a Delay case and record the order ID and last status timestamp.",
+    "after": "When the displayed delivery estimate is at least 10 minutes past, open a Delay case and record the order ID and last status timestamp.",
+    "change_type": "threshold",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "12",
+      "after": "10"
+    },
+    "note": "Delay-case trigger 12 -> 10 minutes."
+  },
+  {
+    "pair_id": "CP-DEV-T09",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-delayed-order-v2",
+      "clause_id": "ED-02"
+    },
+    "before": "If tracking has not refreshed for 8 minutes after the case opens, the support agent must route the case to the duty lead. The duty lead pages the dispatch desk.",
+    "after": "If tracking has not refreshed for 5 minutes after the case opens, the support agent must route the case to the duty lead. The duty lead pages the dispatch desk.",
+    "change_type": "threshold",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "8",
+      "after": "5"
+    },
+    "note": "Stalled-tracking escalation 8 -> 5 minutes."
+  },
+  {
+    "pair_id": "CP-DEV-T10",
+    "language": "en",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-item-substitution-v1",
+      "clause_id": "PS-03"
+    },
+    "before": "If the customer has not answered 7 minutes after you send the request, mark the item unavailable and notify Partner Support. Keep any remaining items in preparation.",
+    "after": "If the customer has not answered 10 minutes after you send the request, mark the item unavailable and notify Partner Support. Keep any remaining items in preparation.",
+    "change_type": "threshold",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "7",
+      "after": "10"
+    },
+    "note": "Substitution answer window 7 -> 10 minutes."
+  },
+  {
+    "pair_id": "CP-DEV-C01",
+    "language": "ar",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-pickup-wait-v2",
+      "clause_id": "CW-02"
+    },
+    "before": "إذا بقي الطلب قيد التجهيز بعد 10 دقائق من تسجيل الوصول، أرسل بلاغ «تأخر الاستلام» إلى مسؤول التوزيع.",
+    "after": "إذا بقي الطلب قيد التجهيز بعد ١٠ دقائق من تسجيل الوصول، أرسل بلاغ «تأخر الاستلام» إلى مسؤول التوزيع.",
+    "change_type": "cosmetic",
+    "material": false,
+    "safety_tag": false,
+    "severity": "none",
+    "expected_handling": "carry_forward",
+    "evidence": {
+      "kind": "digit_glyph"
+    },
+    "note": "Same value, Arabic-Indic instead of ASCII digits."
+  },
+  {
+    "pair_id": "CP-DEV-C02",
+    "language": "ar",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-duplicate-charge-v1",
+      "clause_id": "EC-02"
+    },
+    "before": "إذا كانت إحدى العمليتين معلّقة والأخرى مكتملة، افتح متابعة لمدة ٢٤ ساعة ولا تطلب استرداداً للمبلغ المعلّق.",
+    "after": "إذا كانت إحدى العمليتين معلّقة والأخرى مكتملة، افتح متابعة لمدة 24 ساعة ولا تطلب استرداداً للمبلغ المعلّق.",
+    "change_type": "cosmetic",
+    "material": false,
+    "safety_tag": false,
+    "severity": "none",
+    "expected_handling": "carry_forward",
+    "evidence": {
+      "kind": "digit_glyph"
+    },
+    "note": "Same value, ASCII instead of Arabic-Indic digits."
+  },
+  {
+    "pair_id": "CP-DEV-C03",
+    "language": "ar",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-pickup-wait-v2",
+      "clause_id": "CW-14"
+    },
+    "before": "إذا عرض عليك الموظف كيساً يحمل رقم طلب مختلفاً، اتركه عند نقطة الاستلام واطلب الكيس المطابق.",
+    "after": "إذا عرض عليك الموظف كِيساً يحمل رقم طلب مختلفاً، اتركه عند نقطة الاستلام واطلب الكيس المطابق.",
+    "change_type": "cosmetic",
+    "material": false,
+    "safety_tag": false,
+    "severity": "none",
+    "expected_handling": "carry_forward",
+    "evidence": {
+      "kind": "diacritics"
+    },
+    "note": "Added a kasra."
+  },
+  {
+    "pair_id": "CP-DEV-C04",
+    "language": "ar",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-pickup-wait-v2",
+      "clause_id": "CW-10"
+    },
+    "before": "إذا تعذّر تسجيل الوصول في التطبيق، أبلغ مسؤول التوزيع بوقت وصولك الفعلي واطلب منه تسجيله في البلاغ.",
+    "after": "إذا تعذّر تسجيل الوصول في التطبيق، أبلغ مسؤول التوزيـــع بوقت وصولك الفعلي واطلب منه تسجيله في البلاغ.",
+    "change_type": "cosmetic",
+    "material": false,
+    "safety_tag": false,
+    "severity": "none",
+    "expected_handling": "carry_forward",
+    "evidence": {
+      "kind": "tatweel"
+    },
+    "note": "Added tatweel (kashida) stretching."
+  },
+  {
+    "pair_id": "CP-DEV-C05",
+    "language": "ar",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-packing-sealing-v2",
+      "clause_id": "PP-13"
+    },
+    "before": "إذا ظهرت ملاحظة حساسية على الطلب، اعرضها على مشرف التحضير قبل الإغلاق وانتظر تأكيده لمطابقة المحتوى.",
+    "after": "إذا ظهرت ملاحظة حساسية على الطلب, اعرضها على مشرف التحضير قبل الإغلاق وانتظر تأكيده لمطابقة المحتوى.",
+    "change_type": "cosmetic",
+    "material": false,
+    "safety_tag": true,
+    "severity": "none",
+    "expected_handling": "carry_forward",
+    "evidence": {
+      "kind": "punctuation"
+    },
+    "note": "Arabic comma replaced by a Latin comma."
+  },
+  {
+    "pair_id": "CP-DEV-C06",
+    "language": "en",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-item-substitution-v1",
+      "clause_id": "PS-13"
+    },
+    "before": "If an approved replacement sells out before packing, report it to Partner Support and leave the item unpacked pending instructions.",
+    "after": "If an approved replacement sells out before packing, report it to Partner Support and leave the item unpacked pending instructions",
+    "change_type": "cosmetic",
+    "material": false,
+    "safety_tag": false,
+    "severity": "none",
+    "expected_handling": "carry_forward",
+    "evidence": {
+      "kind": "punctuation"
+    },
+    "note": "Final period removed."
+  },
+  {
+    "pair_id": "CP-DEV-C07",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-delayed-order-v2",
+      "clause_id": "ED-10"
+    },
+    "before": "If the same order already has an open Delay case, add the customer's latest message there and keep its original opening time.",
+    "after": "If the same order already has an open Delay case, add the customer’s latest message there and keep its original opening time.",
+    "change_type": "cosmetic",
+    "material": false,
+    "safety_tag": false,
+    "severity": "none",
+    "expected_handling": "carry_forward",
+    "evidence": {
+      "kind": "quotes"
+    },
+    "note": "Straight apostrophe replaced by a curly one."
+  },
+  {
+    "pair_id": "CP-DEV-C08",
+    "language": "en",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-failed-handoff-v1",
+      "clause_id": "CH-02"
+    },
+    "before": "If the customer is still unreachable after 6 minutes on the handoff timer, open a Failed Handoff ticket with Dispatch. Do not mark the order delivered.",
+    "after": "If the customer is still unreachable after 6 minutes on the handoff timer, open a failed handoff ticket with Dispatch. Do not mark the order delivered.",
+    "change_type": "cosmetic",
+    "material": false,
+    "safety_tag": false,
+    "severity": "none",
+    "expected_handling": "carry_forward",
+    "evidence": {
+      "kind": "case"
+    },
+    "note": "Ticket name lower-cased."
+  },
+  {
+    "pair_id": "CP-DEV-C09",
+    "language": "en",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-failed-handoff-v1",
+      "clause_id": "CH-01"
+    },
+    "before": "If the customer does not answer when you reach the delivery address, place one in-app call and send one chat message. Start the handoff timer after sending the message.",
+    "after": "If the customer does not answer when you reach the delivery address, place one in-app call and send one chat message.  Start the handoff timer after sending the message.",
+    "change_type": "cosmetic",
+    "material": false,
+    "safety_tag": false,
+    "severity": "none",
+    "expected_handling": "carry_forward",
+    "evidence": {
+      "kind": "whitespace"
+    },
+    "note": "Double space between sentences."
+  },
+  {
+    "pair_id": "CP-DEV-C10",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-delayed-order-v2",
+      "clause_id": "ED-11"
+    },
+    "before": "If the order timeline shows no delivery estimate, request the last confirmed status from Dispatch and record that the estimate is unavailable.",
+    "after": "If the order timeline shows no delivery estimate, request the last confirmed status from Dispatch, and record that the estimate is unavailable.",
+    "change_type": "cosmetic",
+    "material": false,
+    "safety_tag": false,
+    "severity": "none",
+    "expected_handling": "carry_forward",
+    "evidence": {
+      "kind": "punctuation"
+    },
+    "note": "Comma added."
+  },
+  {
+    "pair_id": "CP-DEV-N01",
+    "language": "en",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-failed-handoff-v1",
+      "clause_id": "CH-02"
+    },
+    "before": "If the customer is still unreachable after 6 minutes on the handoff timer, open a Failed Handoff ticket with Dispatch. Do not mark the order delivered.",
+    "after": "If the customer is still unreachable after 6 minutes on the handoff timer, open a Failed Handoff ticket with Dispatch and mark the order delivered.",
+    "change_type": "negation",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "removed"
+    },
+    "note": "Courier now marks a failed handoff as delivered."
+  },
+  {
+    "pair_id": "CP-DEV-N02",
+    "language": "en",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-item-substitution-v1",
+      "clause_id": "PS-01"
+    },
+    "before": "If the customer selected No substitutions, mark the item unavailable and notify Partner Support. Do not suggest a replacement.",
+    "after": "If the customer selected No substitutions, mark the item unavailable and notify Partner Support. Suggest a replacement anyway.",
+    "change_type": "negation",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "removed"
+    },
+    "note": "No-substitution customers now get offers."
+  },
+  {
+    "pair_id": "CP-DEV-N03",
+    "language": "en",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-failed-handoff-v1",
+      "clause_id": "CH-14"
+    },
+    "before": "If the app stops responding during handoff, relay the order ID and contact attempts to Dispatch by phone and keep the order with you.",
+    "after": "If the app stops responding during handoff, relay the order ID and contact attempts to Dispatch by phone. Do not keep the order with you.",
+    "change_type": "negation",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "added"
+    },
+    "note": "Courier no longer keeps the order during an app outage."
+  },
+  {
+    "pair_id": "CP-DEV-N04",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-delayed-order-v2",
+      "clause_id": "ED-12"
+    },
+    "before": "If the order belongs to another branch queue, transfer the existing case to that queue with the status history attached.",
+    "after": "If the order belongs to another branch queue, transfer the existing case to that queue without the status history attached.",
+    "change_type": "negation",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "added"
+    },
+    "note": "Transfers drop the status history."
+  },
+  {
+    "pair_id": "CP-DEV-N05",
+    "language": "en",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-item-substitution-v1",
+      "clause_id": "PS-14"
+    },
+    "before": "If the approved replacement costs less, record the lower price in the order screen and leave any payment adjustment to Partner Support.",
+    "after": "If the approved replacement costs less, do not record the lower price in the order screen; leave any payment adjustment to Partner Support.",
+    "change_type": "negation",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "added"
+    },
+    "note": "Lower price is no longer recorded."
+  },
+  {
+    "pair_id": "CP-DEV-N06",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-delayed-order-v2",
+      "clause_id": "ED-15"
+    },
+    "before": "If tracking resumes during an open Delay case, record the fresh status and notify the case owner that the stalled-tracking alert can be cleared.",
+    "after": "If tracking resumes during an open Delay case, record the fresh status and notify the case owner that the stalled-tracking alert cannot be cleared.",
+    "change_type": "negation",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "added"
+    },
+    "note": "Alert can no longer be cleared."
+  },
+  {
+    "pair_id": "CP-DEV-N07",
+    "language": "ar",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-pickup-wait-v2",
+      "clause_id": "CW-15"
+    },
+    "before": "إذا طلب منك موظف الفرع إلغاء الطلب أثناء الانتظار، انقل السبب إلى مسؤول التوزيع ولا تلغِ الطلب من حسابك.",
+    "after": "إذا طلب منك موظف الفرع إلغاء الطلب أثناء الانتظار، انقل السبب إلى مسؤول التوزيع وألغِ الطلب من حسابك.",
+    "change_type": "negation",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "removed"
+    },
+    "note": "Courier now cancels the order themselves."
+  },
+  {
+    "pair_id": "CP-DEV-N08",
+    "language": "ar",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-duplicate-charge-v1",
+      "clause_id": "EC-13"
+    },
+    "before": "إذا ظهر استرداد مكتمل لإحدى العمليتين، أبلغ العميل برقم مرجع الاسترداد ولا ترفع طلب استرداد ثانياً.",
+    "after": "إذا ظهر استرداد مكتمل لإحدى العمليتين، أبلغ العميل برقم مرجع الاسترداد وارفع طلب استرداد ثانياً.",
+    "change_type": "negation",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "removed"
+    },
+    "note": "A second refund request is now raised."
+  },
+  {
+    "pair_id": "CP-DEV-N09",
+    "language": "ar",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-duplicate-charge-v1",
+      "clause_id": "EC-14"
+    },
+    "before": "إذا غاب رقم العملية عن البلاغ، اطلب المرجع الظاهر في الإيصال ولا تطلب رقم البطاقة كاملاً.",
+    "after": "إذا غاب رقم العملية عن البلاغ، اطلب المرجع الظاهر في الإيصال واطلب رقم البطاقة كاملاً.",
+    "change_type": "negation",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "removed"
+    },
+    "note": "Full card number is now requested (privacy-relevant)."
+  },
+  {
+    "pair_id": "CP-DEV-N10",
+    "language": "ar",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-pickup-wait-v2",
+      "clause_id": "CW-14"
+    },
+    "before": "إذا عرض عليك الموظف كيساً يحمل رقم طلب مختلفاً، اتركه عند نقطة الاستلام واطلب الكيس المطابق.",
+    "after": "إذا عرض عليك الموظف كيساً يحمل رقم طلب مختلفاً، لا تتركه عند نقطة الاستلام واطلب الكيس المطابق.",
+    "change_type": "negation",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "added"
+    },
+    "note": "Wrong bag is no longer left at the counter."
+  },
+  {
+    "pair_id": "CP-DEV-N11",
+    "language": "ar",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-packing-sealing-v2",
+      "clause_id": "PP-12"
+    },
+    "before": "إذا تضمن الطلب مشروباً، ثبّت الكوب في حامل عمودي داخل كيس منفصل وتأكد من إحكام الغطاء قبل الإغلاق.",
+    "after": "إذا تضمن الطلب مشروباً، ثبّت الكوب في حامل عمودي دون كيس منفصل وتأكد من إحكام الغطاء قبل الإغلاق.",
+    "change_type": "negation",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "added"
+    },
+    "note": "Drink no longer goes in a separate bag."
+  },
+  {
+    "pair_id": "CP-DEV-M01",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-delayed-order-v2",
+      "clause_id": "ED-02"
+    },
+    "before": "If tracking has not refreshed for 8 minutes after the case opens, the support agent must route the case to the duty lead. The duty lead pages the dispatch desk.",
+    "after": "If tracking has not refreshed for 8 minutes after the case opens, the support agent may route the case to the duty lead. The duty lead pages the dispatch desk.",
+    "change_type": "modality",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "weakened"
+    },
+    "note": "Routing to the duty lead becomes optional."
+  },
+  {
+    "pair_id": "CP-DEV-M02",
+    "language": "en",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-failed-handoff-v1",
+      "clause_id": "CH-11"
+    },
+    "before": "If the customer sends a different address in chat, note it in the order record and wait for Dispatch to confirm the route before moving.",
+    "after": "If the customer sends a different address in chat, note it in the order record; you may wait for Dispatch to confirm the route before moving.",
+    "change_type": "modality",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "weakened"
+    },
+    "note": "Waiting for route confirmation becomes optional."
+  },
+  {
+    "pair_id": "CP-DEV-M03",
+    "language": "en",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-item-substitution-v1",
+      "clause_id": "PS-15"
+    },
+    "before": "After packing an approved replacement, mark the preparation slip with the actual item and retain the approval in the order record.",
+    "after": "After packing an approved replacement, you should mark the preparation slip with the actual item and may retain the approval in the order record.",
+    "change_type": "modality",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "weakened"
+    },
+    "note": "Slip marking becomes a recommendation, retention optional."
+  },
+  {
+    "pair_id": "CP-DEV-M04",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-delayed-order-v2",
+      "clause_id": "ED-16"
+    },
+    "before": "When the timeline confirms delivery, send the customer a closure message and record the confirmation time before closing the case.",
+    "after": "When the timeline confirms delivery, you may send the customer a closure message and record the confirmation time before closing the case.",
+    "change_type": "modality",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "weakened"
+    },
+    "note": "Closure message becomes optional."
+  },
+  {
+    "pair_id": "CP-DEV-M05",
+    "language": "en",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-failed-handoff-v1",
+      "clause_id": "CH-16"
+    },
+    "before": "If the customer responds after a Failed Handoff ticket opens, add their reply to the ticket and follow the next instruction from Dispatch.",
+    "after": "If the customer responds after a Failed Handoff ticket opens, add their reply to the ticket; following the next instruction from Dispatch is optional.",
+    "change_type": "modality",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "weakened"
+    },
+    "note": "Following Dispatch becomes optional."
+  },
+  {
+    "pair_id": "CP-DEV-M06",
+    "language": "en",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-failed-handoff-v1",
+      "clause_id": "CH-10"
+    },
+    "before": "If a locked gate blocks the listed address, ask the customer for access through the order chat. Stay outside the gate while waiting.",
+    "after": "If a locked gate blocks the listed address, ask the customer for access through the order chat. You should stay outside the gate while waiting.",
+    "change_type": "modality",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "weakened"
+    },
+    "note": "Staying outside becomes a recommendation."
+  },
+  {
+    "pair_id": "CP-DEV-M07",
+    "language": "ar",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-pickup-wait-v2",
+      "clause_id": "CW-11"
+    },
+    "before": "إذا عُيّنت لك عدة طلبات من الفرع نفسه، تابع وقت الانتظار لكل طلب على حدة وسجّل وصولك لكل طلب مفتوح.",
+    "after": "إذا عُيّنت لك عدة طلبات من الفرع نفسه، يمكنك متابعة وقت الانتظار لكل طلب على حدة وتسجيل وصولك لكل طلب مفتوح.",
+    "change_type": "modality",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "weakened"
+    },
+    "note": "Per-order tracking becomes optional."
+  },
+  {
+    "pair_id": "CP-DEV-M08",
+    "language": "ar",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-duplicate-charge-v1",
+      "clause_id": "EC-10"
+    },
+    "before": "إذا عرض السجل توقيت العمليتين بمنطقتين زمنيتين مختلفتين، حوّل التوقيتين إلى توقيت الفرع قبل ترتيب الأحداث في البلاغ.",
+    "after": "إذا عرض السجل توقيت العمليتين بمنطقتين زمنيتين مختلفتين، يُفضّل تحويل التوقيتين إلى توقيت الفرع قبل ترتيب الأحداث في البلاغ.",
+    "change_type": "modality",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "weakened"
+    },
+    "note": "Time-zone conversion becomes a preference."
+  },
+  {
+    "pair_id": "CP-DEV-M09",
+    "language": "ar",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-packing-sealing-v2",
+      "clause_id": "PP-13"
+    },
+    "before": "إذا ظهرت ملاحظة حساسية على الطلب، اعرضها على مشرف التحضير قبل الإغلاق وانتظر تأكيده لمطابقة المحتوى.",
+    "after": "إذا ظهرت ملاحظة حساسية على الطلب، يمكنك عرضها على مشرف التحضير قبل الإغلاق وانتظار تأكيده لمطابقة المحتوى.",
+    "change_type": "modality",
+    "material": true,
+    "safety_tag": true,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "weakened"
+    },
+    "note": "Allergy check becomes optional (safety-critical)."
+  },
+  {
+    "pair_id": "CP-DEV-M10",
+    "language": "ar",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-duplicate-charge-v1",
+      "clause_id": "EC-15"
+    },
+    "before": "إذا أظهر السجل دفعة نقدية وأخرى إلكترونية للطلب نفسه، أحل الحالة إلى فريق تسوية الطلبات مع الإيصالين.",
+    "after": "إذا أظهر السجل دفعة نقدية وأخرى إلكترونية للطلب نفسه، يجوز أن تحيل الحالة إلى فريق تسوية الطلبات مع الإيصالين.",
+    "change_type": "modality",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "weakened"
+    },
+    "note": "Referral becomes permitted rather than required."
+  },
+  {
+    "pair_id": "CP-DEV-M11",
+    "language": "ar",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-packing-sealing-v2",
+      "clause_id": "PP-16"
+    },
+    "before": "بعد ختم الأكياس، ضع الطلب في رف الفئة المبيّنة على شاشة التجهيز واجعل ملصق الرقم ظاهراً من جهة الممر.",
+    "after": "بعد ختم الأكياس، ضع الطلب في رف الفئة المبيّنة على شاشة التجهيز ويُفضّل أن يكون ملصق الرقم ظاهراً من جهة الممر.",
+    "change_type": "modality",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "weakened"
+    },
+    "note": "Label visibility becomes a preference."
+  },
+  {
+    "pair_id": "CP-DEV-A01",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-delayed-order-v2",
+      "clause_id": "ED-13"
+    },
+    "before": "If the customer asks to cancel a late order, link a Cancellation Request and route it to the cancellations desk.",
+    "after": "If the customer asks to cancel a late order, link a Cancellation Request and route it to the duty lead.",
+    "change_type": "actor",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "cancellations desk",
+      "after": "duty lead"
+    },
+    "note": "Cancellation requests go to the duty lead."
+  },
+  {
+    "pair_id": "CP-DEV-A02",
+    "language": "en",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-failed-handoff-v1",
+      "clause_id": "CH-15"
+    },
+    "before": "If Dispatch directs a return, give the order to the branch lead and record the branch's receipt code in the Failed Handoff ticket.",
+    "after": "If Dispatch directs a return, give the order to the restaurant cashier and record the branch's receipt code in the Failed Handoff ticket.",
+    "change_type": "actor",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "branch lead",
+      "after": "restaurant cashier"
+    },
+    "note": "Returns handed to the cashier."
+  },
+  {
+    "pair_id": "CP-DEV-A03",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-delayed-order-v2",
+      "clause_id": "ED-11"
+    },
+    "before": "If the order timeline shows no delivery estimate, request the last confirmed status from Dispatch and record that the estimate is unavailable.",
+    "after": "If the order timeline shows no delivery estimate, request the last confirmed status from the duty lead and record that the estimate is unavailable.",
+    "change_type": "actor",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "dispatch",
+      "after": "duty lead"
+    },
+    "note": "Status requested from the duty lead."
+  },
+  {
+    "pair_id": "CP-DEV-A04",
+    "language": "en",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-item-substitution-v1",
+      "clause_id": "PS-12"
+    },
+    "before": "If the customer rejects the offer, mark that item unavailable and send Partner Support the rejection recorded in the order screen.",
+    "after": "If the customer rejects the offer, mark that item unavailable and send the branch manager the rejection recorded in the order screen.",
+    "change_type": "actor",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "partner support",
+      "after": "branch manager"
+    },
+    "note": "Rejection goes to the branch manager."
+  },
+  {
+    "pair_id": "CP-DEV-A05",
+    "language": "en",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-failed-handoff-v1",
+      "clause_id": "CH-13"
+    },
+    "before": "If building staff ask you to leave the order in the lobby, keep it with you unless the app authorizes that drop-off and accepts a proof photo.",
+    "after": "If building staff ask you to leave the order in the lobby, keep it with you unless Dispatch authorizes that drop-off and accepts a proof photo.",
+    "change_type": "actor",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "app",
+      "after": "dispatch"
+    },
+    "note": "Dispatch, not the app, authorizes lobby drops."
+  },
+  {
+    "pair_id": "CP-DEV-A06",
+    "language": "ar",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-pickup-wait-v2",
+      "clause_id": "CW-10"
+    },
+    "before": "إذا تعذّر تسجيل الوصول في التطبيق، أبلغ مسؤول التوزيع بوقت وصولك الفعلي واطلب منه تسجيله في البلاغ.",
+    "after": "إذا تعذّر تسجيل الوصول في التطبيق، أبلغ موظف الفرع بوقت وصولك الفعلي واطلب منه تسجيله في البلاغ.",
+    "change_type": "actor",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "مسؤول التوزيع",
+      "after": "موظف الفرع"
+    },
+    "note": "Arrival time reported to branch staff."
+  },
+  {
+    "pair_id": "CP-DEV-A07",
+    "language": "ar",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-pickup-wait-v2",
+      "clause_id": "CW-13"
+    },
+    "before": "إذا ظهر الطلب جاهزاً ولم تجده على رف الاستلام، اطلب من موظف الفرع تحديد مكانه برقم الطلب قبل تحديث حالته.",
+    "after": "إذا ظهر الطلب جاهزاً ولم تجده على رف الاستلام، اطلب من مسؤول التوزيع تحديد مكانه برقم الطلب قبل تحديث حالته.",
+    "change_type": "actor",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "موظف الفرع",
+      "after": "مسؤول التوزيع"
+    },
+    "note": "Dispatch locates the order."
+  },
+  {
+    "pair_id": "CP-DEV-A08",
+    "language": "ar",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-duplicate-charge-v1",
+      "clause_id": "EC-16"
+    },
+    "before": "إذا اختلفت عملة العمليتين، وثّق القيمتين كما ظهرتا وأحل الحالة إلى مراجع المدفوعات للتحقق من التحويل.",
+    "after": "إذا اختلفت عملة العمليتين، وثّق القيمتين كما ظهرتا وأحل الحالة إلى فريق تسوية الطلبات للتحقق من التحويل.",
+    "change_type": "actor",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "مراجع المدفوعات",
+      "after": "فريق تسوية الطلبات"
+    },
+    "note": "Currency cases go to reconciliation."
+  },
+  {
+    "pair_id": "CP-DEV-A09",
+    "language": "ar",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-packing-sealing-v2",
+      "clause_id": "PP-14"
+    },
+    "before": "إذا ابتل الكيس أثناء التعبئة، افحص العبوات الداخلية واستبدل الكيس قبل الختم. أبلغ المشرف إذا تضررت عبوة داخلية.",
+    "after": "إذا ابتل الكيس أثناء التعبئة، افحص العبوات الداخلية واستبدل الكيس قبل الختم. أبلغ المندوب إذا تضررت عبوة داخلية.",
+    "change_type": "actor",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "المشرف",
+      "after": "المندوب"
+    },
+    "note": "Courier, not the supervisor, is told about damage."
+  },
+  {
+    "pair_id": "CP-DEV-A10",
+    "language": "ar",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-packing-sealing-v2",
+      "clause_id": "PP-15"
+    },
+    "before": "إذا احتوى الكيس على عبوة هشة، ألصق علامة المناولة على وجه الكيس الظاهر لموظف نقطة الاستلام.",
+    "after": "إذا احتوى الكيس على عبوة هشة، ألصق علامة المناولة على وجه الكيس الظاهر للمندوب.",
+    "change_type": "actor",
+    "material": true,
+    "safety_tag": false,
+    "severity": "high",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "before": "موظف نقطة الاستلام",
+      "after": "المندوب"
+    },
+    "note": "Label faces the courier."
+  },
+  {
+    "pair_id": "CP-DEV-K01",
+    "language": "en",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-failed-handoff-v1",
+      "clause_id": "CH-03"
+    },
+    "before": "Leave the order at the door only if the customer selected Leave at Door and the app accepts a proof photo.",
+    "after": "Leave the order at the door only if the customer selected Leave at Door or if the app accepts a proof photo.",
+    "change_type": "condition",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "added"
+    },
+    "note": "Door drop allowed on either condition."
+  },
+  {
+    "pair_id": "CP-DEV-K02",
+    "language": "en",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-item-substitution-v1",
+      "clause_id": "PS-11"
+    },
+    "before": "If a customer ordered several units, offer a replacement only when you can supply the full requested quantity at the allowed price.",
+    "after": "If a customer ordered several units, offer a replacement for whatever quantity you can supply at the allowed price.",
+    "change_type": "condition",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "removed"
+    },
+    "note": "Full-quantity condition dropped."
+  },
+  {
+    "pair_id": "CP-DEV-K03",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-delayed-order-v2",
+      "clause_id": "ED-10"
+    },
+    "before": "If the same order already has an open Delay case, add the customer's latest message there and keep its original opening time.",
+    "after": "If the same order already has an open Delay case, add the customer's latest message there and keep its original opening time unless the customer reports a new delivery address.",
+    "change_type": "condition",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "added"
+    },
+    "note": "New exception for address changes."
+  },
+  {
+    "pair_id": "CP-DEV-K04",
+    "language": "en",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-failed-handoff-v1",
+      "clause_id": "CH-12"
+    },
+    "before": "If someone else offers to take the order, hand it over only when the app lists that person as an alternate recipient.",
+    "after": "If someone else offers to take the order, hand it over when the app lists that person as an alternate recipient or when they show the order number.",
+    "change_type": "condition",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "added"
+    },
+    "note": "Handover allowed on order number alone."
+  },
+  {
+    "pair_id": "CP-DEV-K05",
+    "language": "en",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-item-substitution-v1",
+      "clause_id": "PS-16"
+    },
+    "before": "If the entire order is cancelled while an offer is pending, release the held stock and stop preparing that order.",
+    "after": "If the entire order is cancelled, release the held stock and stop preparing that order.",
+    "change_type": "condition",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "removed"
+    },
+    "note": "Applies to every cancellation."
+  },
+  {
+    "pair_id": "CP-DEV-K06",
+    "language": "ar",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-pickup-wait-v2",
+      "clause_id": "CW-12"
+    },
+    "before": "إذا وجدت مدخل الخدمة مغلقاً والمدخل العام مفتوحاً، اسأل موظف الاستقبال عن نقطة الاستلام المخصصة للمندوبين.",
+    "after": "إذا وجدت مدخل الخدمة مغلقاً، اسأل موظف الاستقبال عن نقطة الاستلام المخصصة للمندوبين إلا إذا كان المدخل العام مغلقاً أيضاً.",
+    "change_type": "condition",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "added"
+    },
+    "note": "Public-entrance condition becomes an exception."
+  },
+  {
+    "pair_id": "CP-DEV-K07",
+    "language": "ar",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-duplicate-charge-v1",
+      "clause_id": "EC-12"
+    },
+    "before": "إذا ظهرت إحدى العمليتين مرفوضة في سجل المدفوعات، وثّق رمز الرفض ولا تسجّلها خصماً مكتملاً.",
+    "after": "إذا ظهرت إحدى العمليتين مرفوضة في سجل المدفوعات، وثّق رمز الرفض ولا تسجّلها خصماً مكتملاً إلا إذا أكد العميل الخصم في كشف حسابه.",
+    "change_type": "condition",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "added"
+    },
+    "note": "Customer statement overrides the decline."
+  },
+  {
+    "pair_id": "CP-DEV-K08",
+    "language": "ar",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-packing-sealing-v2",
+      "clause_id": "PP-11"
+    },
+    "before": "إذا جمع الطلب أصنافاً ساخنة وباردة، ضع كل مجموعة في كيس مستقل وألصق رقم الطلب على الكيسين.",
+    "after": "إذا جمع الطلب أصنافاً ساخنة وباردة، ضع كل مجموعة في كيس مستقل ما لم يطلب العميل كيساً واحداً، وألصق رقم الطلب على الكيسين.",
+    "change_type": "condition",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "added"
+    },
+    "note": "Customer can request a single bag."
+  },
+  {
+    "pair_id": "CP-DEV-K09",
+    "language": "ar",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-duplicate-charge-v1",
+      "clause_id": "EC-11"
+    },
+    "before": "إذا تكرر بلاغ العميل عن العمليتين نفسيهما، أضف الرسالة الجديدة إلى البلاغ المفتوح وأغلق البلاغ الثاني بوصفه مكرراً.",
+    "after": "إذا تكرر بلاغ العميل عن العمليتين نفسيهما، أضف الرسالة الجديدة إلى البلاغ المفتوح وأغلق البلاغ الثاني بوصفه مكرراً إلا إذا كان البلاغ الأول مغلقاً.",
+    "change_type": "condition",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "added"
+    },
+    "note": "Closed first report changes the merge."
+  },
+  {
+    "pair_id": "CP-DEV-K10",
+    "language": "ar",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-packing-sealing-v2",
+      "clause_id": "PP-10"
+    },
+    "before": "قبل إغلاق الكيس، طابق كل صنف وكميته مع شاشة التجهيز. أعد الطلب الناقص إلى محطة التحضير لاستكماله.",
+    "after": "قبل إغلاق الكيس، طابق كل صنف وكميته مع شاشة التجهيز. أعد الطلب الناقص إلى محطة التحضير لاستكماله إذا كان الصنف الناقص متوفراً.",
+    "change_type": "condition",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {
+      "direction": "added"
+    },
+    "note": "Return only when the item is in stock."
+  },
+  {
+    "pair_id": "CP-DEV-O01",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-delayed-order-v2",
+      "clause_id": "ED-01"
+    },
+    "before": "When the displayed delivery estimate is at least 12 minutes past, open a Delay case and record the order ID and last status timestamp.",
+    "after": "When the displayed delivery estimate is at least 12 minutes past, record the order ID and last status timestamp, then open a Delay case.",
+    "change_type": "order",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {},
+    "note": "Record before opening the case."
+  },
+  {
+    "pair_id": "CP-DEV-O02",
+    "language": "en",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-failed-handoff-v1",
+      "clause_id": "CH-01"
+    },
+    "before": "If the customer does not answer when you reach the delivery address, place one in-app call and send one chat message. Start the handoff timer after sending the message.",
+    "after": "If the customer does not answer when you reach the delivery address, place one in-app call and send one chat message. Start the handoff timer before sending the message.",
+    "change_type": "order",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {},
+    "note": "Timer starts earlier."
+  },
+  {
+    "pair_id": "CP-DEV-O03",
+    "language": "en",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-item-substitution-v1",
+      "clause_id": "PS-02"
+    },
+    "before": "When substitutions are allowed, send one replacement of equal or lower price through the order screen. Pack it only after the customer approves it there.",
+    "after": "When substitutions are allowed, send one replacement of equal or lower price through the order screen. Pack it before the customer approves it there.",
+    "change_type": "order",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {},
+    "note": "Packing moves before approval."
+  },
+  {
+    "pair_id": "CP-DEV-O04",
+    "language": "en",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-failed-handoff-v1",
+      "clause_id": "CH-15"
+    },
+    "before": "If Dispatch directs a return, give the order to the branch lead and record the branch's receipt code in the Failed Handoff ticket.",
+    "after": "If Dispatch directs a return, record the branch's receipt code in the Failed Handoff ticket before you give the order to the branch lead.",
+    "change_type": "order",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {},
+    "note": "Receipt code recorded before handover."
+  },
+  {
+    "pair_id": "CP-DEV-O05",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-delayed-order-v2",
+      "clause_id": "ED-16"
+    },
+    "before": "When the timeline confirms delivery, send the customer a closure message and record the confirmation time before closing the case.",
+    "after": "When the timeline confirms delivery, close the case, then send the customer a closure message and record the confirmation time.",
+    "change_type": "order",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {},
+    "note": "Case closed before messaging."
+  },
+  {
+    "pair_id": "CP-DEV-O06",
+    "language": "ar",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-pickup-wait-v2",
+      "clause_id": "CW-01"
+    },
+    "before": "ابدأ حساب الانتظار عند اختيار «وصلت إلى الفرع» في التطبيق. سجّل رقم الطلب، مثل TF-418، ووقت الوصول.",
+    "after": "سجّل رقم الطلب، مثل TF-418، ووقت الوصول، ثم ابدأ حساب الانتظار عند اختيار «وصلت إلى الفرع» في التطبيق.",
+    "change_type": "order",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {},
+    "note": "Logging moves before the timer start."
+  },
+  {
+    "pair_id": "CP-DEV-O07",
+    "language": "ar",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-packing-sealing-v2",
+      "clause_id": "PP-01"
+    },
+    "before": "طابق رقم الطلب على ملصق كل كيس مع شاشة التجهيز قبل الإغلاق. إذا اختلف الرقم، أعد الكيس إلى طاولة التجهيز.",
+    "after": "طابق رقم الطلب على ملصق كل كيس مع شاشة التجهيز بعد الإغلاق. إذا اختلف الرقم، أعد الكيس إلى طاولة التجهيز.",
+    "change_type": "order",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {},
+    "note": "Label check moves after sealing."
+  },
+  {
+    "pair_id": "CP-DEV-O08",
+    "language": "ar",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-packing-sealing-v2",
+      "clause_id": "PP-14"
+    },
+    "before": "إذا ابتل الكيس أثناء التعبئة، افحص العبوات الداخلية واستبدل الكيس قبل الختم. أبلغ المشرف إذا تضررت عبوة داخلية.",
+    "after": "إذا ابتل الكيس أثناء التعبئة، افحص العبوات الداخلية واستبدل الكيس بعد الختم. أبلغ المشرف إذا تضررت عبوة داخلية.",
+    "change_type": "order",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {},
+    "note": "Bag replaced after sealing."
+  },
+  {
+    "pair_id": "CP-DEV-O09",
+    "language": "ar",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-pickup-wait-v2",
+      "clause_id": "CW-13"
+    },
+    "before": "إذا ظهر الطلب جاهزاً ولم تجده على رف الاستلام، اطلب من موظف الفرع تحديد مكانه برقم الطلب قبل تحديث حالته.",
+    "after": "إذا ظهر الطلب جاهزاً ولم تجده على رف الاستلام، اطلب من موظف الفرع تحديد مكانه برقم الطلب بعد تحديث حالته.",
+    "change_type": "order",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {},
+    "note": "Status updated before locating."
+  },
+  {
+    "pair_id": "CP-DEV-O10",
+    "language": "ar",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-packing-sealing-v2",
+      "clause_id": "PP-12"
+    },
+    "before": "إذا تضمن الطلب مشروباً، ثبّت الكوب في حامل عمودي داخل كيس منفصل وتأكد من إحكام الغطاء قبل الإغلاق.",
+    "after": "إذا تضمن الطلب مشروباً، ثبّت الكوب في حامل عمودي داخل كيس منفصل وتأكد من إحكام الغطاء بعد الإغلاق.",
+    "change_type": "order",
+    "material": true,
+    "safety_tag": false,
+    "severity": "medium",
+    "expected_handling": "regenerate_and_reassess",
+    "evidence": {},
+    "note": "Lid checked after closing."
+  },
+  {
+    "pair_id": "CP-DEV-W01",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-delayed-order-v2",
+      "clause_id": "ED-14"
+    },
+    "before": "If several late orders share one dispatch incident, keep a case for each order and add the shared incident ID to each case.",
+    "after": "If several late orders share one dispatch incident, keep a separate case per order and add the shared incident ID to every case.",
+    "change_type": "wording",
+    "material": false,
+    "safety_tag": false,
+    "severity": "low",
+    "expected_handling": "refresh_text",
+    "evidence": {},
+    "note": "Paraphrase."
+  },
+  {
+    "pair_id": "CP-DEV-W02",
+    "language": "en",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-failed-handoff-v1",
+      "clause_id": "CH-10"
+    },
+    "before": "If a locked gate blocks the listed address, ask the customer for access through the order chat. Stay outside the gate while waiting.",
+    "after": "If a locked gate blocks the listed address, use the order chat to ask the customer for access. Stay outside the gate while waiting.",
+    "change_type": "wording",
+    "material": false,
+    "safety_tag": false,
+    "severity": "low",
+    "expected_handling": "refresh_text",
+    "evidence": {},
+    "note": "Paraphrase."
+  },
+  {
+    "pair_id": "CP-DEV-W03",
+    "language": "en",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-item-substitution-v1",
+      "clause_id": "PS-10"
+    },
+    "before": "Before offering a replacement, check available stock and tell the prep station to hold the quantity you will offer until the request is resolved.",
+    "after": "Before offering a replacement, check the stock on hand and ask the prep station to hold the quantity you will offer until the request is resolved.",
+    "change_type": "wording",
+    "material": false,
+    "safety_tag": false,
+    "severity": "low",
+    "expected_handling": "refresh_text",
+    "evidence": {},
+    "note": "Paraphrase."
+  },
+  {
+    "pair_id": "CP-DEV-W04",
+    "language": "en",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-delayed-order-v2",
+      "clause_id": "ED-12"
+    },
+    "before": "If the order belongs to another branch queue, transfer the existing case to that queue with the status history attached.",
+    "after": "If the order belongs to another branch queue, move the existing case to that queue and attach the status history.",
+    "change_type": "wording",
+    "material": false,
+    "safety_tag": false,
+    "severity": "low",
+    "expected_handling": "refresh_text",
+    "evidence": {},
+    "note": "Paraphrase."
+  },
+  {
+    "pair_id": "CP-DEV-W05",
+    "language": "en",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-failed-handoff-v1",
+      "clause_id": "CH-16"
+    },
+    "before": "If the customer responds after a Failed Handoff ticket opens, add their reply to the ticket and follow the next instruction from Dispatch.",
+    "after": "If the customer responds after a Failed Handoff ticket opens, add the reply to that ticket and follow Dispatch's next instruction.",
+    "change_type": "wording",
+    "material": false,
+    "safety_tag": false,
+    "severity": "low",
+    "expected_handling": "refresh_text",
+    "evidence": {},
+    "note": "Paraphrase."
+  },
+  {
+    "pair_id": "CP-DEV-W06",
+    "language": "ar",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-pickup-wait-v2",
+      "clause_id": "CW-11"
+    },
+    "before": "إذا عُيّنت لك عدة طلبات من الفرع نفسه، تابع وقت الانتظار لكل طلب على حدة وسجّل وصولك لكل طلب مفتوح.",
+    "after": "إذا عُيّنت لك عدة طلبات من الفرع نفسه، تابع وقت انتظار كل طلب بشكل منفصل وسجّل وصولك لكل طلب مفتوح.",
+    "change_type": "wording",
+    "material": false,
+    "safety_tag": false,
+    "severity": "low",
+    "expected_handling": "refresh_text",
+    "evidence": {},
+    "note": "Paraphrase."
+  },
+  {
+    "pair_id": "CP-DEV-W07",
+    "language": "ar",
+    "role": "courier",
+    "base": {
+      "document_id": "courier-pickup-wait-v2",
+      "clause_id": "CW-03"
+    },
+    "before": "إذا وجدت نقطة الاستلام مغلقة، اتصل بمسؤول التوزيع فوراً ولا تنتظر انتهاء المهلة.",
+    "after": "إذا كانت نقطة الاستلام مغلقة، اتصل بمسؤول التوزيع على الفور ولا تنتظر انتهاء المهلة.",
+    "change_type": "wording",
+    "material": false,
+    "safety_tag": false,
+    "severity": "low",
+    "expected_handling": "refresh_text",
+    "evidence": {},
+    "note": "Paraphrase."
+  },
+  {
+    "pair_id": "CP-DEV-W08",
+    "language": "ar",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-duplicate-charge-v1",
+      "clause_id": "EC-14"
+    },
+    "before": "إذا غاب رقم العملية عن البلاغ، اطلب المرجع الظاهر في الإيصال ولا تطلب رقم البطاقة كاملاً.",
+    "after": "إذا خلا البلاغ من رقم العملية، اطلب المرجع المطبوع على الإيصال ولا تطلب رقم البطاقة كاملاً.",
+    "change_type": "wording",
+    "material": false,
+    "safety_tag": false,
+    "severity": "low",
+    "expected_handling": "refresh_text",
+    "evidence": {},
+    "note": "Paraphrase."
+  },
+  {
+    "pair_id": "CP-DEV-W09",
+    "language": "ar",
+    "role": "partner",
+    "base": {
+      "document_id": "partner-packing-sealing-v2",
+      "clause_id": "PP-15"
+    },
+    "before": "إذا احتوى الكيس على عبوة هشة، ألصق علامة المناولة على وجه الكيس الظاهر لموظف نقطة الاستلام.",
+    "after": "إذا كان في الكيس عبوة هشة، ضع علامة المناولة على وجه الكيس المواجه لموظف نقطة الاستلام.",
+    "change_type": "wording",
+    "material": false,
+    "safety_tag": false,
+    "severity": "low",
+    "expected_handling": "refresh_text",
+    "evidence": {},
+    "note": "Paraphrase."
+  },
+  {
+    "pair_id": "CP-DEV-W10",
+    "language": "ar",
+    "role": "employee",
+    "base": {
+      "document_id": "employee-duplicate-charge-v1",
+      "clause_id": "EC-15"
+    },
+    "before": "إذا أظهر السجل دفعة نقدية وأخرى إلكترونية للطلب نفسه، أحل الحالة إلى فريق تسوية الطلبات مع الإيصالين.",
+    "after": "إذا بيّن السجل دفعة نقدية ودفعة إلكترونية للطلب ذاته، أحل الحالة إلى فريق تسوية الطلبات مرفقاً الإيصالين.",
+    "change_type": "wording",
+    "material": false,
+    "safety_tag": false,
+    "severity": "low",
+    "expected_handling": "refresh_text",
+    "evidence": {},
+    "note": "Paraphrase."
+  }
+]

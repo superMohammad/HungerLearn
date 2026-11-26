@@ -1,0 +1,8 @@
+MISSED loop  8 scenario_below_threshold: scenario no longer reaches the cited threshold (4 minutes on a 6-minute rule)
+         -> validator PASSED the corrupted data
+MISSED loop  8 incomplete_remediation: remediation skips a rule the wrong answer breaks (door drop without authorization)
+         -> validator PASSED the corrupted data
+MISSED loop  8 non_discriminating_case: CW-02 case set at 16 minutes, so v1 and v2 give the same answer and the update is untested
+         -> validator PASSED the corrupted data
+
+0/3 seeded errors caught

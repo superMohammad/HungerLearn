@@ -1,0 +1,3 @@
+courier-pickup-wait-v2 {'reassess': 1, 'unaffected_out_of_scope': 5, 'update_in_progress_assignment': 1} MISSING: ['unaffected_no_assignment']
+employee-delayed-order-v2 {'unaffected_out_of_scope': 5, 'reassess': 1, 'unaffected_no_assignment': 1} MISSING: ['update_in_progress_assignment']
+partner-packing-sealing-v2 {'unaffected_out_of_scope': 6, 'reassess': 1} MISSING: ['unaffected_no_assignment', 'update_in_progress_assignment']

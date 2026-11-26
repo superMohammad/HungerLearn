@@ -1,0 +1,24 @@
+CAUGHT loop  1 wrong_branch: manifest branch disagrees with the branch printed in the SOP header
+         -> FAIL: Visible header disagrees with manifest organization, branch, or version: courier-failed-handoff-v1
+CAUGHT loop  1 wrong_branch_local: Arabic branch name in the manifest disagrees with the Arabic header
+         -> FAIL: Visible header disagrees with manifest organization, branch, or version: courier-damaged-package-v1
+CAUGHT loop  2 unanchored_timer: a wait threshold that never says when its timer starts (source and gold consistent)
+         -> FAIL: Deadline or wait has no stated start event: partner-item-substitution-v1/PS-03
+CAUGHT loop  3 digit_glyph_loss: Arabic-Indic digits silently rewritten as ASCII in source and quote (glyph loss)
+         -> FAIL: Malformed numeric threshold: employee-duplicate-charge-v1/EC-02
+CAUGHT loop  4 copied_facts: a facts label copied verbatim (in Arabic) from the quote instead of normalized
+         -> FAIL: Fact 'trigger' restates the source instead of a normalized label: employee-duplicate-charge-v1/EC-15
+CAUGHT loop  4 dangling_exception: an exception that points at a clause the document does not contain
+         -> FAIL: exception_to names a missing clause: employee-complaint-escalation-v1/EG-14
+CAUGHT loop  4 dropped_negation: an explicit prohibition (ولا ترفع طلب استرداد ثانياً) dropped from the facts
+         -> FAIL: Explicit prohibition missing from facts: employee-duplicate-charge-v1/EC-13
+CAUGHT loop  5 low_resolution_scan: scan downsampled to ~118 dpi (still >=1000 px, too coarse for reliable OCR)
+         -> FAIL: Scan resolution below 150 dpi: employee-delayed-order-v1-scan-en.png
+CAUGHT loop  5 exif_hidden_text: PNG scan carrying hidden text in an EXIF block instead of a tEXt chunk
+         -> FAIL: PNG carries EXIF, XMP, or comment metadata that could hide text: employee-delayed-order-v1-scan-en.png
+CAUGHT loop  6 missing_version_distractor: a v2-scoped query that no longer lists the identical v1 rule, so the version filter goes untested
+         -> FAIL: Missing other-version distractor courier-pickup-wait-v1/CW-03: dev-courier-03
+CAUGHT loop  6 stale_retrieval_target: a retrieval target pointing at the superseded version (stale-version label)
+         -> FAIL: Retrieval scope mismatch: dev-courier-01
+
+11/11 seeded errors caught

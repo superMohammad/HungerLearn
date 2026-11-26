@@ -4,14 +4,17 @@
     "document_id": "courier-pickup-wait-v2",
     "role": "courier",
     "language": "ar",
-    "scenario": "سجّلت وصولك إلى بوابة التين قبل 10 دقائق. الطلب TF-418 لا يزال قيد التجهيز ونقطة الاستلام مفتوحة. ما الخطوة الآن؟",
+    "scenario": "سجّلت وصولك إلى بوابة التين قبل 12 دقيقة. الطلب TF-418 لا يزال قيد التجهيز ونقطة الاستلام مفتوحة. ما الخطوة الآن؟",
     "correct_action": "أرسل بلاغ «تأخر الاستلام» إلى مسؤول التوزيع.",
-    "explanation": "بلغ انتظار التجهيز المهلة المحددة في الإصدار الثاني.",
+    "explanation": "تجاوز انتظار التجهيز مهلة 10 دقائق المحددة في الإصدار الثاني. مهلة ١٥ دقيقة من الإصدار الأول لم تعد سارية.",
     "supporting_clause_ids": [
       "CW-02"
     ],
     "wrong_answer": {
       "text": "انتظر حتى تمر ١٥ دقيقة.",
+      "violates": [
+        "CW-02"
+      ],
       "expected_route": "remedial_practice",
       "practice_items": [
         "training-cw-02"
@@ -23,18 +26,23 @@
     "document_id": "courier-failed-handoff-v1",
     "role": "courier",
     "language": "en",
-    "scenario": "You called and messaged at the delivery address. Six minutes have elapsed since the message, the customer is unreachable, and there is no Leave at Door authorization. What do you do?",
+    "scenario": "You called and messaged at the delivery address. Seven minutes have elapsed since the message, the customer is unreachable, and there is no Leave at Door authorization. What do you do?",
     "correct_action": "Open a Failed Handoff ticket with Dispatch and leave the delivery status unchanged.",
-    "explanation": "The six-minute contact timer has elapsed and the customer did not authorize a doorstep drop.",
+    "explanation": "The six-minute handoff timer has run out, and without a Leave at Door authorization the order cannot be left at the door.",
     "supporting_clause_ids": [
       "CH-02",
       "CH-03"
     ],
     "wrong_answer": {
       "text": "Leave the order at the door and mark it delivered.",
+      "violates": [
+        "CH-02",
+        "CH-03"
+      ],
       "expected_route": "remedial_practice",
       "practice_items": [
-        "training-ch-02"
+        "training-ch-02",
+        "training-ch-03"
       ]
     }
   },
@@ -43,7 +51,8 @@
     "document_id": "employee-delayed-order-v2",
     "role": "employee",
     "language": "en",
-    "scenario": "Case SD-286 has been open for eight minutes with no tracking refresh. Who should act next?",
+    "scenario": "Case SD-286 has been open for eight minutes with no tracking refresh. What should the support agent do next?",
+    "threshold_boundary": true,
     "correct_action": "Route the case to the duty lead, who pages the dispatch desk.",
     "explanation": "Version 2 assigns paging to the duty lead after the eight-minute trigger.",
     "supporting_clause_ids": [
@@ -51,6 +60,9 @@
     ],
     "wrong_answer": {
       "text": "Page the dispatch desk yourself.",
+      "violates": [
+        "ED-02"
+      ],
       "expected_route": "remedial_practice",
       "practice_items": [
         "training-ed-02"
@@ -71,6 +83,9 @@
     ],
     "wrong_answer": {
       "text": "اطلب استرداد العملية المعلّقة فوراً.",
+      "violates": [
+        "EC-02"
+      ],
       "expected_route": "remedial_practice",
       "practice_items": [
         "training-ec-02"
@@ -90,6 +105,9 @@
     ],
     "wrong_answer": {
       "text": "استخدم شريط الإغلاق عند طاولة التعبئة.",
+      "violates": [
+        "PP-02"
+      ],
       "expected_route": "remedial_practice",
       "practice_items": [
         "training-pp-02"
@@ -101,14 +119,18 @@
     "document_id": "partner-item-substitution-v1",
     "role": "partner",
     "language": "en",
-    "scenario": "An item is unavailable. The customer allows substitutions and a cheaper replacement is available, but the customer has yet to approve it. How do you proceed?",
-    "correct_action": "Send that option through the order screen and wait for approval before packing it.",
-    "explanation": "The price qualifies and the customer's in-app approval is required before packing.",
+    "scenario": "An item is unavailable. The customer allows substitutions, and a cheaper replacement is in stock. You have not offered it yet. How do you proceed?",
+    "correct_action": "Ask the prep station to hold the replacement, send it through the order screen, and pack it only after the customer approves it there.",
+    "explanation": "The price qualifies, stock must be held before the offer, and packing waits for the customer's in-app approval.",
     "supporting_clause_ids": [
-      "PS-02"
+      "PS-02",
+      "PS-10"
     ],
     "wrong_answer": {
       "text": "Pack it immediately because it costs less.",
+      "violates": [
+        "PS-02"
+      ],
       "expected_route": "remedial_practice",
       "practice_items": [
         "training-ps-02"

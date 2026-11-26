@@ -1,0 +1,2 @@
+T1 partner-item-substitution-v1/PS-03: timer has no start event: If the customer has not answered after 7 minutes, mark the item unavailable and notify Partner Support. Keep any remaining items in preparation.
+1 finding(s)

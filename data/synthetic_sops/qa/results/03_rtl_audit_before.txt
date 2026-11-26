@@ -1,0 +1,65 @@
+dev/uploads/courier-pickup-wait-v1-ar.docx: 30 issue(s); digits {'arabic_indic': 15, 'ascii': 4}
+    p0: jc=left in RTL paragraph
+    p1: jc=left in RTL paragraph
+    p2: jc=left in RTL paragraph
+    p3: jc=left in RTL paragraph
+    p4: jc=left in RTL paragraph
+    p5: jc=left in RTL paragraph
+    p6: jc=left in RTL paragraph
+    p7: jc=left in RTL paragraph
+    p8: jc=left in RTL paragraph
+    p9: jc=left in RTL paragraph
+    p10: jc=left in RTL paragraph
+    p11: jc=left in RTL paragraph
+dev/uploads/courier-pickup-wait-v2-ar.docx: 30 issue(s); digits {'arabic_indic': 13, 'ascii': 6}
+    p0: jc=left in RTL paragraph
+    p1: jc=left in RTL paragraph
+    p2: jc=left in RTL paragraph
+    p3: jc=left in RTL paragraph
+    p4: jc=left in RTL paragraph
+    p5: jc=left in RTL paragraph
+    p6: jc=left in RTL paragraph
+    p7: jc=left in RTL paragraph
+    p8: jc=left in RTL paragraph
+    p9: jc=left in RTL paragraph
+    p10: jc=left in RTL paragraph
+    p11: jc=left in RTL paragraph
+dev/uploads/employee-duplicate-charge-v1-ar.docx: 26 issue(s); digits {'arabic_indic': 13, 'ascii': 4}
+    p0: jc=left in RTL paragraph
+    p1: jc=left in RTL paragraph
+    p2: jc=left in RTL paragraph
+    p3: jc=left in RTL paragraph
+    p4: jc=left in RTL paragraph
+    p5: jc=left in RTL paragraph
+    p6: jc=left in RTL paragraph
+    p7: jc=left in RTL paragraph
+    p8: jc=left in RTL paragraph
+    p9: jc=left in RTL paragraph
+    p10: jc=left in RTL paragraph
+    p11: jc=left in RTL paragraph
+dev/uploads/partner-packing-sealing-v1-ar.docx: 28 issue(s); digits {'arabic_indic': 11, 'ascii': 4}
+    p0: jc=left in RTL paragraph
+    p1: jc=left in RTL paragraph
+    p2: jc=left in RTL paragraph
+    p3: jc=left in RTL paragraph
+    p4: jc=left in RTL paragraph
+    p5: jc=left in RTL paragraph
+    p6: jc=left in RTL paragraph
+    p7: jc=left in RTL paragraph
+    p8: jc=left in RTL paragraph
+    p9: jc=left in RTL paragraph
+    p10: jc=left in RTL paragraph
+    p11: jc=left in RTL paragraph
+held_out/uploads/partner-counter-verification-v1-ar.docx: 28 issue(s); digits {'arabic_indic': 12, 'ascii': 4}
+    p0: jc=left in RTL paragraph
+    p1: jc=left in RTL paragraph
+    p2: jc=left in RTL paragraph
+    p3: jc=left in RTL paragraph
+    p4: jc=left in RTL paragraph
+    p5: jc=left in RTL paragraph
+    p6: jc=left in RTL paragraph
+    p7: jc=left in RTL paragraph
+    p8: jc=left in RTL paragraph
+    p9: jc=left in RTL paragraph
+    p10: jc=left in RTL paragraph
+    p11: jc=left in RTL paragraph

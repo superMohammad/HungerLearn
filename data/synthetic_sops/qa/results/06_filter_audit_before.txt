@@ -1,0 +1,13 @@
+dev-courier-03: no version distractor courier-pickup-wait-v1/CW-03
+dev-courier-04: no version distractor courier-pickup-wait-v1/CW-01
+dev-courier-08: no version distractor courier-pickup-wait-v1/CW-04
+dev-employee-03: no version distractor employee-delayed-order-v1/ED-01
+dev-employee-04: no version distractor employee-delayed-order-v1/ED-03
+dev-partner-02: no version distractor partner-packing-sealing-v1/PP-03
+dev-partner-08: no version distractor partner-packing-sealing-v1/PP-01
+dev-courier-09: no version distractor courier-pickup-wait-v1/CW-10
+dev-employee-09: no version distractor employee-delayed-order-v1/ED-10
+dev-partner-09: no version distractor partner-packing-sealing-v1/PP-11
+dev: distractors by violated filter {'version': 6, 'in-scope': 18, 'family': 3, 'role/organization': 3}
+held_out: distractors by violated filter {'in-scope': 9}
+10 missing version-filter distractor(s)

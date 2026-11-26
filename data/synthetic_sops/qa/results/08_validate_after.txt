@@ -1,0 +1,11 @@
+PASS: HungerLearn fixture validation
+  role: courier=5, employee=5, partner=5
+  language: ar=9, en=6
+  format: docx=5, image_pdf=2, pdf=3, png=1, txt=4
+  split: dev=12, held_out=3
+  10-11 procedures per file, 156 procedure occurrences
+  15 files, 156 clause occurrences, 3 transcribed scan pages
+  39 retrieval queries (24 cross-language), 6 assessment cases, 1 blocked draft
+  3 version diffs, 7 learner profiles
+  Live demo upload: held_out/uploads/employee-complaint-escalation-v1-en.pdf
+  Model evaluations run: 0

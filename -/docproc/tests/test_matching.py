@@ -2,11 +2,13 @@
 import numpy as np
 
 from docproc.config import Settings
+from docproc.llm.fixture import FixtureJudge
 from docproc.matching import match_versions
-from docproc.models import ClauseRecord, SourceLocation, Status
+from docproc.models import ChangeVerdict, ClauseRecord, SourceLocation, Status
 from docproc.normalize import content_hash
 
 S = Settings(_env_file=None)
+JUDGE = FixtureJudge()
 
 
 def rec(ver, ordinal, quote, heading="H", number=None, page=1, aud=("employee",), sid=None):
@@ -26,22 +28,22 @@ def same_vectors(*records):
 def test_deadline_change_is_changed_even_with_identical_embeddings():
     o = rec("v1", 0, "Employees must submit claims within 30 days.", sid="S1")
     n = rec("v2", 0, "Employees must submit claims within 15 days.")
-    [r] = match_versions("d", "v2", [o], [n], same_vectors(o, n), S)
+    [r] = match_versions("d", "v2", [o], [n], same_vectors(o, n), S, JUDGE)
     assert r.status == Status.changed and r.stable_id == "S1" and r.cosine == 1.0
-    assert r.reasons[0] == "numbers: 30 -> 15"
+    assert r.reasons[0] == "threshold: 30 -> 15"
 
 
 def test_audience_change_is_changed():
     o = rec("v1", 0, "Staff must complete training.", aud=("employee",), sid="S1")
     n = rec("v2", 0, "Staff must complete training.", aud=("employee", "partner"))
-    [r] = match_versions("d", "v2", [o], [n], same_vectors(o, n), S)
+    [r] = match_versions("d", "v2", [o], [n], same_vectors(o, n), S, JUDGE)
     assert r.status == Status.changed and any(x.startswith("audience") for x in r.reasons)
 
 
 def test_high_cosine_but_unrelated_text_is_not_matched():
     o = rec("v1", 0, "Owners may approve remote work.", sid="S1")
     n = rec("v2", 0, "Partners must encrypt laptops and rotate passwords quarterly.")
-    rs = match_versions("d", "v2", [o], [n], same_vectors(o, n), S)
+    rs = match_versions("d", "v2", [o], [n], same_vectors(o, n), S, JUDGE)
     assert sorted(r.status for r in rs) == [Status.added, Status.removed]
 
 
@@ -50,7 +52,7 @@ def test_duplicate_text_moved_is_needs_review():
     o2 = rec("v1", 1, "Lock your screen.", heading="B", sid="S2")
     n1 = rec("v2", 0, "Lock your screen.", heading="C")
     n2 = rec("v2", 1, "Lock your screen.", heading="D")
-    rs = match_versions("d", "v2", [o1, o2], [n1, n2], same_vectors(o1), S)
+    rs = match_versions("d", "v2", [o1, o2], [n1, n2], same_vectors(o1), S, JUDGE)
     assert [r.status for r in rs] == [Status.needs_review, Status.needs_review]
     assert all(r.candidates == ["S1", "S2"] and r.stable_id is None for r in rs)
 
@@ -60,7 +62,7 @@ def test_duplicate_text_in_place_is_unchanged():
     o2 = rec("v1", 1, "Lock your screen.", heading="B", sid="S2")
     n1 = rec("v2", 0, "Lock your screen.", heading="A")
     n2 = rec("v2", 1, "Lock your screen.", heading="B")
-    rs = match_versions("d", "v2", [o1, o2], [n1, n2], same_vectors(o1), S)
+    rs = match_versions("d", "v2", [o1, o2], [n1, n2], same_vectors(o1), S, JUDGE)
     assert [(r.status, r.stable_id) for r in rs] == [(Status.unchanged, "S1"), (Status.unchanged, "S2")]
 
 
@@ -68,7 +70,7 @@ def test_competing_candidates_are_needs_review():
     o1 = rec("v1", 0, "Employees must submit claims within 30 days.", sid="S1")
     o2 = rec("v1", 1, "Employees must submit claims within 60 days.", sid="S2")
     n = rec("v2", 0, "Employees must submit claims within 45 days.")
-    rs = match_versions("d", "v2", [o1, o2], [n], same_vectors(o1, o2, n), S)
+    rs = match_versions("d", "v2", [o1, o2], [n], same_vectors(o1, o2, n), S, JUDGE)
     review = [r for r in rs if r.status == Status.needs_review]
     assert len(review) == 1 and review[0].candidates == ["S1", "S2"]
     assert not any(r.status == Status.removed for r in rs), "competing candidates are not removals"
@@ -78,7 +80,7 @@ def test_one_to_one():
     o = rec("v1", 0, "Employees must submit claims within 30 days.", number="1.2", sid="S1")
     n1 = rec("v2", 0, "Employees must submit claims within 15 days.", number="1.2")
     n2 = rec("v2", 1, "Employees must submit claims within 15 working days.", number="3.1")
-    rs = match_versions("d", "v2", [o], [n1, n2], same_vectors(o, n1, n2), S)
+    rs = match_versions("d", "v2", [o], [n1, n2], same_vectors(o, n1, n2), S, JUDGE)
     st = {r.new.record_id: (r.status, r.stable_id) for r in rs if r.new}
     assert st["v2-0"] == (Status.changed, "S1")
     assert st["v2-1"][0] == Status.added and st["v2-1"][1] != "S1"
@@ -94,3 +96,67 @@ def test_audience_label_drift_on_identical_text_is_not_a_change():
     # Both sides name the audience in the text: that is a real change.
     explicit_old = old.model_copy(update={"audience_source": "explicit"})
     assert status_for(change_reasons(explicit_old, new)) is Status.changed
+
+
+class ScriptedJudge:
+    """Returns a fixed verdict and records every pair it was asked about."""
+
+    name = "scripted"
+
+    def __init__(self, kind: str, old_evidence: str = "", new_evidence: str = ""):
+        self.verdict = ChangeVerdict(kind=kind, old_evidence=old_evidence, new_evidence=new_evidence,
+                                     explanation="scripted")
+        self.calls: list[tuple[str, str]] = []
+
+    def judge(self, old: ClauseRecord, new: ClauseRecord) -> ChangeVerdict:
+        self.calls.append((old.quote, new.quote))
+        return self.verdict
+
+
+def _actor_pair():
+    o = rec("v1", 0, "The courier calls the customer before leaving.", sid="S1")
+    n = rec("v2", 0, "The dispatcher calls the customer before leaving.")
+    return o, n
+
+
+def test_the_judge_decides_a_material_change_the_rules_cannot_see():
+    o, n = _actor_pair()
+    judge = ScriptedJudge("actor", "courier", "dispatcher")
+    [r] = match_versions("d", "v2", [o], [n], same_vectors(o, n), S, judge)
+    assert judge.calls == [(o.quote, n.quote)]
+    assert r.status == Status.changed and r.stable_id == "S1"
+    assert r.reasons == ["actor: courier -> dispatcher"]
+
+
+def test_a_cosmetic_verdict_keeps_the_clause_unchanged():
+    o = rec("v1", 0, "Call the customer.", sid="S1")
+    n = rec("v2", 0, "Call the customer!")
+    [r] = match_versions("d", "v2", [o], [n], same_vectors(o, n), S, ScriptedJudge("cosmetic"))
+    assert r.status == Status.unchanged and r.stable_id == "S1"
+
+
+def test_identical_text_never_reaches_the_judge():
+    o = rec("v1", 0, "Staff must complete training.", aud=("employee",), sid="S1")
+    n = rec("v2", 0, "Staff must complete training.", aud=("employee", "partner"))
+    judge = ScriptedJudge("actor", "x", "y")
+    [r] = match_versions("d", "v2", [o], [n], same_vectors(o, n), S, judge)
+    assert judge.calls == []
+    assert r.status == Status.changed and r.reasons == ["audience: employee -> employee, partner"]
+
+
+def test_evidence_missing_from_the_clause_text_goes_to_review():
+    o, n = _actor_pair()
+    judge = ScriptedJudge("actor", "courier", "supervisor")  # "supervisor" is not in the new quote
+    [r] = match_versions("d", "v2", [o], [n], same_vectors(o, n), S, judge)
+    assert r.status == Status.needs_review and r.stable_id == "S1"
+    assert "evidence" in (r.review_reason or "") and "supervisor" in (r.review_reason or "")
+
+
+def test_a_pair_too_long_for_the_context_window_goes_to_review_without_a_call():
+    o, n = _actor_pair()
+    judge = ScriptedJudge("actor", "courier", "dispatcher")
+    tiny = S.model_copy(update={"llm_context_tokens": 600, "change_max_output_tokens": 512})
+    [r] = match_versions("d", "v2", [o], [n], same_vectors(o, n), tiny, judge)
+    assert judge.calls == []
+    assert r.status == Status.needs_review and "context" in (r.review_reason or "")
+    assert "600" in (r.review_reason or "")

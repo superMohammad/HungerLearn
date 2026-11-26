@@ -10,6 +10,7 @@ from langgraph.graph import END, START, StateGraph
 
 from docproc.config import Settings
 from docproc.embeddings import Embedder
+from docproc.llm.base import ChangeJudge
 from docproc.matching import REMOVAL_DEFERRED, Matcher, MatchResult, affected_audiences
 from docproc.models import (
     ClauseChange, ClauseRecord, ClauseSide, ComparisonReport, ExtractionIssue, RegenerationItem, Status,
@@ -38,6 +39,7 @@ class CompareDeps:
     repo: SqlRepository
     embedder: Embedder
     settings: Settings
+    judge: ChangeJudge
     links: dict[str, dict[str, list[str]]] = field(default_factory=dict)
 
 
@@ -63,7 +65,7 @@ def build_compare_graph(deps: CompareDeps):
             pinfo = deps.repo.get_version(doc, prev)
             if pinfo and not pinfo.complete:
                 reasons.append(f"previous version {prev} was incomplete; some 'added' clauses may have existed before")
-        holder["m"] = Matcher(doc, ver, old, new, s)
+        holder["m"] = Matcher(doc, ver, old, new, s, deps.judge)
         return {"old_version_id": prev, "old_records": old, "new_records": new, "new_complete": new_complete,
                 "complete": not reasons, "incomplete_reasons": reasons, "issues": issues}
 

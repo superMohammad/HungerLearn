@@ -105,6 +105,23 @@ class ClauseDraftList(BaseModel):
     clauses: list[ClauseDraft]
 
 
+ChangeKind = Literal["none", "cosmetic", "wording", "threshold", "negation", "modality", "actor", "condition",
+                     "order", "audience"]
+
+
+class ChangeVerdict(BaseModel):
+    """The change judge's answer for one matched clause pair (LLM output schema).
+
+    Materiality follows from `kind` (see matching.py): none/cosmetic keep the clause, wording refreshes its
+    text, every other kind changes what the rule requires.
+    """
+
+    kind: ChangeKind
+    old_evidence: str = Field(description="the exact words of the OLD clause that differ; empty if none")
+    new_evidence: str = Field(description="the exact words of the NEW clause that differ; empty if none")
+    explanation: str = Field(description="one short sentence")
+
+
 class ClauseRecord(BaseModel):
     """Version-specific clause record. `stable_id` is the cross-version identity."""
 

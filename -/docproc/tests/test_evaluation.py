@@ -4,6 +4,7 @@ import json
 
 import pytest
 
+from docproc.config import Settings
 from docproc.embeddings import FixtureEmbedder
 from docproc.evaluation import (
     DATASET_DIR,
@@ -28,8 +29,9 @@ from docproc.evaluation import (
     skip_reason,
     word_set,
 )
-from docproc.llm.fixture import FixtureExtractor
-from docproc.models import ClauseRecord, SourceLocation
+from docproc.llm.fixture import FixtureExtractor, FixtureJudge
+from docproc.matching import PairDecision
+from docproc.models import ClauseRecord, SourceLocation, Status
 from docproc.ocr.base import OCRPageRequest, OCRPageResult
 from docproc.pipeline import App
 from docproc.storage.sqlite import SqliteRepository
@@ -87,6 +89,7 @@ def test_run_eval_offline_scores_dev_and_never_reads_held_out(make_app, tmp_path
     assert 0.0 <= report.macro_recall <= 1.0 and 0.0 <= report.diff_accuracy <= 1.0
     gold_pairs = json.loads((DATASET_DIR / "dev" / "gold" / "change_pairs.json").read_text(encoding="utf-8"))
     assert report.change_pairs.pairs == len(gold_pairs) == 82
+    assert (report.change_pairs.judge, report.change_pairs.correct) == ("fixture", 44)  # the rules, offline
     assert sum(t.pairs for t in report.change_pairs.by_change_type.values()) == 82
     assert report.publication_gates.status == "not_scored" and report.publication_gates.gates == 8
     assert report.publication_gates.score is None and "gate" in (report.publication_gates.reason or "")
@@ -100,13 +103,14 @@ def _pair(pair_id: str, before: str, after: str, change_type: str, handling: str
     })
 
 
-def test_predicted_handling_maps_matcher_reasons():
-    assert predicted_handling([]) == "carry_forward"
-    assert predicted_handling(["location changed"]) == "carry_forward"
-    assert predicted_handling(["wording changed"]) == "refresh_text"
-    for reason in ("numbers: 15 -> 20", "negation changed", "modality: obligation -> permission",
-                   "audience: courier -> employee"):
-        assert predicted_handling([reason, "location changed"]) == "regenerate_and_reassess"
+def test_predicted_handling_maps_the_matcher_decision():
+    assert predicted_handling(PairDecision(Status.unchanged, [])) == "carry_forward"
+    assert predicted_handling(PairDecision(Status.moved, ["location changed"])) == "carry_forward"
+    assert predicted_handling(PairDecision(Status.changed, ["wording: a -> b"])) == "refresh_text"
+    assert predicted_handling(PairDecision(Status.needs_review, [], "does not fit")) == "needs_review"
+    for reason in ("threshold: 15 -> 20", "negation: لا -> -", "modality: must -> may", "actor: courier -> dispatcher",
+                   "condition: - -> unless", "order: - -> -", "audience: courier -> employee"):
+        assert predicted_handling(PairDecision(Status.changed, [reason, "location changed"])) == "regenerate_and_reassess"
 
 
 def test_score_change_pairs_on_hand_made_arabic_and_english_cases():
@@ -123,7 +127,8 @@ def test_score_change_pairs_on_hand_made_arabic_and_english_cases():
         # Punctuation-only edit: the matcher sees wording, so a cosmetic change is over-handled (not material, though).
         _pair("punct", "Call the customer.", "Call the customer", "cosmetic", "carry_forward"),
     ]
-    score = score_change_pairs(pairs)
+    score = score_change_pairs(pairs, FixtureJudge(), Settings(_env_file=None))
+    assert score.judge == "fixture" and score.needs_review == 0
     assert (score.pairs, score.correct) == (6, 4)
     assert score.accuracy == pytest.approx(4 / 6)
     assert (score.material_pairs, score.material_caught, score.material_recall) == (3, 2, pytest.approx(2 / 3))
@@ -136,10 +141,19 @@ def test_score_change_pairs_on_hand_made_arabic_and_english_cases():
 
 def test_score_change_pairs_counts_non_material_pairs_sent_to_reassessment():
     pairs = [_pair("num", "Wait 10 minutes.", "Wait 12 minutes.", "wording", "refresh_text")]
-    score = score_change_pairs(pairs)
+    score = score_change_pairs(pairs, FixtureJudge(), Settings(_env_file=None))
     assert (score.material_pairs, score.material_recall, score.false_material) == (0, None, 1)
     with pytest.raises(ValueError):
-        score_change_pairs([])
+        score_change_pairs([], FixtureJudge(), Settings(_env_file=None))
+
+
+def test_a_pair_the_judge_cannot_take_counts_as_needs_review_not_caught():
+    pairs = [_pair("long", "The courier calls the customer.", "The dispatcher calls the customer.", "actor",
+                   "regenerate_and_reassess")]
+    tiny = Settings(_env_file=None, llm_context_tokens=600)
+    score = score_change_pairs(pairs, FixtureJudge(), tiny)
+    assert (score.needs_review, score.material_caught, score.correct) == (1, 0, 0)
+    assert "context" in (score.wrong[0].review_reason or "")
 
 
 def _gate(gate_id: str, expected: str, reason_code: str) -> GoldGate:

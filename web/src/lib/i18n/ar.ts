@@ -69,7 +69,11 @@ export const ar = {
   },
   /** docproc change reasons ("numbers: 15 -> 10", "wording changed", ...). */
   reasons: {
-    prefix: { "numbers:": "الأرقام:", "modality:": "صيغة الإلزام:", "audience:": "الفئة المستهدفة:" },
+    prefix: {
+      "numbers:": "الأرقام:", "modality:": "صيغة الإلزام:", "audience:": "الفئة المستهدفة:",
+      "threshold:": "الحدّ أو الرقم:", "negation:": "النفي:", "actor:": "المسؤول عن التنفيذ:",
+      "condition:": "شرط التطبيق:", "order:": "ترتيب الخطوات:", "wording:": "الصياغة:",
+    },
     exact: { "negation changed": "تغيّر النفي", "wording changed": "تغيّرت الصياغة", "location changed": "تغيّر الموضع" },
     arrow: "←",
     join: "؛ ",

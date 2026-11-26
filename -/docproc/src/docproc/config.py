@@ -27,6 +27,15 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     llm_timeout_s: float = 120.0
     llm_max_retries: int = 2
+    # Context window of the LLM server. Must match it (e.g. OLLAMA_CONTEXT_LENGTH / the model's num_ctx):
+    # Ollama silently truncates longer prompts, so pairs that would not fit are sent to review instead.
+    llm_context_tokens: int = 4096
+
+    # Change judge: decides whether a matched v1/v2 clause pair changed (one call per reworded pair)
+    change_max_output_tokens: int = 512
+    # Sent as reasoning_effort on every judge call (openai_compat). "none" keeps thinking models (Gemma 4)
+    # from spending the output budget on reasoning, independent of llm_reasoning_effort for extraction.
+    change_reasoning_effort: str = "none"
 
     # Embeddings (BGE-M3 dense, 1024-d)
     # embeddinggemma: google/embeddinggemma-2 via sentence-transformers (set embedding_dim=768)

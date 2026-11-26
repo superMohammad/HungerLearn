@@ -3,8 +3,9 @@
 Stages (each is one LangGraph node in graphs/compare.py):
  1. exact content hash (normalized quote + audiences)  -> unchanged / moved
  2. candidates from clause number, heading, BGE-M3 cosine
- 3. verification on the *actual text* and audience     -> same identity (changed) or reject
- 4. one-to-one assignment; near-ties                   -> needs_review
+ 3. verification on the *actual text* and audience     -> same identity or reject
+ 4. one-to-one assignment; near-ties                   -> needs_review; the change judge (an LLM, or the
+    rule-based FixtureJudge offline) decides whether each assigned pair changed (`decide_pair`)
  5. leftovers                                          -> added / removed (deferred if incomplete)
 Embedding similarity alone never decides "unchanged": 30 -> 15 days is high-cosine but its
 hash differs, so it can only ever be `changed`.
@@ -19,8 +20,19 @@ import numpy as np
 from rapidfuzz import fuzz
 
 from docproc.config import Settings
-from docproc.models import Audience, ClauseRecord, Status
-from docproc.normalize import clause_body, core_text, is_title_label, modalities, negations, normalize, numbers, title_of
+from docproc.llm.base import ChangeJudge, estimate_change_tokens
+from docproc.models import Audience, ChangeVerdict, ClauseRecord, Status
+from docproc.normalize import (
+    clause_body,
+    core_text,
+    is_title_label,
+    modalities,
+    negations,
+    normalize,
+    numbers,
+    title_of,
+    words,
+)
 
 ID_NAMESPACE = uuid.UUID("6f1c2a52-9a43-4c1e-9d55-0d0c5e2b7a10")
 REMOVAL_DEFERRED = "removal_deferred_incomplete_extraction"
@@ -62,6 +74,51 @@ def lexical_similarity(a: str, b: str) -> float:
 
 
 CONTENT_REASONS = ("numbers", "negation", "modality", "audience", "wording")
+
+# Change judge kinds (models.ChangeKind): which ones keep a clause, and which change what the rule requires.
+KEPT_KINDS = ("none", "cosmetic")
+MATERIAL_KINDS = ("threshold", "negation", "modality", "actor", "condition", "order", "audience")
+
+
+@dataclass
+class PairDecision:
+    status: Status
+    reasons: list[str]
+    review_reason: str | None = None
+
+
+def evidence_problem(verdict: ChangeVerdict, old: ClauseRecord, new: ClauseRecord) -> str | None:
+    """The judge's evidence must be words of the clause it cites (LLM output is untrusted). Pure."""
+    for side, evidence, rec in (("old", verdict.old_evidence, old), ("new", verdict.new_evidence, new)):
+        missing = [w for w in words(evidence) if w not in set(words(rec.quote))]
+        if missing:
+            return f"change judge evidence not found in the {side} clause text: {missing} (kind {verdict.kind})"
+    return None
+
+
+def decide_pair(old: ClauseRecord, new: ClauseRecord, judge: ChangeJudge, settings: Settings) -> PairDecision:
+    """Status and reasons for a verified pair. The change judge decides; identical text never reaches it.
+
+    Only a pair whose rule text differs is sent, and only if it fits the model's context window: a pair that
+    would not fit is sent to review instead of being truncated by the server.
+    """
+    location = ["location changed"] if old.location.position_key() != new.location.position_key() else []
+    if _body(old) == _body(new) or same_but_title(old, new):
+        reasons = change_reasons(old, new)  # same text: only an explicit audience or the location can differ
+        return PairDecision(status_for(reasons), reasons)
+    need = estimate_change_tokens(old, new) + settings.change_max_output_tokens
+    if need > settings.llm_context_tokens:
+        return PairDecision(Status.needs_review, location, review_reason=(
+            f"clause pair (~{need} tokens incl. {settings.change_max_output_tokens} for the answer) does not fit "
+            f"the model context ({settings.llm_context_tokens}); raise DOCPROC_LLM_CONTEXT_TOKENS if the server allows"))
+    verdict = judge.judge(old, new)
+    problem = evidence_problem(verdict, old, new)
+    if problem:
+        return PairDecision(Status.needs_review, location, review_reason=problem)
+    if verdict.kind in KEPT_KINDS:
+        return PairDecision(Status.moved if location else Status.unchanged, location)
+    return PairDecision(Status.changed,
+                        [f"{verdict.kind}: {verdict.old_evidence or '-'} -> {verdict.new_evidence or '-'}", *location])
 
 
 def _body(r: ClauseRecord) -> str:
@@ -126,11 +183,13 @@ def _same_heading(a: ClauseRecord, b: ClauseRecord) -> bool:
 
 
 class Matcher:
-    """Holds matching state between stages. All decisions are deterministic."""
+    """Holds matching state between stages. Identity decisions are deterministic; whether a verified pair
+    changed (and how) is the change judge's verdict, checked against the clause text."""
 
-    def __init__(self, document_id: str, new_version_id: str, old: list[ClauseRecord], new: list[ClauseRecord], settings: Settings):
+    def __init__(self, document_id: str, new_version_id: str, old: list[ClauseRecord], new: list[ClauseRecord],
+                 settings: Settings, judge: ChangeJudge):
         self.document_id, self.new_version_id = document_id, new_version_id
-        self.old, self.new, self.s = old, new, settings
+        self.old, self.new, self.s, self.judge = old, new, settings, judge
         self.results: list[MatchResult] = []
         self.used_old: set[str] = set()
         self.used_new: set[str] = set()
@@ -242,9 +301,9 @@ class Matcher:
                 self.reserved_old.add(p.old.record_id)
                 self.reserved_old.update(q.old.record_id for q in same_new)
                 continue
-            reasons = change_reasons(p.old, p.new)
+            d = decide_pair(p.old, p.new, self.judge, self.s)
             self._take(MatchResult(
-                status_for(reasons), self.sid_for(p.old), p.old, p.new, reasons=reasons,
+                d.status, self.sid_for(p.old), p.old, p.new, reasons=d.reasons, review_reason=d.review_reason,
                 cosine=round(p.cosine, 4), lexical=round(p.lexical or 0, 4),
             ))
 
@@ -264,8 +323,8 @@ class Matcher:
         return self.results
 
 
-def match_versions(document_id, new_version_id, old, new, vectors, settings, complete=True) -> list[MatchResult]:
-    m = Matcher(document_id, new_version_id, old, new, settings)
+def match_versions(document_id, new_version_id, old, new, vectors, settings, judge, complete=True) -> list[MatchResult]:
+    m = Matcher(document_id, new_version_id, old, new, settings, judge)
     m.exact_hash()
     m.generate_candidates(vectors)
     m.verify()

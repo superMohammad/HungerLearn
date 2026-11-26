@@ -245,7 +245,8 @@ def eval_dev(
     cp = rep.change_pairs
     recall = "n/a" if cp.material_recall is None else f"{cp.material_recall:.2f}"
     typer.echo(f"  change pairs {cp.correct}/{cp.pairs} handled correctly  material recall {recall} "
-               f"({cp.material_caught}/{cp.material_pairs})  false material {cp.false_material}")
+               f"({cp.material_caught}/{cp.material_pairs})  false material {cp.false_material}  "
+               f"needs_review {cp.needs_review}  judge {cp.judge}")
     for name, g in cp.by_change_type.items():
         typer.echo(f"    {name:<10} {g.correct}/{g.pairs}")
     typer.echo("    by language: " + "  ".join(f"{lang} {g.correct}/{g.pairs}" for lang, g in cp.by_language.items()))

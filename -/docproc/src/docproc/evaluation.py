@@ -17,7 +17,9 @@ from pydantic import BaseModel, ValidationError
 
 from docproc.config import OcrEngine
 from docproc.loaders import detect_format
-from docproc.matching import CONTENT_REASONS, change_reasons, status_for
+from docproc.config import Settings
+from docproc.llm.base import ChangeJudge
+from docproc.matching import MATERIAL_KINDS, PairDecision, decide_pair
 from docproc.models import Audience, ClauseChange, ClauseRecord, ComparisonReport, SourceLocation, Status
 from docproc.normalize import clause_body, words
 from docproc.pipeline import App
@@ -29,11 +31,10 @@ COVERAGE_THRESHOLD = 0.8
 
 GoldChange = Literal["added", "changed", "removed", "unchanged"]
 ChangeHandling = Literal["carry_forward", "refresh_text", "regenerate_and_reassess"]
+# What the update flow does with a pair; needs_review = the judge could not decide (counts as not caught).
+PredictedHandling = Literal["carry_forward", "refresh_text", "regenerate_and_reassess", "needs_review"]
 GateDecision = Literal["allow_trainer_review", "block_publication"]
 ChangeType = Literal["cosmetic", "wording", "threshold", "negation", "modality", "actor", "condition", "order"]
-# Matcher content reasons that change what a rule requires (all but wording): training must be regenerated and
-# learners reassessed. Derived from matching.py, so a new content reason there counts as material here too.
-MATERIAL_REASONS = tuple(r for r in CONTENT_REASONS if r != "wording")
 GATES_NOT_SCORED = ("no publication gate implementation to score yet (vGolden25's web gate); "
                     "pass its decisions with `docproc eval --gate-decisions FILE`")
 
@@ -164,8 +165,9 @@ class ChangePairResult(BaseModel):
     change_type: str
     language: str
     expected: ChangeHandling
-    predicted: ChangeHandling
+    predicted: PredictedHandling
     reasons: list[str]
+    review_reason: str | None
 
 
 class GroupScore(BaseModel):
@@ -174,6 +176,7 @@ class GroupScore(BaseModel):
 
 
 class ChangePairScore(BaseModel):
+    judge: str  # the change judge that decided (fixture = docproc's text rules; otherwise the configured LLM)
     pairs: int
     correct: int
     accuracy: float
@@ -181,6 +184,7 @@ class ChangePairScore(BaseModel):
     material_caught: int
     material_recall: float | None  # None when no pair is material
     false_material: int  # non-material pairs that would send learners to reassessment
+    needs_review: int  # pairs the judge could not decide (context too small, evidence not in the text)
     by_change_type: dict[str, GroupScore]
     by_language: dict[str, GroupScore]
     wrong: list[ChangePairResult]
@@ -316,11 +320,14 @@ def score_diff(gold: GoldDiff, before: GoldDocument, after: GoldDocument, report
     )
 
 
-def predicted_handling(reasons: list[str]) -> ChangeHandling:
-    """What the update flow would do with a clause given docproc's change reasons. Pure."""
-    if any(r.startswith(MATERIAL_REASONS) for r in reasons):
-        return "regenerate_and_reassess"
-    return "refresh_text" if status_for(reasons) == Status.changed else "carry_forward"
+def predicted_handling(decision: PairDecision) -> PredictedHandling:
+    """What the update flow would do with a clause given the matcher's decision for the pair. Pure."""
+    if decision.status == Status.needs_review:
+        return "needs_review"
+    if decision.status != Status.changed:
+        return "carry_forward"
+    kinds = [r.split(":", 1)[0] for r in decision.reasons]
+    return "regenerate_and_reassess" if any(k in MATERIAL_KINDS for k in kinds) else "refresh_text"
 
 
 def _pair_record(text: str, pair: GoldChangePair, side: Literal["before", "after"]) -> ClauseRecord:
@@ -341,8 +348,9 @@ def _group(results: list[ChangePairResult], key: str) -> dict[str, GroupScore]:
     return dict(sorted(groups.items()))
 
 
-def score_change_pairs(pairs: list[GoldChangePair]) -> ChangePairScore:
-    """Run docproc's own matcher (`matching.change_reasons`) on each typed edit and score its handling. Pure.
+def score_change_pairs(pairs: list[GoldChangePair], judge: ChangeJudge, settings: Settings) -> ChangePairScore:
+    """Decide each typed edit exactly as the matcher does (`matching.decide_pair`: identical text, context
+    guard, change judge, evidence check) and score the resulting handling.
 
     This judges how an edit is classified once the two versions are correctly paired. It skips candidate
     search and one-to-one assignment, so a large rewrite that a full run would split into removed + added
@@ -352,19 +360,20 @@ def score_change_pairs(pairs: list[GoldChangePair]) -> ChangePairScore:
         raise ValueError("no change pairs to score")
     results = []
     for p in pairs:
-        reasons = change_reasons(_pair_record(p.before, p, "before"), _pair_record(p.after, p, "after"))
+        d = decide_pair(_pair_record(p.before, p, "before"), _pair_record(p.after, p, "after"), judge, settings)
         results.append(ChangePairResult(pair_id=p.pair_id, change_type=p.change_type, language=p.language,
-                                        expected=p.expected_handling, predicted=predicted_handling(reasons),
-                                        reasons=reasons))
+                                        expected=p.expected_handling, predicted=predicted_handling(d),
+                                        reasons=d.reasons, review_reason=d.review_reason))
     material = [r for r, p in zip(results, pairs, strict=True) if p.material]
     caught = sum(1 for r in material if r.predicted == "regenerate_and_reassess")
     false_material = sum(1 for r, p in zip(results, pairs, strict=True)
                          if not p.material and r.predicted == "regenerate_and_reassess")
     wrong = [r for r in results if r.predicted != r.expected]
     return ChangePairScore(
-        pairs=len(results), correct=len(results) - len(wrong), accuracy=(len(results) - len(wrong)) / len(results),
+        judge=judge.name, pairs=len(results), correct=len(results) - len(wrong), accuracy=(len(results) - len(wrong)) / len(results),
         material_pairs=len(material), material_caught=caught,
         material_recall=caught / len(material) if material else None, false_material=false_material,
+        needs_review=sum(1 for r in results if r.predicted == "needs_review"),
         by_change_type=_group(results, "change_type"), by_language=_group(results, "language"), wrong=wrong,
     )
 
@@ -496,5 +505,5 @@ def run_eval(app: App, dataset_dir: Path, work_dir: Path, gate_decisions: Path |
         macro_recall=sum(e.recall for e in extraction) / len(extraction),
         macro_precision=sum(e.precision for e in extraction) / len(extraction),
         diff_accuracy=sum(d.correct for d in diffs) / total_diff_clauses if total_diff_clauses else 0.0,
-        change_pairs=score_change_pairs(pairs), publication_gates=gate_eval,
+        change_pairs=score_change_pairs(pairs, app.change_judge, app.settings), publication_gates=gate_eval,
     )

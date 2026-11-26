@@ -9,9 +9,11 @@ Keep the shared carry-over and citation helpers used by the v2 pipeline and admi
 
 ## Verification
 
-- Run node scripts/check.mjs. Keep the regression tests for training carry-over, the updated citation, and regeneration after a material change.
+- Run `node scripts/check.mjs`. Keep the regression tests for training carry-over, the updated citation, and regeneration after a material change.
+- Measure the **eval delta** by running `docproc eval --real` from `-/docproc/` on the `main` commit merged into B8 and on the B8 branch. Use the same dev corpus, model, and settings for both runs. Record the baseline, B8 result, and difference for extraction precision, recall, and version-diff accuracy in the PR evidence.
 - Use the synthetic courier pickup-wait v1/v2 pair. Verify CW-04 keeps its training and cites its new section, CW-01 carries over as the unchanged control, and CW-02 triggers regeneration when the wait threshold changes from 15 to 10 minutes.
 - Capture F04 for the admin review page, F05 for the learner flow, and F07 for v2 carry-over in Arabic and English. Record the additional Enhanced verification and review evidence required by AGENTS.md, including any owner-run eval or video evidence.
+- Eval delta: n/a. B8 changes only web/; docproc is untouched, so docproc eval cannot change.
 
 ## Risk and rollback
 

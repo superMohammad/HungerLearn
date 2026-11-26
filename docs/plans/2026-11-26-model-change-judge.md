@@ -2,7 +2,13 @@
 
 **Tier:** Enhanced (matching pipeline, new prompt and model call, docproc + web i18n) · **Owner:** Yasser (@altayariyasser) · **Branch:** `feat/model-change-judge` (from `main`; carries the A4 scorer from closed PR #16)
 
-**Approval pending:** @superMohammad. Replace this line with `**Approved:** @superMohammad, <date>` to approve, or answer the open questions first.
+**Approved:** @superMohammad, 2026-11-27
+
+Decisions on the open questions (@superMohammad):
+1. The owner's gemma4 runs with a 32768-token context (Ollama picks it automatically; `OLLAMA_CONTEXT_LENGTH` is not set). Keep the default `llm_context_tokens=4096`; the owner sets `DOCPROC_LLM_CONTEXT_TOKENS=32768` locally.
+2. About 3 to 11 judge calls per v2 document is OK until the separate PR logs docproc calls in `ai_calls`.
+
+Condition: gemma4 thinks by default and its thinking tokens count against `change_max_output_tokens=512`, so answers would be cut off. The judge call turns thinking off (or budgets for it), with a test. The one-line `-/docproc/AGENTS.md` note stays out of this PR; Mohammad adds it separately.
 
 ## Problem
 The A4 change-pair scorer (closed PR #16, carried here) runs docproc's fixed rules (`matching.change_reasons`) on the 82 typed edits in `dev/gold/change_pairs.json`:

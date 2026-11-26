@@ -27,6 +27,23 @@ export type Clause = {
   page: number | null;
 };
 
+type ReportSide = { quote: string; heading: string | null };
+type ReportClause = {
+  status: ClauseStatus;
+  stable_id: string | null;
+  old: ReportSide | null;
+  new: ReportSide | null;
+  change_reasons: string[];
+};
+/** docproc's v1→v2 comparison, as stored in `comparisons.report`. */
+export type ComparisonReport = {
+  old_version_id: string | null;
+  new_version_id: string;
+  complete: boolean;
+  summary: Record<ClauseStatus, number>;
+  clauses: ReportClause[];
+};
+
 export type Procedure = {
   id: string;
   documentId: string;

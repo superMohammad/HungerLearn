@@ -77,6 +77,8 @@ CONTENT_REASONS = ("numbers", "negation", "modality", "audience", "wording")
 
 # Change judge kinds (models.ChangeKind): which ones keep a clause, and which change what the rule requires.
 KEPT_KINDS = ("none", "cosmetic")
+# Kinds that claim the rule's meaning is unchanged (training kept, or only its text refreshed).
+SAME_MEANING_KINDS = (*KEPT_KINDS, "wording")
 MATERIAL_KINDS = ("threshold", "negation", "modality", "actor", "condition", "order", "audience")
 
 
@@ -93,8 +95,9 @@ def evidence_problem(verdict: ChangeVerdict, old: ClauseRecord, new: ClauseRecor
     - Cited words must occur in the clause they are cited from.
     - A material kind other than `order` needs evidence that differs: some cited word must be missing from
       the other version (step order changes the sequence, not the words).
-    - A kept verdict (none/cosmetic) cannot stand when the numbers or prohibitions differ: digit script is
-      folded, so ١٥ vs 10 is a real difference, and a model calling it cosmetic would carry training over.
+    - A same-meaning verdict (none/cosmetic keep the training, wording only refreshes its text) cannot stand
+      when the numbers or prohibitions differ: digit script is folded, so ١٥ vs 10 is a real difference, and a
+      model calling it cosmetic or wording would keep training whose rule changed.
     """
     old_words, new_words = set(words(old.quote)), set(words(new.quote))
     for side, evidence, own in (("old", verdict.old_evidence, old_words), ("new", verdict.new_evidence, new_words)):
@@ -106,7 +109,7 @@ def evidence_problem(verdict: ChangeVerdict, old: ClauseRecord, new: ClauseRecor
                    + [w for w in words(verdict.new_evidence) if w not in old_words])
         if not differs:
             return f"change judge evidence does not show a difference between the clauses (kind {verdict.kind})"
-    if verdict.kind in KEPT_KINDS:
+    if verdict.kind in SAME_MEANING_KINDS:
         if numbers(old.quote) != numbers(new.quote):
             return (f"change judge said {verdict.kind}, but the numbers differ: "
                     f"{numbers(old.quote)} -> {numbers(new.quote)}")

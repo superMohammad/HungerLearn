@@ -173,6 +173,25 @@ def test_a_kept_verdict_on_a_changed_number_or_prohibition_goes_to_review():
         assert kind in (r.review_reason or "")
 
 
+def test_a_wording_verdict_on_a_changed_number_or_prohibition_goes_to_review():
+    # "wording" also claims the meaning is the same (text refresh only), so it gets the same check as a kept verdict.
+    for old_q, new_q in (("Wait 15 minutes, then call the dispatcher.", "Wait 10 minutes, then call the dispatcher."),
+                         ("انتظر ١٥ دقيقة ثم اتصل بمركز التوزيع.", "انتظر 10 دقائق ثم اتصل بمركز التوزيع."),
+                         ("لا تلغِ الطلب قبل الاتصال بالعميل.", "ألغِ الطلب قبل الاتصال بالعميل.")):
+        o, n = rec("v1", 0, old_q, sid="S1"), rec("v2", 0, new_q)
+        [r] = match_versions("d", "v2", [o], [n], same_vectors(o, n), S, ScriptedJudge("wording"))
+        assert r.status == Status.needs_review and r.stable_id == "S1", (old_q, r)
+        assert "wording" in (r.review_reason or "")
+
+
+def test_a_wording_verdict_with_the_same_numbers_and_prohibitions_is_a_text_change():
+    o = rec("v1", 0, "Do not leave before 10 minutes; call the dispatcher.", sid="S1")
+    n = rec("v2", 0, "Do not leave before 10 minutes; phone the dispatcher.")
+    [r] = match_versions("d", "v2", [o], [n], same_vectors(o, n), S, ScriptedJudge("wording", "call", "phone"))
+    assert r.status == Status.changed and r.stable_id == "S1"
+    assert r.reasons == ["wording: call -> phone"]
+
+
 def test_a_material_verdict_needs_evidence_that_actually_differs():
     o, n = _actor_pair()
     for judge in (ScriptedJudge("actor"),                               # no evidence at all

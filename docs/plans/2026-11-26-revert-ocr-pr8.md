@@ -11,7 +11,7 @@ workflow under the new `pr-policy` gate.
 ## Acceptance criteria → checks
 - **Restores main exactly:** given `main` after this PR, the 10 files #8 changed are identical to `main` before #8.
   Check: `git diff 679f666^ HEAD -- <files>` is empty.
-- **Checks pass:** `node scripts/check.mjs docproc web`.
+- **Checks pass:** `node scripts/check.mjs docproc web scripts`.
 - **Scans skipped again:** the offline dev eval (`docproc eval`) skips the 3 dev scans.
 
 ## Scope

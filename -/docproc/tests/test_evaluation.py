@@ -198,6 +198,20 @@ def test_run_eval_scores_a_gate_decisions_file(make_app, tmp_path):
     assert (gates.score.accuracy, gates.score.unsafe_allows) == (1.0, 0)
 
 
+def test_run_eval_rejects_a_bad_gate_decisions_file_before_ingesting(make_app, tmp_path):
+    app = make_app()
+    bad_record = tmp_path / "bad-record.json"
+    bad_record.write_text(json.dumps([{"gate_id": "G-01", "decision": "publish"}]), encoding="utf-8")
+    with pytest.raises(ValueError, match=r"bad-record\.json.*\[0\]"):
+        run_eval(app, DATASET_DIR, tmp_path / "pages", gate_decisions=bad_record)
+    unknown = tmp_path / "unknown.json"
+    unknown.write_text(json.dumps([{"gate_id": "G-99", "decision": "block_publication", "reason_code": "x"}]),
+                       encoding="utf-8")
+    with pytest.raises(ValueError, match=r"unknown\.json.*G-99"):
+        run_eval(app, DATASET_DIR, tmp_path / "pages", gate_decisions=unknown)
+    assert app.repo.get_version("courier-pickup-wait", "v1") is None  # failed before any upload was ingested
+
+
 def test_gold_models_parse_every_dev_change_pair_and_gate():
     pairs = json.loads((DATASET_DIR / "dev" / "gold" / "change_pairs.json").read_text(encoding="utf-8"))
     gates = json.loads((DATASET_DIR / "dev" / "gold" / "publication_gates.json").read_text(encoding="utf-8"))

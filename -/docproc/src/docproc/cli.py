@@ -248,6 +248,7 @@ def eval_dev(
                f"({cp.material_caught}/{cp.material_pairs})  false material {cp.false_material}")
     for name, g in cp.by_change_type.items():
         typer.echo(f"    {name:<10} {g.correct}/{g.pairs}")
+    typer.echo("    by language: " + "  ".join(f"{lang} {g.correct}/{g.pairs}" for lang, g in cp.by_language.items()))
     gates = rep.publication_gates
     if gates.score is None:
         typer.echo(f"  gates   not scored ({gates.gates} gold claims): {gates.reason}")

@@ -13,7 +13,7 @@ import json
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from docproc.config import OcrEngine
 from docproc.loaders import detect_format
@@ -398,7 +398,25 @@ def load_gate_decisions(path: Path) -> list[GateDecisionRecord]:
     data = _load_json(path)
     if not isinstance(data, list):
         raise ValueError(f"{path}: expected a JSON list of gate decisions, got {type(data).__name__}")
-    return [GateDecisionRecord.model_validate(x) for x in data]
+    records = []
+    for i, x in enumerate(data):
+        try:
+            records.append(GateDecisionRecord.model_validate(x))
+        except ValidationError as e:
+            raise ValueError(f"{path} [{i}]: invalid gate decision: {e}") from e
+    return records
+
+
+def gate_eval_for(gates: list[GoldGate], decisions_file: Path | None) -> GateEval:
+    """Score a decisions file against the gold claims, or report the gates as not scored. Errors name the file."""
+    if decisions_file is None:
+        return GateEval(status="not_scored", reason=GATES_NOT_SCORED, gates=len(gates), score=None)
+    decisions = load_gate_decisions(decisions_file)
+    try:
+        score = score_gates(gates, decisions)
+    except ValueError as e:
+        raise ValueError(f"{decisions_file}: {e}") from e
+    return GateEval(status="scored", reason=None, gates=len(gates), score=score)
 
 
 def skip_reason(doc: ManifestDocument, dataset_dir: Path, ocr_engine: OcrEngine) -> str | None:
@@ -425,7 +443,15 @@ def _load_json(path: Path) -> object:
 
 
 def run_eval(app: App, dataset_dir: Path, work_dir: Path, gate_decisions: Path | None = None) -> EvalReport:
-    """Ingest every scorable dev upload as `<family>/v<version>` (scans as `<family>-scan`), compare v2 with v1, and score both stages."""
+    """Ingest every scorable dev upload as `<family>/v<version>` (scans as `<family>-scan`), compare v2 with v1, and
+    score extraction and the diffs; then score docproc's matcher on the change pairs and a gate's decisions.
+
+    The gold and the gate decisions file are read and checked first, so a bad file fails before a long run.
+    """
+    gold_dir = dataset_dir / SPLIT / "gold"
+    pairs = [GoldChangePair.model_validate(x) for x in _load_json(gold_dir / "change_pairs.json")]
+    gates = [GoldGate.model_validate(x) for x in _load_json(gold_dir / "publication_gates.json")]
+    gate_eval = gate_eval_for(gates, gate_decisions)
     manifest = Manifest.model_validate(_load_json(dataset_dir / "manifest.json"))
     gold_docs = {g.document_id: g for g in
                  (GoldDocument.model_validate(x) for x in _load_json(dataset_dir / SPLIT / "gold" / "extraction.json"))}
@@ -464,13 +490,6 @@ def run_eval(app: App, dataset_dir: Path, work_dir: Path, gate_decisions: Path |
     if not extraction:
         raise RuntimeError(f"no {SPLIT} upload could be scored; skipped: {[s.model_dump() for s in skipped]}")
     total_diff_clauses = sum(d.clauses for d in diffs)
-    gold_dir = dataset_dir / SPLIT / "gold"
-    pairs = [GoldChangePair.model_validate(x) for x in _load_json(gold_dir / "change_pairs.json")]
-    gates = [GoldGate.model_validate(x) for x in _load_json(gold_dir / "publication_gates.json")]
-    gate_eval = (GateEval(status="not_scored", reason=GATES_NOT_SCORED, gates=len(gates), score=None)
-                 if gate_decisions is None else
-                 GateEval(status="scored", reason=None, gates=len(gates),
-                          score=score_gates(gates, load_gate_decisions(gate_decisions))))
     return EvalReport(
         split=SPLIT, llm=app.settings.llm, llm_model=app.settings.llm_model, embedding_model=app.embedder.model_id,
         coverage_threshold=COVERAGE_THRESHOLD, extraction=extraction, diffs=diffs, skipped=skipped,

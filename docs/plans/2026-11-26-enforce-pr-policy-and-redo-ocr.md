@@ -80,7 +80,7 @@ Feature-map rows: none; there are no app changes in this PR.
    - tests first (`fix-bug` style);
    - implementation;
    - `docproc eval --real` before and after;
-   - `verify-app` for F03 (scan upload) and a walk of all feature-map rows in AR and EN, in the Playwright MCP browser, with the **DEMO_PASSWORD you give me** (never read from `.env*`);
+   - `verify-app` for F03 (scan upload) and a walk of all feature-map rows in AR and EN, in the Playwright MCP browser, as the admin signed in there plus a reused per-branch verify learner, as the verify-app skill says (Mohammad, 2026-11-26: never ask for DEMO_PASSWORD; never read `.env*`);
    - `reviewer` plus a second `review-change` pass;
    - `pr-ready`;
    - merge when all green and Mohammad says so.

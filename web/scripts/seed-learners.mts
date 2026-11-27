@@ -6,80 +6,16 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import postgres from "postgres";
-import { z } from "zod";
+import { BRANCH_AR, EMAILS, GoldLearnersSchema, NAMES } from "../src/lib/demo-personas";
 import { hashPassword } from "../src/lib/password";
 
-const GoldLearnersSchema = z.object({
-  learners: z.array(
-    z.object({
-      learner_id: z.string(),
-      role: z.enum(["courier", "employee", "partner"]),
-      language: z.enum(["ar", "en"]),
-      branch: z.string(),
-      device_type: z.string(),
-    }),
-  ),
-});
-
-/** Display names for the demo personas (synthetic). */
-const NAMES: Record<string, string> = {
-  "HL-101": "فهد العتيبي",
-  "HL-102": "سارة القحطاني",
-  "HL-103": "ناصر الدوسري",
-  "HL-104": "خالد الغامدي",
-  "HL-105": "هيا الزهراني",
-  "HL-106": "ماجد الحربي",
-  "HL-107": "ريان الشهري",
-  "HL-201": "نورة الشمري",
-  "HL-202": "عبدالله المطيري",
-  "HL-203": "منيرة السبيعي",
-  "HL-204": "لمى القرني",
-  "HL-205": "تركي العنزي",
-  "HL-301": "مطعم ليمونة",
-  "HL-302": "متجر الريحان",
-  "HL-303": "مخبز السنبلة",
-  "HL-304": "مقهى الهيل",
-  "HL-305": "مطعم سنا",
-  "HL-306": "مقهى الدلة",
-};
-
-/** Demo sign-in emails (reserved .test domain). */
-const EMAILS: Record<string, string> = {
-  "HL-101": "fahad@hungerlearn.test",
-  "HL-102": "sara@hungerlearn.test",
-  "HL-103": "nasser@hungerlearn.test",
-  "HL-104": "khalid@hungerlearn.test",
-  "HL-105": "haya@hungerlearn.test",
-  "HL-106": "majed@hungerlearn.test",
-  "HL-107": "rayan@hungerlearn.test",
-  "HL-201": "noura@hungerlearn.test",
-  "HL-202": "abdullah@hungerlearn.test",
-  "HL-203": "munira@hungerlearn.test",
-  "HL-204": "lama@hungerlearn.test",
-  "HL-205": "turki@hungerlearn.test",
-  "HL-301": "laymouna@hungerlearn.test",
-  "HL-302": "alrayhan@hungerlearn.test",
-  "HL-303": "alsunbula@hungerlearn.test",
-  "HL-304": "alhail@hungerlearn.test",
-  "HL-305": "sana@hungerlearn.test",
-  "HL-306": "aldalla@hungerlearn.test",
-};
 const ADMIN = { email: "admin@hungerlearn.test", name: "ريم الحربي" };
-
-/** The corpus uses English branch codes; learners see the Arabic branch names. */
-const BRANCH_AR: Record<string, string> = {
-  "Fig Gate": "فرع حي الملقا",
-  "Papaya Bend": "فرع حي النرجس",
-  "Sidr Square": "مركز العمليات – العليا",
-  "Olive Lane": "فرع حي الياسمين",
-  "Caper Walk": "فرع حي الصحافة",
-};
 
 const DEVICE_FOR_ROLE = { courier: "phone", employee: "laptop", partner: "tablet" } as const;
 
 function required<T>(map: Record<string, T>, key: string, what: string): T {
   const value = map[key];
-  if (value === undefined) throw new Error(`No ${what} for "${key}"; add it to the seed script`);
+  if (value === undefined) throw new Error(`No ${what} for "${key}"; add it to web/src/lib/demo-personas.ts`);
   return value;
 }
 

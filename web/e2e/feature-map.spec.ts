@@ -29,16 +29,28 @@ async function signIn(page: Page, email: string): Promise<void> {
   await page.locator('button[type="submit"]').first().click();
 }
 
+/**
+ * A feature-map test: the body, then a wait until no loading state is visible. Playwright takes the evidence
+ * screenshot as soon as the test body returns (before afterEach hooks), so the wait must be part of the body.
+ * Every Suspense fallback is the shared Skeleton, which carries aria-busy="true" (src/lib/loading.test.ts keeps it so).
+ */
+function row(title: string, body: (page: Page) => Promise<void>): void {
+  test(title, async ({ page }) => {
+    await body(page);
+    await expect(page.locator('[aria-busy="true"]'), "a loading state is still visible when the test ends").toHaveCount(0);
+  });
+}
+
 test.describe("F01 landing page and language toggle", () => {
   for (const { lang, dir } of LANGS) {
-    test(`renders in ${lang} with the right direction`, async ({ page }) => {
+    row(`renders in ${lang} with the right direction`, async (page) => {
       await useLanguage(page, lang);
       await expect(page.locator("html")).toHaveAttribute("dir", dir);
       await expect(page.locator('img[alt*="HungerLearn" i], [aria-label*="HungerLearn" i]').first()).toBeVisible();
     });
   }
 
-  test("the header toggle switches the language and keeps the page", async ({ page }) => {
+  row("the header toggle switches the language and keeps the page", async (page) => {
     await useLanguage(page, "ar");
     await page.locator('a[hreflang="en"]').first().click();
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
@@ -49,13 +61,13 @@ test.describe("F01 landing page and language toggle", () => {
 
 test.describe("F02 sign-in, guards and sign-out", () => {
   for (const { lang } of LANGS) {
-    test(`admin signs in and reaches /admin (${lang})`, async ({ page }) => {
+    row(`admin signs in and reaches /admin (${lang})`, async (page) => {
       await useLanguage(page, lang);
       await signIn(page, ADMIN_EMAIL);
       await expect(page).toHaveURL(/\/admin$/);
     });
 
-    test(`learner signs in, reaches /learn and cannot open /admin (${lang})`, async ({ page }) => {
+    row(`learner signs in, reaches /learn and cannot open /admin (${lang})`, async (page) => {
       await useLanguage(page, lang);
       await signIn(page, LEARNER_EMAIL);
       await expect(page).toHaveURL(/\/learn$/);
@@ -64,7 +76,7 @@ test.describe("F02 sign-in, guards and sign-out", () => {
     });
   }
 
-  test("a wrong password is refused", async ({ page }) => {
+  row("a wrong password is refused", async (page) => {
     await useLanguage(page, "en");
     await page.goto("/signin");
     await page.locator('input[name="email"]').fill(ADMIN_EMAIL);
@@ -76,7 +88,7 @@ test.describe("F02 sign-in, guards and sign-out", () => {
     await expect(page).toHaveURL(/\/signin$/);
   });
 
-  test("anonymous visitors are sent to sign-in", async ({ page }) => {
+  row("anonymous visitors are sent to sign-in", async (page) => {
     for (const path of ["/admin", "/admin/review", "/admin/readiness", "/learn"]) {
       await page.goto(path);
       await expect(page, path).toHaveURL(/\/signin$/);
@@ -86,7 +98,7 @@ test.describe("F02 sign-in, guards and sign-out", () => {
 
 test.describe("F06 readiness page", () => {
   for (const { lang } of LANGS) {
-    test(`renders for the admin (${lang})`, async ({ page }) => {
+    row(`renders for the admin (${lang})`, async (page) => {
       await useLanguage(page, lang);
       await signIn(page, ADMIN_EMAIL);
       await expect(page).toHaveURL(/\/admin$/);

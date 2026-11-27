@@ -19,3 +19,11 @@ export function canPublishWithFlags(flags: readonly string[]): boolean {
   void flags;
   return true;
 }
+
+/** The items that the rule does not let a trainer approve and publish (none today). */
+export function blockedFromPublishing<T extends { flags: readonly string[] }>(
+  items: readonly T[],
+  rule: (flags: readonly string[]) => boolean = canPublishWithFlags,
+): T[] {
+  return items.filter((i) => !rule(i.flags));
+}

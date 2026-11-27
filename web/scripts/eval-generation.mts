@@ -40,7 +40,8 @@ function requiredEnv(name: string): string {
 
 function gitCommit(): string {
   const r = spawnSync("git", ["rev-parse", "HEAD"], { cwd: REPO, encoding: "utf8" });
-  return r.status === 0 ? r.stdout.trim() : `unknown (${r.stderr.trim()})`;
+  if (r.status !== 0) throw new Error(`git rev-parse HEAD failed (the report must name the commit it scored): ${r.stderr.trim() || r.error?.message}`);
+  return r.stdout.trim();
 }
 
 function migrate(url: string): void {

@@ -6,10 +6,8 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import postgres from "postgres";
-import { BRANCH_AR, EMAILS, GoldLearnersSchema, NAMES } from "../src/lib/demo-personas";
+import { ADMIN, BRANCH_AR, EMAILS, GoldLearnersSchema, NAMES } from "../src/lib/demo-personas";
 import { hashPassword } from "../src/lib/password";
-
-const ADMIN = { email: "admin@hungerlearn.test", name: "ريم الحربي" };
 
 const DEVICE_FOR_ROLE = { courier: "phone", employee: "laptop", partner: "tablet" } as const;
 

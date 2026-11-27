@@ -37,7 +37,7 @@ async function signIn(page: Page, email: string): Promise<void> {
 function row(title: string, body: (page: Page) => Promise<void>): void {
   test(title, async ({ page }) => {
     await body(page);
-    await expect(page.locator('[aria-busy="true"]'), "a loading state is still visible when the test ends").toHaveCount(0);
+    await expect(page.locator('[aria-busy="true"]').filter({ visible: true }), "a loading state is still visible when the test ends").toHaveCount(0);
   });
 }
 

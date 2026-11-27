@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
-import { GoldLearnersSchema, personaProblems, type GoldLearner } from "./demo-personas";
+import { EMAILS, GoldLearnersSchema, personaProblems, type GoldLearner } from "./demo-personas";
 
 const LEARNERS_FILE = path.resolve(import.meta.dirname, "..", "..", "..", "data", "synthetic_sops", "dev", "gold", "learners.json");
 
@@ -26,5 +26,5 @@ test("personaProblems names a learner the seed cannot create", () => {
 
 test("personaProblems refuses a duplicated email", () => {
   const known = goldLearners()[0];
-  assert.deepEqual(personaProblems([known, known]), [`${known.learner_id}: email ${"fahad@hungerlearn.test"} is already used by ${known.learner_id}`]);
+  assert.deepEqual(personaProblems([known, known]), [`${known.learner_id}: email ${EMAILS[known.learner_id]} is already used by ${known.learner_id}`]);
 });

@@ -72,12 +72,15 @@ export const BRANCH_AR: Record<string, string> = {
 
 export type GoldLearner = z.infer<typeof GoldLearnersSchema>["learners"][number];
 
-export const DEMO_EMAIL_DOMAIN = "@hungerlearn.test";
+const DEMO_EMAIL_DOMAIN = "@hungerlearn.test";
+
+/** The platform admin account; its email must not collide with a learner's. */
+export const ADMIN = { email: "admin@hungerlearn.test", name: "ريم الحربي" } as const;
 
 /** Every reason the seed would fail or collide for these learners; empty when each has a full, unique persona. */
 export function personaProblems(learners: readonly GoldLearner[]): string[] {
   const problems: string[] = [];
-  const emails = new Map<string, string>();
+  const emails = new Map<string, string>([[ADMIN.email, "the admin account"]]);
   for (const l of learners) {
     if (NAMES[l.learner_id] === undefined) problems.push(`${l.learner_id}: no display name in NAMES`);
     if (BRANCH_AR[l.branch] === undefined) problems.push(`${l.learner_id}: no Arabic name for branch "${l.branch}" in BRANCH_AR`);
@@ -86,6 +89,7 @@ export function personaProblems(learners: readonly GoldLearner[]): string[] {
       problems.push(`${l.learner_id}: no email in EMAILS`);
       continue;
     }
+    // verify-…@verify.hungerlearn.test accounts are throwaway learners created by verify-app, never seeded.
     if (!email.endsWith(DEMO_EMAIL_DOMAIN) || email.startsWith("verify-")) problems.push(`${l.learner_id}: email ${email} is not a demo ${DEMO_EMAIL_DOMAIN} address`);
     const other = emails.get(email);
     if (other !== undefined) problems.push(`${l.learner_id}: email ${email} is already used by ${other}`);

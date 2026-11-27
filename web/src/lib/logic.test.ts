@@ -68,7 +68,7 @@ test("order steps are never shown already in order, and the shuffle is stable", 
 });
 
 test("flow: practice first, then exam; a failed exam sends the learner back through practice", () => {
-  const p = ["p1", "p2"], e = ["e1"];
+  const p = [{ id: "p1", format: "mcq" }, { id: "p2", format: "mcq" }] as const, e = [{ id: "e1", format: "mcq" }] as const;
   assert.deepEqual(nextStep(p, e, []), { kind: "practice", itemId: "p1" });
   const practiced = [{ itemId: "p1", correct: true, at: 1 }, { itemId: "p2", correct: false, at: 2 }];
   assert.deepEqual(nextStep(p, e, practiced), { kind: "exam", itemId: "e1" });
@@ -77,6 +77,53 @@ test("flow: practice first, then exam; a failed exam sends the learner back thro
   const repracticed = [...failed, { itemId: "p1", correct: true, at: 4 }, { itemId: "p2", correct: true, at: 5 }];
   assert.deepEqual(nextStep(p, e, repracticed), { kind: "exam", itemId: "e1" });
   assert.deepEqual(nextStep(p, e, [...repracticed, { itemId: "e1", correct: true, at: 6 }]), { kind: "mastered" });
+});
+
+test("retry after Not yet: the next question uses a different published format when one exists", () => {
+  const p = [{ id: "p1", format: "mcq" }, { id: "p2", format: "checklist" }] as const;
+  const e = [{ id: "e1", format: "mcq" }] as const;
+  const failed = [{ itemId: "p1", correct: true, at: 1 }, { itemId: "p2", correct: true, at: 2 }, { itemId: "e1", correct: false, at: 3 }];
+  assert.deepEqual(nextStep(p, e, failed), { kind: "practice", itemId: "p2" });
+  // After that one, the existing order resumes: remaining practice, then the failed exam item.
+  const next = [...failed, { itemId: "p2", correct: true, at: 4 }];
+  assert.deepEqual(nextStep(p, e, next), { kind: "practice", itemId: "p1" });
+  assert.deepEqual(nextStep(p, e, [...next, { itemId: "p1", correct: true, at: 5 }]), { kind: "exam", itemId: "e1" });
+  // Practice all in the failed format: another due exam item in a different format comes first.
+  const p2 = [{ id: "p1", format: "mcq" }] as const;
+  const e2 = [{ id: "e1", format: "mcq" }, { id: "e2", format: "order_steps" }] as const;
+  const failed2 = [{ itemId: "p1", correct: true, at: 1 }, { itemId: "e1", correct: false, at: 2 }];
+  assert.deepEqual(nextStep(p2, e2, failed2), { kind: "exam", itemId: "e2" });
+});
+
+test("retry after Not yet: edge cases keep the grading and mastery rules", () => {
+  const p = [{ id: "p1", format: "mcq" }, { id: "p2", format: "checklist" }] as const;
+  const e = [{ id: "e1", format: "mcq" }, { id: "e2", format: "order_steps" }] as const;
+  // A wrong practice answer is not "Not yet": no switch, the usual order.
+  assert.deepEqual(nextStep(p, e, [{ itemId: "p1", correct: true, at: 1 }, { itemId: "p2", correct: false, at: 2 }]), { kind: "exam", itemId: "e1" });
+  // An attempt on an item that is no longer published does not hide the failed exam answer.
+  const failed = [{ itemId: "p1", correct: true, at: 1 }, { itemId: "p2", correct: true, at: 2 }, { itemId: "e1", correct: false, at: 3 }, { itemId: "old", correct: true, at: 4 }];
+  assert.deepEqual(nextStep(p, e, failed), { kind: "practice", itemId: "p2" });
+  // Mixed formats still master only when every exam item's latest attempt is correct.
+  const redone = [...failed, { itemId: "p2", correct: true, at: 5 }, { itemId: "p1", correct: true, at: 6 }, { itemId: "e1", correct: true, at: 7 }];
+  assert.deepEqual(nextStep(p, e, redone), { kind: "exam", itemId: "e2" });
+  assert.deepEqual(nextStep(p, e, [...redone, { itemId: "e2", correct: true, at: 8 }]), { kind: "mastered" });
+});
+
+test("flow: attempts with the same timestamp count in the given order (latest = last listed)", () => {
+  const p = [{ id: "p1", format: "mcq" }] as const, e = [{ id: "e1", format: "mcq" }] as const;
+  const base = [{ itemId: "p1", correct: true, at: 1 }];
+  assert.deepEqual(nextStep(p, e, [...base, { itemId: "e1", correct: false, at: 2 }, { itemId: "e1", correct: true, at: 2 }]), { kind: "mastered" });
+  assert.deepEqual(nextStep(p, e, [...base, { itemId: "e1", correct: true, at: 2 }, { itemId: "e1", correct: false, at: 2 }]), { kind: "practice", itemId: "p1" });
+});
+
+test("retry after Not yet: with a single published format the existing retry flow is kept", () => {
+  const p = [{ id: "p1", format: "timed_decision" }, { id: "p2", format: "timed_decision" }] as const;
+  const e = [{ id: "e1", format: "timed_decision" }, { id: "e2", format: "timed_decision" }] as const;
+  const failed = [{ itemId: "p1", correct: true, at: 1 }, { itemId: "p2", correct: true, at: 2 },
+    { itemId: "e1", correct: true, at: 3 }, { itemId: "e2", correct: false, at: 4 }];
+  assert.deepEqual(nextStep(p, e, failed), { kind: "practice", itemId: "p1" });
+  const redone = [...failed, { itemId: "p1", correct: true, at: 5 }, { itemId: "p2", correct: true, at: 6 }];
+  assert.deepEqual(nextStep(p, e, redone), { kind: "exam", itemId: "e2" });
 });
 
 test("composeQuestion hides the key and falls back to the lesson when the spec is invalid", () => {

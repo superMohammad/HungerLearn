@@ -22,6 +22,7 @@ export const ar = {
     noResults: "لا نتائج.",
     seconds: (n: number) => `${n} ث`,
     page: (n: number) => `ص ${n}`,
+    upload: (n: number) => `الرفع رقم ${n}`,
     switchLanguage: { label: "English", aria: "Switch to English" },
   },
   labels: {
@@ -266,7 +267,7 @@ export const ar = {
       submit: "رفع وبدء المعالجة",
     },
     doc: {
-      versions: "النسخ: ",
+      uploads: (current: number, total: number) => `الرفع رقم ${current} من ${total}`,
       pipeline: "سير المعالجة",
       notStarted: "لم تبدأ بعد.",
       step: {
@@ -280,7 +281,7 @@ export const ar = {
       approvedWaiting: "معتمد بانتظار النشر: ",
       onlyPublished: ". لا يرى المتدربون إلا المحتوى المنشور.",
       publish: (n: number) => `نشر المحتوى المعتمد (${n})`,
-      newVersion: (n: number) => `رفع نسخة جديدة (v${n})`,
+      newVersion: (n: number) => `رفع نسخة جديدة من الدليل (الرفع رقم ${n})`,
       compare: "مقارنة وتحديث",
       changesTitle: "ما الذي تغيّر في هذه النسخة؟",
       changesBody: "الإجراءات التي لم تتغيّر بنودها احتفظت بتدريبها المعتمد دون أي تكلفة ذكاء اصطناعي، وأعيد توليد غيرها فقط.",

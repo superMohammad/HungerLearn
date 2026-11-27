@@ -11,6 +11,7 @@ import { getItem, getLessonVideo, getPackage, listItemEvents, listReviewQueue } 
 import type { Dict } from "@/lib/i18n";
 import { getDict } from "@/lib/i18n-server";
 import type { Clause, LessonItem, QuestionItem, TrainingItem } from "@/lib/types";
+import { uploadNumber } from "@/lib/uploads";
 
 const field = "mt-1 w-full min-h-11 rounded-xl border border-line bg-bg px-3 py-2";
 
@@ -198,7 +199,7 @@ async function Panel({ itemId, t }: { itemId: string; t: Dict }) {
               <span className="text-ink">{e.actor}</span>
               <span>{e.action}</span>
               <span className="num" dir="ltr">{e.fromStatus ?? "∅"} → {e.toStatus}</span>
-              <span className="num">{e.versionId}</span>
+              <span className="num">{t.common.upload(uploadNumber(e.versionId))}</span>
               {e.note !== "" ? <span dir="auto">{e.note}</span> : null}
             </li>
           ))}

@@ -65,7 +65,11 @@ export const en: Dict = {
     video: { queued: "Queued", rendering: "Rendering", ready: "Ready", failed: "Failed" },
   },
   reasons: {
-    prefix: { "numbers:": "Numbers:", "modality:": "Obligation wording:", "audience:": "Audience:" },
+    prefix: {
+      "numbers:": "Numbers:", "modality:": "Obligation wording:", "audience:": "Audience:",
+      "threshold:": "Limit or number:", "negation:": "Prohibition:", "actor:": "Who does it:",
+      "condition:": "When it applies:", "order:": "Step order:", "wording:": "Wording:",
+    },
     exact: { "negation changed": "Negation changed", "wording changed": "Wording changed", "location changed": "Moved in the document" },
     arrow: "→",
     join: "; ",

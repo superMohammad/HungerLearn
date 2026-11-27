@@ -210,8 +210,11 @@ def demo(
 def eval_dev(
     real: bool = typer.Option(False, help="Use the configured LLM and embeddings (and OCR if DOCPROC_OCR=ovis) instead of fixtures"),
     out_dir: Path = typer.Option(Path("out")),
+    gate_decisions: Path | None = typer.Option(
+        None, help="JSON list of {gate_id, decision, reason_code} from a publication gate, scored against "
+                   "dev/gold/publication_gates.json"),
 ) -> None:
-    """Score clause extraction and v1 -> v2 comparison on data/synthetic_sops/dev; writes out/eval_dev[_real].json."""
+    """Score extraction, v1 -> v2 comparison, change pairs and gate decisions on data/synthetic_sops/dev; writes out/eval_dev[_real].json."""
     _utf8_stdout()
     from docproc.evaluation import DATASET_DIR, run_eval
 
@@ -226,7 +229,7 @@ def eval_dev(
         over.update(llm="fixture", embeddings="fixture")
     a = _app(settings.model_copy(update=over))
     a.repo.init_schema()
-    rep = run_eval(a, DATASET_DIR, out_dir / "eval_pages")
+    rep = run_eval(a, DATASET_DIR, out_dir / "eval_pages", gate_decisions=gate_decisions)
     out = out_dir / f"eval_dev_{suffix}.json"
     out.write_text(json.dumps(rep.model_dump(mode="json"), ensure_ascii=False, indent=2), encoding="utf-8")
     typer.echo(f"LLM={rep.llm} ({rep.llm_model}) embeddings={rep.embedding_model} -> {out}")
@@ -239,8 +242,23 @@ def eval_dev(
                    f"needs_review {d.needs_review}  wrong {[(w.clause_id, w.expected, w.predicted) for w in d.wrong]}")
     for s in rep.skipped:
         typer.echo(f"  skipped {s.document_id}: {s.reason}")
+    cp = rep.change_pairs
+    recall = "n/a" if cp.material_recall is None else f"{cp.material_recall:.2f}"
+    typer.echo(f"  change pairs {cp.correct}/{cp.pairs} handled correctly  material recall {recall} "
+               f"({cp.material_caught}/{cp.material_pairs})  false material {cp.false_material}  "
+               f"needs_review {cp.needs_review}  judge {cp.judge} ({cp.prompt_version})")
+    for name, g in cp.by_change_type.items():
+        typer.echo(f"    {name:<10} {g.correct}/{g.pairs}")
+    typer.echo("    by language: " + "  ".join(f"{lang} {g.correct}/{g.pairs}" for lang, g in cp.by_language.items()))
+    gates = rep.publication_gates
+    if gates.score is None:
+        typer.echo(f"  gates   not scored ({gates.gates} gold claims): {gates.reason}")
+    else:
+        s = gates.score
+        typer.echo(f"  gates   {s.correct}/{s.gates} correct  unsafe allows {s.unsafe_allows}/{s.must_block}  "
+                   f"wrongly blocked {s.wrongly_blocked}  reason agreement {s.reason_agreement}/{s.gates}")
     typer.echo(f"macro recall {rep.macro_recall:.2f}  macro precision {rep.macro_precision:.2f}  "
-               f"diff accuracy {rep.diff_accuracy:.2f}")
+               f"diff accuracy {rep.diff_accuracy:.2f}  change-pair accuracy {cp.accuracy:.2f}")
 
 
 if __name__ == "__main__":

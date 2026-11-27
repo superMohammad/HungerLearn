@@ -3,7 +3,7 @@ import { sql } from "@/lib/db";
 import { listClauses } from "@/lib/docproc";
 import { verifyEditedQuestion } from "@/lib/generation";
 import { generatePackageFor } from "@/lib/pipeline";
-import { canPublishWithFlags } from "@/lib/publication-rules";
+import { blockedFromPublishing, canPublishWithFlags } from "@/lib/publication-rules";
 import { getDocument, getItem, getPackage, listPackageItems } from "@/lib/repo";
 import type { ItemStatus, QuestionPayload, TrainingItem } from "@/lib/types";
 
@@ -31,10 +31,14 @@ export async function approveItem(itemId: string, actor: string): Promise<void> 
 
 /** Approves every reviewable item of a package (the reviewer has seen the whole package). */
 export async function approvePackage(packageId: string, actor: string): Promise<void> {
-  for (const item of await listPackageItems(packageId)) {
-    if ((item.status === "draft" || item.status === "verified") && canPublishWithFlags(item.flags)) {
-      await transition(item, "approved", actor, "approve_package", item.flags.length > 0 ? `approved despite flags: ${item.flags.join(",")}` : "");
-    }
+  const reviewable = (await listPackageItems(packageId)).filter((item) => item.status === "draft" || item.status === "verified");
+  // Refuse the whole package, before approving anything, rather than skipping blocked items silently.
+  const blocked = blockedFromPublishing(reviewable);
+  if (blocked.length > 0) {
+    throw new Error(`Package ${packageId} cannot be approved: ${blocked.map((i) => `item ${i.id} has flags ${i.flags.join(",")}`).join("; ")}`);
+  }
+  for (const item of reviewable) {
+    await transition(item, "approved", actor, "approve_package", item.flags.length > 0 ? `approved despite flags: ${item.flags.join(",")}` : "");
   }
 }
 

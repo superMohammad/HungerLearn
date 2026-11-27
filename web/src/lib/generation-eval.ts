@@ -8,7 +8,7 @@ import path from "node:path";
 import { z } from "zod";
 import type { ResolvedItem } from "@/lib/generation";
 import { initialItemState } from "@/lib/publication-rules";
-import { quoteInClause } from "@/lib/text";
+import { foldDigits, quoteInClause } from "@/lib/text";
 import type { Clause, HlDocument, ItemStatus, LessonPayload, PackageStatus } from "@/lib/types";
 
 // ---------------------------------------------------------------- dataset (dev originals only)
@@ -132,7 +132,14 @@ export type ProcedureOutcome = {
   result: { kind: "package"; status: PackageStatus; items: ResolvedItem[] } | { kind: "error"; message: string };
 };
 
-export type Citation = { clause_id: string | null; quote: string; normalized: boolean; exact: boolean };
+export type Citation = {
+  clause_id: string | null;
+  quote: string;
+  normalized: boolean;
+  exact: boolean;
+  /** The cited clause's text when the citation fails a check, so a reviewer can read why; null otherwise. */
+  clause_text: string | null;
+};
 
 export type ScoredItem = {
   kind: ResolvedItem["kind"];
@@ -140,7 +147,11 @@ export type ScoredItem = {
   status: ItemStatus;
   flags: string[];
   citations: Citation[];
-  /** The app's flags, plus quote_not_exact when the quote only matches after normalization (e.g. 15 vs ١٥). */
+  /**
+   * The app's flags, plus, for a quote that matches its clause only after the app's normalization:
+   * quote_digits_differ when the printed digits are the difference (15 vs ١٥), else quote_not_exact
+   * (punctuation, spacing, diacritics).
+   */
   failed_checks: string[];
   /** Marked verified (no warning for the trainer) but failing a check. */
   silent_failure: boolean;
@@ -157,6 +168,13 @@ export type ScoredProcedure = {
   error: string | null;
   items: ScoredItem[];
 };
+
+const DIGIT_RUN = /[0-9٠-٩۰-۹]+/g;
+
+/** A printed number in the quote that the clause does not print the same way (15 against ١٥). */
+function digitsDiffer(quote: string, clauseQuote: string): boolean {
+  return (quote.match(DIGIT_RUN) ?? []).some((run) => !clauseQuote.includes(run));
+}
 
 /** Exact: the trimmed quote appears verbatim in the clause, so printed digits must match. */
 function exactInClause(quote: string, clauseQuote: string): boolean {
@@ -183,15 +201,15 @@ export function scoreProcedure(outcome: ProcedureOutcome, canPublish: (flags: re
     const state = initialItemState(packageStatus, item.flags);
     const citations = citationsOf(item).map(({ stableId, quote }): Citation => {
       const clause = stableId === null ? undefined : byId.get(stableId);
-      return {
-        clause_id: clause?.stableId ?? null,
-        quote,
-        normalized: clause !== undefined && quoteInClause(quote, clause.quote),
-        exact: clause !== undefined && exactInClause(quote, clause.quote),
-      };
+      const normalized = clause !== undefined && quoteInClause(quote, clause.quote);
+      const exact = clause !== undefined && exactInClause(quote, clause.quote);
+      return { clause_id: clause?.stableId ?? null, quote, normalized, exact, clause_text: exact ? null : (clause?.quote ?? null) };
     });
-    const notExact = citations.some((c) => c.normalized && !c.exact);
-    const failed = notExact ? [...state.flags, "quote_not_exact"] : state.flags;
+    // A citation that passes the app's check but not the exact one always has its clause text.
+    const inexact = citations.flatMap((c) => (c.normalized && !c.exact && c.clause_text !== null ? [{ quote: c.quote, clause: c.clause_text }] : []));
+    const digits = inexact.some((c) => digitsDiffer(c.quote, c.clause));
+    const other = inexact.some((c) => !exactInClause(foldDigits(c.quote), foldDigits(c.clause)));
+    const failed = [...state.flags, ...(digits ? ["quote_digits_differ"] : []), ...(other ? ["quote_not_exact"] : [])];
     return {
       kind: item.kind,
       ordinal: item.ordinal,

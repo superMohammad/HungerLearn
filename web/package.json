@@ -11,7 +11,7 @@
     "db:seed": "tsx --env-file=.env.local scripts/seed-learners.mts",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "tsx --test src/lib/*.test.ts",
-    "test:db": "tsx --conditions=react-server --test db/tests/*.test.ts",
+    "test:db": "tsx --conditions=react-server --test --test-concurrency=1 db/tests/*.test.ts",
     "eval:generation": "tsx --env-file=.env.local --conditions=react-server scripts/eval-generation.mts"
   },
   "dependencies": {

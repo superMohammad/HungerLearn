@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
@@ -95,6 +96,16 @@ def test_run_eval_offline_scores_dev_and_never_reads_held_out(make_app, tmp_path
     assert sum(t.pairs for t in report.change_pairs.by_change_type.values()) == 82
     assert report.publication_gates.status == "not_scored" and report.publication_gates.gates == 8
     assert report.publication_gates.score is None and "gate" in (report.publication_gates.reason or "")
+
+
+def test_run_eval_records_when_it_ran_in_utc(make_app, tmp_path):
+    started = datetime.now(UTC)
+    report = run_eval(make_app(), DATASET_DIR, tmp_path / "pages")
+    assert report.generated_at.tzinfo is not None and report.generated_at.utcoffset() == timedelta(0)
+    assert started <= report.generated_at <= datetime.now(UTC)
+    # The JSON keeps the ISO form with "Z", which the web scoreboard reads as the result's date.
+    written = report.model_dump(mode="json")["generated_at"]
+    assert written.endswith("Z") and datetime.fromisoformat(written) == report.generated_at
 
 
 def _pair(pair_id: str, before: str, after: str, change_type: str, handling: str, language: str = "en") -> GoldChangePair:

@@ -10,6 +10,7 @@ configuration and is a separate, deliberate run.
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 
@@ -218,6 +219,7 @@ class GateEval(BaseModel):
 
 
 class EvalReport(BaseModel):
+    generated_at: datetime  # when the run finished, in UTC (shown with each result, e.g. on the web scoreboard)
     split: str
     llm: str
     llm_model: str
@@ -507,7 +509,7 @@ def run_eval(app: App, dataset_dir: Path, work_dir: Path, gate_decisions: Path |
         raise RuntimeError(f"no {SPLIT} upload could be scored; skipped: {[s.model_dump() for s in skipped]}")
     total_diff_clauses = sum(d.clauses for d in diffs)
     return EvalReport(
-        split=SPLIT, llm=app.settings.llm, llm_model=app.settings.llm_model, embedding_model=app.embedder.model_id,
+        generated_at=datetime.now(UTC), split=SPLIT, llm=app.settings.llm, llm_model=app.settings.llm_model, embedding_model=app.embedder.model_id,
         coverage_threshold=COVERAGE_THRESHOLD, extraction=extraction, diffs=diffs, skipped=skipped,
         macro_recall=sum(e.recall for e in extraction) / len(extraction),
         macro_precision=sum(e.precision for e in extraction) / len(extraction),

@@ -179,5 +179,20 @@ Unit tests come first and must fail before the change (`web/src/lib/carry-over.t
 - **Reviews:** the `reviewer` subagent and a second `review-change` pass; every must-fix resolved in `0eb1db0`.
 - **Checks:** `node scripts/check.mjs` passed (web, docproc, media, scripts); `pnpm test` 85/85; `pnpm test:db` 22/22.
 - **Browser verification (`node scripts/verify-app.mjs F01 F02 F05 F06`, disposable database):** 19/19 in Arabic and English, including the F05 skipped-upload case. Inspected screenshots in `.verify/vgolden25-b7-what-changed/shareable/`; traces and the HTML report stay local.
-- **PR preparation:** a description drafted locally from the template and checked with `node scripts/pr-policy.mjs`; the PR is not opened.
-- **Pending:** the live F07 v2 upload and comparison in Arabic and English, which need a working LLM endpoint.
+- **Merged with `origin/main` at `302f803`** (B6 layouts #29, A2c cost/time #30, A2a follow-ups #28; no migration) in merge commit `da14083`.
+  - **Conflicts, resolved by keeping both sides:**
+    - `learning.ts`: the What changed gate runs before B6's layout choice. A courier on a phone, who skips the separate lesson under B6, still sees What changed first.
+    - `screen.tsx`: imports.
+    - `docs/feature-map.md`: the F05 row carries both Proofs.
+    - `web/e2e/feature-map.spec.ts`: keeps the B7 and B6 F05 blocks. They use different demo learners.
+  - **Checks after the merge:**
+    - `node scripts/check.mjs` passed (web, docproc, media, scripts), with guard-diff reporting no weakened checks.
+    - `pnpm test`: 113/113.
+    - `pnpm test:db`: 24/24, including all 8 in `what-changed.test.ts`.
+  - **Browser verification after the merge** (`node scripts/verify-app.mjs F05`, disposable database): 14/14 in the Arabic and English UI.
+    - B7, 8 cases: What changed on the Arabic courier and English employee documents, the skipped upload 1→3, and the badge recheck.
+    - B6, 6 cases: the courier `video_question`, employee `scenario` and partner `checklist` layouts.
+- **PR preparation:** the description is drafted locally from the template, updated with the post-merge results and checked with `node scripts/pr-policy.mjs`. Its only failure is the unticked live-F07 item. The PR is not opened.
+- **Pending:**
+  - The live F07 v2 upload and comparison in Arabic and English. It needs a working LLM endpoint.
+  - Mohammad's confirmation of the incomplete-comparison behaviour (the amendment under "Skipped SOP versions" step 5).

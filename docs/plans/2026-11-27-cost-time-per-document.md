@@ -78,3 +78,12 @@ No pipeline code changes, so `docproc eval --real` is unchanged by construction.
 - docproc call logging and failed-attempt logging (questions 1 and 2: separate PRs if wanted).
 - The scoreboard page (A2d).
 - Changing prices or models.
+
+## Implementation notes (2026-11-27, for review)
+- **Branch:** `main` (with A2a squash-merged as #25) was merged into this branch first, so the PR diff is A2c only. It does not depend on the open follow-ups PR #28, which touches other files.
+- **"First" vs "update":** a version is an update when its document has an earlier version (ordered by first `pipeline_jobs` row). The summary averages first uploads, updates and all versions, plus `by_role` and `by_language`.
+- **Carried packages** are found from `item_events.action = 'carried_over'` on the package's items, which `carryPackage` writes. A carried package keeps its `procedure_key`.
+- **Average cost per generated package** = the version's `generate.package` + `verify.judge` calls ÷ its generated (not carried) packages. `understand.name_procedures` is excluded, because naming happens once per document, not per package. The v2 saving uses the previous version's average; rework uses the version's own. Both multiply before dividing, so exact sums stay exact. Both are `null`, not 0, when there is no logged generation to average.
+- **A model with no price fails the report** with its name (`costUsd()`), as planned. `--hosted-model` is checked against `LLM_PRICES_USD_PER_MTOK` before anything is read.
+- **Dollars are floating point**, so the tests compare dollar amounts within 1e-8. Token counts and all other fields are compared exactly. Production values are not rounded; rounding is for display (A2d).
+- **The report is read-only:** the DB test checks that row counts in every table it reads are unchanged after the run. A mutation (the reader ignoring `carried_over`) fails the DB test.

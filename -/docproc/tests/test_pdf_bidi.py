@@ -1,7 +1,14 @@
 """pdf_bidi on synthetic glyphs: each case is a pattern measured in Chrome/Skia Arabic PDFs."""
 from __future__ import annotations
 
-from docproc.loaders.pdf_bidi import Glyph, logical_rows, rebuilds, restore_unmapped
+from docproc.loaders.pdf_bidi import (
+    Glyph,
+    logical_rows,
+    rebuilds_on_ltr_page,
+    rebuilds_on_rtl_page,
+    restore_unmapped,
+    right_to_left_page,
+)
 
 SIZE = 11.0
 W = 5.0  # glyph width
@@ -87,22 +94,33 @@ def test_a_glyph_the_font_cannot_map_takes_the_actualtext_marks_at_its_spot() ->
     assert logical_rows(restore_unmapped([[*lam, unmapped]], marks)) == ["لَّ"]
 
 
-def test_which_blocks_are_rebuilt_is_decided_from_the_block_alone() -> None:
+def g(char: str, x0: float, x1: float) -> Glyph:
+    return Glyph(char, x0, 100.0, x1, 100.0 + SIZE, SIZE)
+
+
+def test_which_blocks_are_rebuilt_is_decided_from_the_block_and_the_page() -> None:
     chrome = [rtl("يجب على الموظفين", 540.0)]
     table_cell_on_the_left = [rtl("يجب على الموظفين", 200.0)]  # far from the right margin, still right to left
     ltr_paragraph = [ltr("1.2 ", 41.0) + rtl("يجب على الموظفين", 300.0)]  # an LTR paragraph quoting Arabic
     drawn_left_to_right = [ltr("يجب على الموظفين", 300.0)]  # a generator that does not shape Arabic
     english = [ltr("Wear gloves", 41.0)]
-    assert rebuilds(chrome) and rebuilds(table_cell_on_the_left)
-    assert not rebuilds(ltr_paragraph)
-    assert not rebuilds(drawn_left_to_right)
-    assert not rebuilds(english)
+    assert rebuilds_on_ltr_page(chrome) and rebuilds_on_ltr_page(table_cell_on_the_left)
+    assert not rebuilds_on_ltr_page(ltr_paragraph) and not rebuilds_on_ltr_page(drawn_left_to_right)
+    assert not rebuilds_on_ltr_page(english) and not rebuilds_on_rtl_page(english)
+    assert right_to_left_page([chrome, table_cell_on_the_left]) and not right_to_left_page([english, english])
+
+
+def test_on_an_arabic_page_a_sentence_ending_in_a_time_is_rebuilt() -> None:
+    words = rtl("وصلت الساعة", 400.0)
+    time = ltr("1:15", words[-1].x0 - SPACE - 4 * W)  # the stream opens with the time, at the row's left end
+    assert rebuilds_on_rtl_page([time + words]) and not rebuilds_on_ltr_page([time + words])
+    assert logical_rows([time + words]) == ["وصلت الساعة 1:15"]
 
 
 def test_an_arabic_paragraph_that_opens_with_a_latin_code_is_rebuilt() -> None:
     words = rtl("يجب الالتزام", 400.0)
     code = ltr("SOP-12", words[0].x1 + SPACE)  # at the row's right end, where a right-to-left paragraph starts
-    assert rebuilds([code + words])
+    assert rebuilds_on_ltr_page([code + words])
     assert logical_rows([code + words]) == ["SOP-12 يجب الالتزام"]
 
 
@@ -125,3 +143,47 @@ def test_a_mark_written_after_the_full_stop_joins_its_letter() -> None:
     stop = Glyph(".", word[-1].x0 - 2.0, 100.0, word[-1].x0, 100.0 + SIZE, SIZE)
     tanween = Glyph("\u064b", word[-1].x0, 100.0, word[-1].x0, 100.0 + SIZE, SIZE)
     assert logical_rows([[*word, stop, tanween]]) == ["فوراً."]
+
+
+def test_a_date_right_after_arabic_words_keeps_its_logical_order() -> None:
+    lead = rtl("تاريخ السريان:", 500.0)
+    date = ltr("01-12-2026", lead[-1].x0 - SPACE - 10 * W)  # bidi rule W2 draws it day first, left to right
+    assert logical_rows([lead + date]) == ["تاريخ السريان: 2026-12-01"]
+
+
+def test_a_percent_sign_stays_with_its_number() -> None:
+    lead = rtl("النسبة", 500.0)
+    pct = ltr("95٪", lead[-1].x0 - SPACE - 3 * W)
+    assert logical_rows([lead + pct]) == ["النسبة 95٪"]
+
+
+def test_digits_after_latin_count_as_latin_between_two_codes() -> None:
+    codes = ltr("ZN-401، ZN-404", 178.0)
+    assert logical_rows([rtl("الحاويات", 400.0) + codes]) == ["الحاويات ZN-401، ZN-404"]
+
+
+def test_a_number_and_the_arabic_word_after_it_are_separate_runs() -> None:
+    # Chrome writes «من ١٥ دقيقة» with the number and the next word in one touching run, the digits right to left
+    stream = [g("٥", 205.0, 210.0), g("١", 200.0, 205.0), g(" ", 197.5, 200.0), *rtl("دقيقة", 197.5)]
+    assert logical_rows([rtl("من", 222.5) + stream]) == ["من ١٥ دقيقة"]
+
+
+def test_the_allah_ligature_is_read_in_order() -> None:
+    # the font writes «الله» as alef, then «ه» and «ل» with zero width at the right edge of the final lam glyph
+    abd = rtl("عبد", 309.6 + 3 * W)
+    stream = [*abd, g("ا", 307.0, 309.6), g("ه", 307.0, 307.0), g("ل", 307.0, 307.0), g("ل", 296.5, 307.0)]
+    assert logical_rows([stream]) == ["عبدالله"]
+
+
+def test_a_placeholder_space_lying_on_a_letter_is_dropped() -> None:
+    word = rtl("تجه", 362.3)
+    he = word[-1]
+    stream = [*word, g("\u0651", he.x0 + 1.6, he.x0 + 1.6), g("\u064e", he.x0 + 1.6, he.x0 + 1.6),
+              g(" ", he.x0, he.x0 + 1.6), g("ز", he.x0 - 4.0, he.x0)]
+    assert logical_rows([stream]) == ["تجهَّز"]
+
+
+def test_a_stray_mark_far_from_its_letter_is_dropped() -> None:
+    word = rtl("الأخطاء", 120.0)
+    stray = g("\u064b", 541.3, 541.3)
+    assert logical_rows([[*word, stray]]) == ["الأخطاء"]

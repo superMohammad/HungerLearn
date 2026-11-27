@@ -80,3 +80,34 @@ def test_an_arabic_table_row_reads_its_cells_right_to_left() -> None:
     assert "الإصدار التاريخ ملخص التعديل" in lines
     assert "1 2026-03-01 الإصدار الأول." in lines
     assert "رقم الوثيقة MF-OPS-017" in lines
+
+
+# Words whose tanween the PDF text layer does not carry anywhere near them (only as a stray copy elsewhere).
+KNOWN_TANWEEN_LOSSES = {
+    "courier-pickup-wait": {"أولاً"},
+    "employee-delayed-order": {"فريقاً"},
+    "partner-packing-sealing": set(),
+}
+
+
+def _txt_lines(path: Path) -> list[str]:
+    """Every line and table cell of a dataset TXT upload, without its Markdown-like markers."""
+    out: list[str] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = re.sub(r"^#+\s*|^\s*[-*]\s+|\*\*", "", line).strip()
+        if not line or set(line) <= set("|-: =") or line.startswith("["):
+            continue
+        out += [c.strip() for c in line.strip("|").split("|")] if line.startswith("|") else [line]
+    return [c for c in out if c]
+
+
+@pytest.mark.parametrize("family", ARABIC_PDFS)
+def test_an_arabic_chrome_pdf_reads_like_its_txt_copy(family: str) -> None:
+    """Every line of the TXT copy of the same document (scenarios, tables, captions, footers included) appears in the
+    PDF text, except words whose tanween the PDF does not carry."""
+    uploads = DATASET / "dev" / "uploads"
+    pdf = _flat(" ".join(p.text for p in probe_pdf(uploads / f"{family}-v3-ar.pdf")))
+    missing = [line for line in _txt_lines(uploads / f"{family}-v3-ar.txt") if _flat(line) not in pdf]
+    unexplained = [line for line in missing
+                   if not any(_flat(line.replace(w, w[:-1])) in pdf for w in KNOWN_TANWEEN_LOSSES[family])]
+    assert unexplained == []

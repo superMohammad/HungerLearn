@@ -7,7 +7,14 @@ from pathlib import Path
 
 import pymupdf as fitz  # PyMuPDF
 
-from docproc.loaders.pdf_bidi import Glyph, logical_rows, rebuilds, restore_unmapped
+from docproc.loaders.pdf_bidi import (
+    Glyph,
+    logical_rows,
+    rebuilds_on_ltr_page,
+    rebuilds_on_rtl_page,
+    restore_unmapped,
+    right_to_left_page,
+)
 from docproc.normalize import is_arabic_char, repair_arabic_order
 
 
@@ -58,61 +65,81 @@ class _Entry:
     top: float
     across: float  # horizontal sort key within a row
     text: str
-    reordered_rows: int
 
 
-def _inside(g: Glyph, bbox: tuple[float, float, float, float]) -> bool:
-    cx = (g.x0 + g.x1) / 2
-    return bbox[0] - 1 <= cx <= bbox[2] + 1 and bbox[1] - 1 <= g.cy <= bbox[3] + 1
+Box = tuple[float, float, float, float]
 
 
-def _rebuilt(bbox: tuple[float, float, float, float], plain: list[list[Glyph]], marks: list[Glyph]) -> tuple[str, int]:
-    """A right-to-left block in logical order, from the ActualText-off glyphs inside its box, and how many of its
-    rows differ from the stream order."""
-    lines = [[g for g in line if _inside(g, bbox)] for line in plain]
-    lines = [line for line in lines if line]
+def _box(block: dict) -> Box:
+    return (block["bbox"][0], block["bbox"][1], block["bbox"][2], block["bbox"][3])
+
+
+def _overlap(a: Box, b: Box) -> float:
+    w = min(a[2], b[2]) - max(a[0], b[0])
+    h = min(a[3], b[3]) - max(a[1], b[1])
+    return w * h if w > 0 and h > 0 else 0.0
+
+
+def _line_box(line: list[Glyph]) -> Box:
+    return (min(g.x0 for g in line), min(g.y0 for g in line), max(g.x1 for g in line), max(g.y1 for g in line))
+
+
+def _assign(boxes: list[Box], plain: list[list[Glyph]]) -> list[list[list[Glyph]]]:
+    """Each ActualText-off line goes to the one block it overlaps most, so no text is lost or read twice even when
+    the two readings split blocks differently (a letter carrying a mark is wider without ActualText)."""
+    out: list[list[list[Glyph]]] = [[] for _ in boxes]
+    for line in plain:
+        lb = _line_box(line)
+        best = max(range(len(boxes)), key=lambda k: _overlap(boxes[k], lb), default=None)
+        if best is not None and _overlap(boxes[best], lb) > 0:
+            out[best].append(line)
+    return out
+
+
+def _rebuilt(lines: list[list[Glyph]], marks: list[Glyph]) -> str:
+    """A right-to-left block in logical order, from its ActualText-off lines."""
     if any(g.char == "\ufffd" for line in lines for g in line):
         lines = restore_unmapped(lines, marks)
-    rows = [r for r in logical_rows(lines) if r]
-    stream = {unicodedata.normalize("NFC", " ".join("".join(g.char for g in line).split())) for line in lines}
-    return " ".join(rows), sum(r not in stream for r in rows)
+    return " ".join(r for r in logical_rows(lines) if r)
 
 
-def _page_text(page: "fitz.Page") -> tuple[str, int]:
-    """Text block by block in reading order, and how many right-to-left rows were reordered.
+def _page_text(page: "fitz.Page") -> str:
+    """Text block by block in reading order.
 
     Left-to-right blocks keep the PDF stream order, and a page without a right-to-left block reads exactly as the
-    stream gives it. A right-to-left block drawn right to left (pdf_bidi.rebuilds) is rebuilt from glyph positions,
-    because browser-made PDFs write right-to-left runs in visual order. Its glyphs come from a reading with ActualText
-    off: Chrome wraps letters carrying a shadda or tanween in ActualText, which yields zero-width glyphs between
+    stream gives it. A right-to-left block drawn right to left is rebuilt from glyph positions (pdf_bidi), because
+    browser-made PDFs write right-to-left runs in visual order. Its glyphs come from a reading with ActualText off:
+    Chrome wraps letters carrying a shadda or tanween in ActualText, which yields zero-width glyphs between
     placeholder spaces; the ActualText reading only supplies marks for glyphs the font cannot map. On such a page,
     blocks on one row go right to left.
     """
     flags = fitz.TEXT_PRESERVE_WHITESPACE | fitz.TEXT_MEDIABOX_CLIP
     blocks = _text_blocks(page, flags)
     glyphs = [_glyphs(b) for b in blocks]
+    rebuilds = rebuilds_on_rtl_page if right_to_left_page(glyphs) else rebuilds_on_ltr_page
     rtl = [rebuilds(g) for g in glyphs]
-    plain = [line for b in _text_blocks(page, flags | fitz.TEXT_IGNORE_ACTUALTEXT) for line in _glyphs(b)] if any(rtl) else []
+    plain = [line for b in _text_blocks(page, flags | fitz.TEXT_IGNORE_ACTUALTEXT) for line in _glyphs(b) if line] if any(rtl) else []
+    assigned = _assign([_box(b) for b in blocks], plain)
     marks = [g for lines in glyphs for line in lines for g in line if unicodedata.combining(g.char)]
     entries: list[_Entry] = []
-    for b, is_rtl in zip(blocks, rtl):
-        bbox = (b["bbox"][0], b["bbox"][1], b["bbox"][2], b["bbox"][3])
-        across = -bbox[2] if any(rtl) else bbox[0]
+    for b, is_rtl, lines in zip(blocks, rtl, assigned):
+        box = _box(b)
+        across = -box[2] if any(rtl) else box[0]
         if is_rtl:
-            text, reordered = _rebuilt(bbox, plain, marks)
+            text = _rebuilt(lines, marks)
         else:
-            text, reordered = " ".join(s for s in (_stream_line(line) for line in b["lines"]) if s), 0
-        entries.append(_Entry(round(bbox[1], 1), across, text, reordered))
+            text = " ".join(s for s in (_stream_line(line) for line in b["lines"]) if s)
+        entries.append(_Entry(round(box[1], 1), across, text))
     entries.sort(key=lambda e: (e.top, e.across))
-    return "\n".join(e.text for e in entries if e.text), sum(e.reordered_rows for e in entries)
+    return "\n".join(e.text for e in entries if e.text)
 
 
 def probe_pdf(path: str | Path, min_chars: int = 40, min_letter_ratio: float = 0.5) -> list[PdfPage]:
     pages: list[PdfPage] = []
     with fitz.open(str(path)) as doc:
         for i, page in enumerate(doc, start=1):
-            text, fixed = _page_text(page)
-            lines = []
+            text = _page_text(page)
+            lines, fixed = [], 0
             for line in text.splitlines():
                 line, rep = repair_arabic_order(line)
                 lines.append(line)

@@ -12,7 +12,7 @@ the spaces between units from real gaps. Every other block is left to the caller
 from __future__ import annotations
 
 import unicodedata
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Literal
 
 RTL_CLASSES = frozenset({"R", "AL"})
@@ -22,8 +22,8 @@ SEPARATOR_CLASSES = frozenset({"CS", "ES", "ET"})
 TOUCH = 0.35  # glyphs closer than this × font size belong to one unit
 SPACE_GAP = 0.15  # a gap between units wider than this × font size is a space
 SAME_ROW = 0.5  # vertical centres closer than this × font size are one row
+CELL_GAP = 1.5  # a wider gap (× font size) between texts on one row separates table cells or columns
 ZERO_WIDTH = 0.5  # points
-ALEFS = frozenset("اأإآ")
 # A PDF stores the shape it draws, so a bracket or guillemet inside right-to-left text comes out mirrored.
 MIRROR = str.maketrans("()[]{}<>«»‹›", ")(][}{><»«›‹")
 
@@ -80,9 +80,7 @@ def _mostly_arabic(lines: list[list[Glyph]]) -> bool:
 
 
 def _left_to_right_paragraph(lines: list[list[Glyph]]) -> bool:
-    """The stream opens with digits or Latin at the left end of their row («1.2 يجب …» at the left margin): a
-    left-to-right paragraph quoting Arabic, already in order. In a right-to-left paragraph a leading number sits at
-    the row's right end, and browsers start the stream with an Arabic run."""
+    """The stream opens with digits or Latin at the left end of their row («1.2 يجب …» at the left margin)."""
     glyphs = [g for line in lines for g in line]
     first = next((g for g in glyphs if unicodedata.bidirectional(g.char) in RTL_CLASSES | LTR_CLASSES), None)
     if first is None or unicodedata.bidirectional(first.char) in RTL_CLASSES:
@@ -103,10 +101,21 @@ def _drawn_right_to_left(lines: list[list[Glyph]]) -> bool:
     return left > right
 
 
-def rebuilds(lines: list[list[Glyph]]) -> bool:
-    """Whether a block needs rebuilding: mostly Arabic, drawn right to left, and not a left-to-right paragraph.
-    Decided from the block alone, so table cells and columns anywhere on the page are handled alike."""
-    return _mostly_arabic(lines) and _drawn_right_to_left(lines) and not _left_to_right_paragraph(lines)
+def right_to_left_page(blocks: list[list[list[Glyph]]]) -> bool:
+    """A page whose letters are mostly Arabic (browser-made Arabic SOPs: 88 % or more; bilingual pages: 41 % or less)."""
+    return _mostly_arabic([line for lines in blocks for line in lines])
+
+
+def rebuilds_on_rtl_page(lines: list[list[Glyph]]) -> bool:
+    """On a right-to-left page, every mostly-Arabic block drawn right to left is a right-to-left paragraph, also
+    when its stream opens with the time or code that ends the sentence («… الساعة 1:15»)."""
+    return _mostly_arabic(lines) and _drawn_right_to_left(lines)
+
+
+def rebuilds_on_ltr_page(lines: list[list[Glyph]]) -> bool:
+    """On a left-to-right page, a block that opens with digits or Latin at its row's left end is a left-to-right
+    paragraph quoting Arabic («1.2 يجب …»), already in order."""
+    return rebuilds_on_rtl_page(lines) and not _left_to_right_paragraph(lines)
 
 
 def restore_unmapped(lines: list[list[Glyph]], marks: list[Glyph]) -> list[list[Glyph]]:
@@ -149,10 +158,13 @@ def _script(char: str) -> str:
     return "W" if cls == "WS" else "N"
 
 
-def _same_unit(prev: Glyph, cur: Glyph) -> bool:
-    """Glyphs stay in one unit when they touch and keep the same script; punctuation is always a unit of its own."""
+def _same_unit(prev: Glyph, last_solid: Glyph | None, cur: Glyph) -> bool:
+    """Glyphs stay in one unit when they touch and keep the same script, also across a space («١٥ دقيقة» is two
+    units); punctuation is always a unit of its own. `last_solid` is the unit's last glyph that is not a space."""
     a, b = _script(prev.char), _script(cur.char)
     if "N" in (a, b) or ("W" not in (a, b) and a != b):
+        return False
+    if b != "W" and last_solid is not None and _script(last_solid.char) != b:
         return False
     return _touches(prev, cur)
 
@@ -162,33 +174,22 @@ def _near(a: float, b: float) -> bool:
 
 
 def _lam_first(glyphs: list[Glyph]) -> list[Glyph]:
-    """A lam-alef ligature is one glyph: its alef comes out with zero width, at the lam's left edge when the stream
-    has it after the lam («خلال»), at the lam's right edge when the stream has it first («إغلاق» in a heading).
-    Logically lam comes first."""
+    """Ligatures. Zero-width letters at the right edge of the next glyph are its ligature components, written in
+    reverse: lam-alef alef first («إغلاق» in a heading) and «الله» as «اهلل». Components at the previous lam's left
+    edge are already in order («خلال», «الأصناف»)."""
     out = list(glyphs)
-    for i in range(len(out) - 1):
-        alef, nxt = out[i], out[i + 1]
-        after_lam = i > 0 and out[i - 1].char == "ل" and _near(alef.x0, out[i - 1].x0)
-        if alef.char in ALEFS and alef.zero_width and nxt.char == "ل" and _near(alef.x0, nxt.x1) and not after_lam:
-            out[i], out[i + 1] = nxt, alef
-    return out
-
-
-def _attach_marks(units: list[Unit]) -> list[Unit]:
-    """A mark the stream put after punctuation («فوراً.») joins the right-to-left glyph it is drawn on."""
-    out = [u for u in units if not all(unicodedata.combining(g.char) for g in u.glyphs)]
-    for mark_unit in (u for u in units if all(unicodedata.combining(g.char) for g in u.glyphs)):
-        x = mark_unit.x0
-        hosts = [k for k, u in enumerate(out) if u.kind == "rtl" and abs(u.cy - mark_unit.cy) <= SAME_ROW * u.size
-                 and u.x0 - ZERO_WIDTH <= x <= u.x1 + ZERO_WIDTH]
-        if not hosts:
-            out.append(mark_unit)
+    i = 0
+    while i < len(out):
+        j = i
+        while j < len(out) and out[j].zero_width and not unicodedata.combining(out[j].char) and _script(out[j].char) == "R":
+            j += 1
+        if j == i or j >= len(out) or not _near(out[i].x0, out[j].x1):
+            i = max(j, i + 1)
             continue
-        nearest = min(hosts, key=lambda k: abs(out[k].cy - mark_unit.cy))
-        host = out[nearest]
-        at = min(range(len(host.glyphs)), key=lambda n: abs(host.glyphs[n].x0 - x))
-        glyphs = host.glyphs[:at + 1] + mark_unit.glyphs + host.glyphs[at + 1:]
-        out[nearest] = Unit(glyphs=glyphs, text="".join(g.char for g in glyphs), kind="rtl")
+        after_lam = i > 0 and out[i - 1].char == "ل" and _near(out[i].x0, out[i - 1].x0)
+        if not after_lam:
+            out[i:j + 1] = reversed(out[i:j + 1])
+        i = j + 1
     return out
 
 
@@ -214,12 +215,65 @@ def _unit(glyphs: list[Glyph]) -> Unit | None:
     return Unit(glyphs=tuple(ordered), text="".join(g.char for g in ordered), kind=kind)
 
 
+def _drop_overlapping_spaces(stream: list[Glyph]) -> list[Glyph]:
+    """A real space sits in its own gap. A space glyph lying on the letter before it is a placeholder the PDF adds
+    after a glyph the font cannot map («تُجهَّز» drawn with a combined shadda and fatha)."""
+    out: list[Glyph] = []
+    for g in stream:
+        prev = next((h for h in reversed(out) if not h.char.isspace() and not h.zero_width), None)
+        on_letter = prev is not None and _script(prev.char) == "R" and abs(g.cy - prev.cy) <= SAME_ROW * prev.size \
+            and min(g.x1, prev.x1) - max(g.x0, prev.x0) > ZERO_WIDTH
+        if g.char.isspace() and on_letter:
+            continue
+        out.append(g)
+    return out
+
+
+def _place_marks(line: list[Glyph]) -> list[Glyph]:
+    """A mark the stream puts right after punctuation belongs to the Arabic letter touching that punctuation on its
+    right: Chrome writes a sentence-final «اً.» as «.», «ً», then the rest of the row (the mark's own box is not
+    reliable there). Move such marks after their letter. A mark right after a letter in the stream belongs to that
+    letter and takes its position: its own box can carry another row's height or the row's edge."""
+    out = list(line)
+    i = 0
+    while i < len(out):
+        mark = out[i]
+        if unicodedata.combining(mark.char) and i > 0 and _script(out[i - 1].char) == "R":
+            base = out[i - 1]
+            if min(abs(mark.x0 - base.x0), abs(mark.x0 - base.x1)) > base.size:
+                out.pop(i)  # a stray copy at the row's edge, far from its letter (the letter's own mark is read too)
+                continue
+            out[i] = replace(mark, x0=base.x0, x1=base.x0, y0=base.y0, y1=base.y1)
+            i += 1
+            continue
+        prev = next((g for g in reversed(out[:i]) if not g.char.isspace()), None)
+        if not unicodedata.combining(mark.char) or prev is None or _script(prev.char) != "N":
+            i += 1
+            continue
+        hosts = [k for k, g in enumerate(out) if _script(g.char) == "R" and not unicodedata.combining(g.char)
+                 and abs(g.cy - prev.cy) <= SAME_ROW * prev.size and abs(g.x0 - prev.x1) <= TOUCH * prev.size]
+        if not hosts:
+            i += 1
+            continue
+        out.pop(i)
+        host = hosts[-1] - (1 if hosts[-1] > i else 0)  # the logically last letter (alef of a final lam-alef)
+        at = host + 1
+        while at < len(out) and unicodedata.combining(out[at].char):
+            at += 1
+        out.insert(at, replace(mark, x0=out[host].x0, x1=out[host].x0))
+        if at <= i:
+            i += 1
+    return out
+
+
 def _units(lines: list[list[Glyph]]) -> list[Unit]:
     units: list[Unit] = []
-    for line in lines:
+    # one stream for the whole block: a mark can open the next line's stream («فريقا» | «ً مختصاً»)
+    for line in [_place_marks(_drop_overlapping_spaces([g for line in lines for g in line]))]:
         current: list[Glyph] = []
         for glyph in line:
-            if current and not _same_unit(current[-1], glyph):
+            last_solid = next((g for g in reversed(current) if not g.char.isspace()), None)
+            if current and not _same_unit(current[-1], last_solid, glyph):
                 unit = _unit(current)
                 if unit is not None:
                     units.append(unit)
@@ -228,7 +282,7 @@ def _units(lines: list[list[Glyph]]) -> list[Unit]:
         unit = _unit(current) if current else None
         if unit is not None:
             units.append(unit)
-    return _attach_marks(units)
+    return units
 
 
 def _rows(units: list[Unit]) -> list[list[Unit]]:
@@ -245,31 +299,69 @@ def _latin(unit: Unit) -> bool:
     return any(unicodedata.bidirectional(c) == "L" for c in unit.text)
 
 
-def _split_at_number_spaces(stretch: list[Unit]) -> list[list[Unit]]:
-    """Unicode bidi rule N1 treats numbers as right-to-left when resolving the space between them, so a spaced
-    boundary splits a stretch unless the nearest strong units on both sides are Latin («1 2026-03-01» in a table row
-    reads «1» first; «A & B» stays one stretch). `stretch` is in right-to-left order."""
+def _classes(unit: Unit) -> set[str]:
+    return {unicodedata.bidirectional(c) for c in unit.text}
+
+
+def _latin_context(logical: list[Unit], k: int) -> bool:
+    """Bidi rule W7: digits count as Latin when the nearest strong unit before them is Latin («ZN-401»)."""
+    for u in reversed(logical[:k + 1]):
+        if _latin(u):
+            return True
+        if u.kind == "rtl":
+            return False
+    return False
+
+
+def _pieces(stretch: list[Unit], after_arabic: bool) -> list[list[Unit]]:
+    """Split a left-to-right stretch (given right to left) into the pieces that read left to right.
+
+    - N1: a space between numbers resolves right to left, so a spaced boundary splits unless the strong units on
+      both sides are Latin (after W7) («1 2026-03-01» in a table row; «A & B» and «ZN-401، ZN-404» stay whole).
+    - W2/W4: after Arabic letters, digits are Arabic numbers and only a single common separator (":", ".", ",")
+      binds them, so «-» splits a date in Arabic prose into right-to-left pieces («2026-12-01»).
+    """
+    logical = list(reversed(stretch))
+    latin = [_latin_context(logical, k) for k in range(len(logical))][::-1]  # back to right-to-left order
     pieces: list[list[Unit]] = [[stretch[0]]]
     for k in range(1, len(stretch)):
         prev, cur = stretch[k - 1], stretch[k]
-        if _spaced(prev, cur, prev.x0 - cur.x1):
-            before = next((u for u in reversed(stretch[:k]) if u.kind == "ltr"), None)
-            after = next((u for u in stretch[k:] if u.kind == "ltr"), None)
-            if not (before is not None and after is not None and _latin(before) and _latin(after)):
-                pieces.append([cur])
-                continue
-        pieces[-1].append(cur)
+        before = next((latin[m] for m in range(k - 1, -1, -1) if stretch[m].kind == "ltr"), False)
+        after = next((latin[m] for m in range(k, len(stretch)) if stretch[m].kind == "ltr"), False)
+        spaced = _spaced(prev, cur, prev.x0 - cur.x1)
+        arabic_numbers = after_arabic and not (before or after)
+        es_split = arabic_numbers and ({"ES"} & (_classes(prev) | _classes(cur))) and not ({"CS"} & (_classes(prev) | _classes(cur)))
+        if (spaced and not (before and after)) or es_split:
+            pieces.append([cur])
+        else:
+            pieces[-1].append(cur)
     return pieces
+
+
+def _binds_left(sep: Unit, nxt: Unit) -> bool:
+    """Bidi rule W5: a percent or currency sign touching a number is part of it («95٪»)."""
+    return _classes(sep) <= {"ET"} and nxt.kind == "ltr" and sep.x0 - nxt.x1 <= TOUCH * max(sep.size, nxt.size)
+
+
+def _after_arabic(groups: list[list[Unit]], first: Unit) -> bool:
+    """Bidi rule W2 looks back past punctuation to the last strong text: Arabic within a word gap (not across a
+    table-cell gap, where each cell is its own paragraph)."""
+    for group in reversed(groups):
+        unit = group[-1]
+        if unit.kind in ("rtl", "ltr"):
+            return unit.kind == "rtl" and min(u.x0 for u in group) - first.x1 <= CELL_GAP * max(unit.size, first.size)
+    return False
 
 
 def _groups(row: list[Unit]) -> list[list[Unit]]:
     """Right to left. A left-to-right stretch is one group read left to right: digits and Latin, with the separators
-    and punctuation between them (Unicode bidi rule N1: "A & B", "user@example.com", "2026-12-01")."""
+    and punctuation between them (Unicode bidi rule N1: "A & B", "user@example.com"), split per `_pieces`."""
     ordered = sorted(row, key=lambda u: -u.x1)
     groups: list[list[Unit]] = []
     i = 0
     while i < len(ordered):
-        if ordered[i].kind != "ltr":
+        starts = ordered[i].kind == "ltr" or (i + 1 < len(ordered) and _binds_left(ordered[i], ordered[i + 1]))
+        if not starts:
             groups.append([ordered[i]])
             i += 1
             continue
@@ -279,7 +371,8 @@ def _groups(row: list[Unit]) -> list[list[Unit]]:
             if ordered[j].kind == "ltr":
                 last = j
             j += 1
-        groups.extend(list(reversed(piece)) for piece in _split_at_number_spaces(ordered[i:last + 1]))
+        after_arabic = _after_arabic(groups, ordered[i])
+        groups.extend(list(reversed(piece)) for piece in _pieces(ordered[i:last + 1], after_arabic))
         i = last + 1
     return groups
 

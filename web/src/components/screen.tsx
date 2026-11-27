@@ -6,7 +6,7 @@ import { useEffect, useState, useTransition } from "react";
 import { answerAction } from "@/app/actions";
 import type { QuestionScreen, ScreenSpec } from "@/lib/compose";
 import type { AnswerResult } from "@/lib/learning";
-import { useDict } from "@/components/i18n-provider";
+import { useDict, useUiDir } from "@/components/i18n-provider";
 
 /** Renders a validated screen spec. It only arranges approved content; grading happens on the server. */
 export function Screen({ spec }: { spec: ScreenSpec }) {
@@ -19,15 +19,7 @@ function Lesson({ spec }: { spec: Extract<ScreenSpec, { kind: "lesson" }> }) {
   return (
     <article className="panel-enter grid gap-5">
       <p className="text-xs font-semibold tracking-wide text-ink-soft">{t.screen.lesson}</p>
-      {spec.videoUrl !== null ? (
-        <video
-          controls
-          playsInline
-          preload="metadata"
-          src={spec.videoUrl}
-          className={`w-full rounded-3xl border border-line bg-black ${spec.orientation === "portrait" ? "mx-auto aspect-[9/16] max-h-[70vh] w-auto" : "aspect-video"}`}
-        />
-      ) : null}
+      {spec.videoUrl !== null ? <LessonVideo url={spec.videoUrl} orientation={spec.orientation} maxHeight="max-h-[70vh]" /> : null}
       <section className="rounded-3xl border border-line bg-surface p-5" dir="auto">
         <h2 className="text-xl font-bold">{spec.title}</h2>
         <ul className="mt-3 grid gap-2">
@@ -46,12 +38,26 @@ function Lesson({ spec }: { spec: Extract<ScreenSpec, { kind: "lesson" }> }) {
   );
 }
 
+function LessonVideo({ url, orientation, maxHeight, label }: { url: string; orientation: "portrait" | "landscape"; maxHeight: string; label?: string }) {
+  return (
+    <video
+      controls
+      playsInline
+      preload="metadata"
+      src={url}
+      aria-label={label}
+      className={`w-full rounded-3xl border border-line bg-black ${orientation === "portrait" ? `mx-auto aspect-[9/16] ${maxHeight} w-auto` : "aspect-video"}`}
+    />
+  );
+}
+
 type Draft = { choice: number | null; selected: ReadonlySet<number>; order: string[] };
 
 function Question({ spec }: { spec: QuestionScreen }) {
   const router = useRouter();
   const pathname = usePathname();
   const t = useDict();
+  const uiDir = useUiDir();
   const [draft, setDraft] = useState<Draft>({ choice: null, selected: new Set(), order: spec.steps });
   const [result, setResult] = useState<AnswerResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -99,7 +105,13 @@ function Question({ spec }: { spec: QuestionScreen }) {
   }
 
   return (
-    <article className="panel-enter grid gap-5">
+    <article className="panel-enter grid gap-5" data-layout={spec.layout}>
+      {spec.layout === "video_question" && spec.video !== null ? (
+        <div className="grid gap-2">
+          <LessonVideo url={spec.video.url} orientation={spec.video.orientation} maxHeight="max-h-[45vh]" label={t.screen.lessonVideo} />
+          <Link href={`${pathname}?lesson=1`} className="text-center text-sm underline underline-offset-4">{t.learn.reviewLesson}</Link>
+        </div>
+      ) : null}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs font-semibold tracking-wide text-ink-soft">
           {t.screen.phase[spec.phase]} · {t.labels.format[spec.format]}
@@ -110,8 +122,13 @@ function Question({ spec }: { spec: QuestionScreen }) {
       </div>
 
       <section className="rounded-3xl border border-line bg-surface p-5">
-        <div dir="auto">
-        {spec.scene !== null ? <p className="mb-4 rounded-2xl bg-surface-2 p-4 text-lg">{spec.scene}</p> : null}
+        <div dir="auto" className={spec.layout === "scenario" && spec.scene !== null ? "lg:grid lg:grid-cols-[2fr_3fr] lg:items-start lg:gap-6" : undefined}>
+        {spec.scene !== null && spec.layout === "scenario" ? (
+          <section className="mb-5 rounded-2xl border-s-4 border-accent bg-surface-2 p-5 lg:mb-0">
+            <p dir={uiDir} className="mb-2 text-xs font-semibold tracking-wide text-ink-soft">{t.screen.scenario}</p>
+            <p className="text-lg leading-relaxed">{spec.scene}</p>
+          </section>
+        ) : spec.scene !== null ? <p className="mb-4 rounded-2xl bg-surface-2 p-4 text-lg">{spec.scene}</p> : null}
         <fieldset disabled={result !== null || pending}>
           <legend className="mb-3 text-lg font-bold">{spec.prompt}</legend>
 
@@ -127,9 +144,10 @@ function Question({ spec }: { spec: QuestionScreen }) {
           ) : null}
 
           {spec.format === "checklist" ? (
-            <div className="grid gap-2">
+            <div className={spec.layout === "checklist" ? "grid gap-3 sm:grid-cols-2" : "grid gap-2"}>
+              {spec.layout === "checklist" ? <p dir={uiDir} className="text-sm text-ink-soft sm:col-span-2">{t.screen.checklistHint}</p> : null}
               {spec.options.map((o, i) => (
-                <label key={i} className={`flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border-2 p-3 ${draft.selected.has(i) ? "border-brand bg-surface-2" : "border-line hover:border-brand"}`}>
+                <label key={i} className={`flex ${spec.layout === "checklist" ? "min-h-16 p-4" : "min-h-14 p-3"} cursor-pointer items-center gap-3 rounded-2xl border-2 ${draft.selected.has(i) ? "border-brand bg-surface-2" : "border-line hover:border-brand"}`}>
                   <input
                     type="checkbox"
                     className="size-5 accent-[var(--brand)]"

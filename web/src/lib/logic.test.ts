@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { composeQuestion, levelFor, nextStep, type ScreenSpec } from "./compose";
+import { composeQuestion, composeScreen, levelFor, nextStep, nextStepForLayout, orderForLayout, preferredLayout, skipsLessonInAuto, type ScreenSpec } from "./compose";
 import { parseDocprocIssues, zeroClausesError } from "./docproc-issues";
 import { checkQuestionShape, gradeAgainstKey, repeatedExamFormats, shuffledSteps } from "./question-rules";
 import { DICTIONARIES } from "./i18n";
@@ -132,6 +132,114 @@ test("composeQuestion hides the key and falls back to the lesson when the spec i
   assert.ok(!JSON.stringify(spec).includes("correct"));
   const broken = composeQuestion(ID, "exam", question({ format: "order_steps", options: [], correct_order: ["only one"] }), LESSON);
   assert.equal(broken.kind, "lesson");
+});
+
+const VIDEO = { url: "/api/media/v1", orientation: "portrait" as const };
+
+test("preferredLayout: courier+phone, employee+laptop, partner+tablet; every other pair is standard", () => {
+  assert.equal(preferredLayout("courier", "phone"), "video_question");
+  assert.equal(preferredLayout("employee", "laptop"), "scenario");
+  assert.equal(preferredLayout("partner", "tablet"), "checklist");
+  assert.equal(preferredLayout("courier", "laptop"), "standard");
+  assert.equal(preferredLayout("employee", "phone"), "standard");
+  assert.equal(preferredLayout("partner", "laptop"), "standard");
+});
+
+test("composeScreen: courier on a phone gets the lesson video plus one question", () => {
+  const spec = composeScreen({ role: "courier", device: "phone", itemId: ID, phase: "practice", question: question({}), video: VIDEO, fallback: LESSON });
+  assert.equal(spec.kind, "question");
+  assert.ok(spec.kind === "question" && spec.layout === "video_question");
+  assert.deepEqual(spec.kind === "question" ? spec.video : null, VIDEO);
+  assert.ok(!JSON.stringify(spec).includes("correct"));
+});
+
+test("composeScreen: employee on a laptop gets a scenario question", () => {
+  const spec = composeScreen({ role: "employee", device: "laptop", itemId: ID, phase: "exam", question: question({ scene: "A customer calls…" }), video: null, fallback: LESSON });
+  assert.ok(spec.kind === "question" && spec.layout === "scenario" && spec.scene === "A customer calls…" && spec.video === null);
+});
+
+test("composeScreen: partner on a tablet gets a checklist question", () => {
+  const checklist = question({ format: "checklist", options: [
+    { text: "a", correct: true, misconception: null }, { text: "b", correct: false, misconception: "x" },
+  ] });
+  const spec = composeScreen({ role: "partner", device: "tablet", itemId: ID, phase: "practice", question: checklist, video: VIDEO, fallback: LESSON });
+  assert.ok(spec.kind === "question" && spec.layout === "checklist" && spec.format === "checklist" && spec.video === null);
+});
+
+test("composeScreen: other pairs and missing preferred content use the standard layout", () => {
+  const std = (s: ScreenSpec) => s.kind === "question" && s.layout === "standard" && s.video === null;
+  // other role/device pairs
+  assert.ok(std(composeScreen({ role: "courier", device: "laptop", itemId: ID, phase: "practice", question: question({}), video: VIDEO, fallback: LESSON })));
+  assert.ok(std(composeScreen({ role: "partner", device: "phone", itemId: ID, phase: "practice", question: question({ format: "checklist" }), video: null, fallback: LESSON })));
+  // preferred content unavailable: no ready video, no scene, not a checklist
+  assert.ok(std(composeScreen({ role: "courier", device: "phone", itemId: ID, phase: "practice", question: question({}), video: null, fallback: LESSON })));
+  assert.ok(std(composeScreen({ role: "employee", device: "laptop", itemId: ID, phase: "practice", question: question({ scene: null }), video: null, fallback: LESSON })));
+  assert.ok(std(composeScreen({ role: "partner", device: "tablet", itemId: ID, phase: "exam", question: question({}), video: null, fallback: LESSON })));
+});
+
+test("composeScreen keeps the Zod fallback: an invalid spec becomes the lesson screen in every layout", () => {
+  const broken = question({ format: "order_steps", options: [], correct_order: ["only one"] });
+  for (const [role, device] of [["courier", "phone"], ["employee", "laptop"], ["partner", "tablet"], ["courier", "tablet"]] as const) {
+    assert.deepEqual(composeScreen({ role, device, itemId: ID, phase: "exam", question: broken, video: VIDEO, fallback: LESSON }), LESSON);
+  }
+  const badVideo = composeScreen({ role: "courier", device: "phone", itemId: ID, phase: "practice", question: question({}), video: { url: "", orientation: "portrait" }, fallback: LESSON });
+  assert.deepEqual(badVideo, LESSON);
+  assert.deepEqual(composeScreen({ role: "courier", device: "phone", itemId: "not-a-uuid", phase: "practice", question: question({}), video: VIDEO, fallback: LESSON }), LESSON);
+});
+
+test("orderForLayout puts fitting items first, keeps order otherwise, and leaves mastery to nextStep", () => {
+  const items = [{ id: "a", ok: false }, { id: "b", ok: true }, { id: "c", ok: false }, { id: "d", ok: true }];
+  assert.deepEqual(orderForLayout(items, (i) => i.ok).map((i) => i.id), ["b", "d", "a", "c"]);
+  assert.deepEqual(orderForLayout(items, () => false).map((i) => i.id), ["a", "b", "c", "d"]);
+  // Reordering inside a phase never changes when the learner is mastered.
+  const exam = orderForLayout(["e1", "e2"].map((id) => ({ id, format: "mcq" as const, ok: id === "e2" })), (i) => i.ok);
+  assert.deepEqual(nextStep([], exam, []), { kind: "exam", itemId: "e2" });
+  assert.deepEqual(nextStep([], exam, [{ itemId: "e2", correct: true, at: 1 }]), { kind: "exam", itemId: "e1" });
+  assert.deepEqual(nextStep([], exam, [{ itemId: "e2", correct: true, at: 1 }, { itemId: "e1", correct: true, at: 2 }]), { kind: "mastered" });
+});
+
+test("B5 retry beats the B6 layout: after a failed checklist exam the partner tablet gets another format, in the standard layout", () => {
+  const practice = [
+    { id: "p-check", format: "checklist" as const, scene: null },
+    { id: "p-mcq", format: "mcq" as const, scene: null },
+  ];
+  const exam = [{ id: "e-check", format: "checklist" as const, scene: null }];
+  // Without a failure the layout preference picks the checklist first.
+  assert.deepEqual(nextStepForLayout("checklist", null, practice, exam, []), { kind: "practice", itemId: "p-check" });
+  // After "Not yet" on the checklist exam, B5 needs a different format, even though the layout prefers checklists.
+  const failed = [
+    { itemId: "p-check", correct: true, at: 1 }, { itemId: "p-mcq", correct: true, at: 2 }, { itemId: "e-check", correct: false, at: 3 },
+  ];
+  const step = nextStepForLayout("checklist", null, practice, exam, failed);
+  assert.deepEqual(step, { kind: "practice", itemId: "p-mcq" });
+  // The picked item (an mcq) is shown in the standard layout, not forced into the checklist layout.
+  const pickedId = "itemId" in step ? step.itemId : null;
+  const picked = practice.find((i) => i.id === pickedId);
+  assert.ok(picked !== undefined);
+  const spec = composeScreen({ role: "partner", device: "tablet", itemId: ID, phase: "practice", question: question({ format: picked.format, scene: picked.scene }), video: null, fallback: LESSON });
+  assert.ok(spec.kind === "question" && spec.layout === "standard" && spec.format === "mcq");
+  // With several other-format items due, the layout still orders among them (scenario first for the employee).
+  const ePractice = [
+    { id: "p-mcq", format: "mcq" as const, scene: null },
+    { id: "p-order", format: "order_steps" as const, scene: "A rider is waiting" },
+    { id: "p-spot", format: "spot_the_mistake" as const, scene: null },
+  ];
+  const eExam = [{ id: "e-spot", format: "spot_the_mistake" as const, scene: "A late order" }];
+  const eFailed = [
+    { itemId: "p-mcq", correct: true, at: 1 }, { itemId: "p-order", correct: true, at: 2 }, { itemId: "p-spot", correct: true, at: 3 },
+    { itemId: "e-spot", correct: false, at: 4 },
+  ];
+  assert.deepEqual(nextStepForLayout("scenario", null, ePractice, eExam, eFailed), { kind: "practice", itemId: "p-order" });
+  // The layout never revives the failed format first: spot_the_mistake (p-spot) is not picked.
+  assert.deepEqual(nextStepForLayout("standard", null, ePractice, eExam, eFailed), { kind: "practice", itemId: "p-mcq" });
+});
+
+test("skipsLessonInAuto: only courier on a phone with a ready video and questions skips the separate lesson", () => {
+  assert.equal(skipsLessonInAuto("video_question", VIDEO, 2), true);
+  assert.equal(skipsLessonInAuto("video_question", null, 2), false);
+  assert.equal(skipsLessonInAuto("video_question", VIDEO, 0), false);
+  for (const layout of ["standard", "scenario", "checklist"] as const) assert.equal(skipsLessonInAuto(layout, VIDEO, 2), false);
+  assert.equal(skipsLessonInAuto(preferredLayout("courier", "laptop"), VIDEO, 2), false);
 });
 
 test("levels: beginner → certified → expert", () => {

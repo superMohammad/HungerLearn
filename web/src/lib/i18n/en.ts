@@ -223,6 +223,9 @@ export const en: Dict = {
   },
   screen: {
     lesson: "Lesson",
+    scenario: "The situation",
+    checklistHint: "Tick everything that applies",
+    lessonVideo: "Lesson video",
     startTraining: "Start training",
     phase: { practice: "Practice", exam: "Exam" },
     moveUp: (step: string) => `Move “${step}” up`,

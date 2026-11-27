@@ -5,6 +5,7 @@ import { approveAction, approvePackageAction, editQuestionAction, rejectPackageA
 import { AutoRefresh } from "@/components/auto-refresh";
 import { ensureAdmin } from "@/components/guard";
 import { CheckIcon, PageHeader, Pill, Skeleton, WarnIcon } from "@/components/ui";
+import { citedClauses } from "@/lib/carry-over";
 import { listClauses } from "@/lib/docproc";
 import { getItem, getLessonVideo, getPackage, listItemEvents, listReviewQueue } from "@/lib/repo";
 import type { Dict } from "@/lib/i18n";
@@ -123,10 +124,7 @@ async function LessonBody({ item, t }: { item: LessonItem; t: Dict }) {
 }
 
 function SourceClauses({ item, clauses, t }: { item: TrainingItem; clauses: Clause[]; t: Dict }) {
-  const ids = item.kind === "lesson"
-    ? new Set([...item.payload.key_points.map((k) => k.stable_id), ...(item.payload.video?.shots ?? []).map((s) => s.stable_id)])
-    : new Set([item.stableId]);
-  const cited = clauses.filter((c) => ids.has(c.stableId));
+  const cited = citedClauses(item, clauses);
   return (
     <div className="grid gap-3">
       {cited.map((c) => (

@@ -1,0 +1,473 @@
+Delayed order support triage
+Synthetic training data
+SidrDesk Operations | Sidr Square branch | Version 3
+To: Company employee
+Standard operating procedure for the support desk
+Document number: SD-OPS-021 | Effective date: 2026-12-01
+
+
+Section 1: Document control
+
+Document details
+| Item | Value |
+| Document number | SD-OPS-021 |
+| Owner | Customer Support |
+| Effective date | 2026-12-01 |
+| Next review | 2027-06-01 |
+| Classification | Internal |
+
+Revision history
+| Version | Date | Summary of change |
+| 1 | 2026-03-10 | First issue. |
+| 2 | 2026-08-20 | Added case reuse, transfer, cancellation and restored-tracking cases. |
+| 3 | 2026-12-01 | Full rewrite: new cases for compensation, safety, shift handover and data protection, and a review of escalation timers. |
+
+Approval
+| Name | Role | Date |
+| Hind Al-Qahtani | Customer Support Manager | 2026-11-19 |
+| Salman Al-Dosari | Quality Lead | 2026-11-21 |
+
+
+
+Section 2: Purpose and scope
+
+These procedures apply to late deliveries in the Sidr Square support queue, such as order SD-286.
+
+This document explains how a support agent handles a late order from the moment it appears in the queue until its case is closed: when to open the case, when to escalate it, what to tell the customer, and how to hand it over at the end of a shift. The aim is that customers get an honest picture of their order and that the order is delivered or resolved as quickly as possible.
+
+Out of scope
+- Incidents that delay several orders at once, which follow the Dispatch Incident procedure SD-OPS-030.
+- Paying compensation, which the refunds team handles.
+- Directing couriers on the road, which is the dispatch desk's job.
+
+[Figure 1: A support agent working the late-order queue.]
+
+
+
+Section 3: Definitions
+
+The terms below have the meaning shown wherever they appear in this document.
+
+Terms
+| Term | Meaning |
+| Delay case | A record in the case system that holds everything about one late order. |
+| Displayed delivery estimate | The arrival time the customer sees in the app. |
+| Order timeline | The list of order statuses from acceptance to delivery. |
+| Shift supervisor | The person in charge of the support agents and escalations on a shift. |
+| Dispatch desk | The team that follows couriers and reassigns orders. |
+| Cancellations desk | The team that decides cancellation requests. |
+| Case owner | The agent currently responsible for a case. |
+
+
+
+Section 4: Roles and responsibilities
+
+The table shows who does each activity, who is accountable, who is consulted and who is informed.
+
+Responsibility matrix (R: responsible, A: accountable, C: consulted, I: informed)
+| Activity | Support agent | Shift supervisor | Dispatch desk | Cancellations desk |
+| Opening a Delay case | R | A | I | - |
+| Escalating stalled tracking | R | A | C | - |
+| Updating the customer | R | A | C | - |
+| Cancellation decision | I | C | C | A |
+| Closing the case | R | A | I | - |
+
+
+
+Section 5: Overview of the case journey
+
+Every Delay case goes through five stages: spotting the delay, opening the case, escalating when needed, updating the customer and closing. Sections 6 to 22 cover each stage and the situations that come up in it.
+
+[Figure 2: Stages of a Delay case from spotting the delay to closing.]
+
+How to use this document
+Each procedure section starts with the situation, then the numbered rules, then an example from the field and common mistakes. The numbered rules are what your work is measured against; the examples are only there to explain them.
+
+
+
+Section 6: Opening the delay case
+
+When this applies
+This starts when an order passes the delivery estimate shown to the customer and appears in the late-order queue.
+
+Rules
+6.1 When the displayed delivery estimate is at least 10 minutes past, open a Delay case and record the order ID and last status timestamp.
+6.2 Before you open a case, check the order timeline for the last status and the courier's location.
+6.3 Do not open a Delay case for an order that has not yet passed its displayed estimate.
+
+Example from the field
+Order SD-286 appeared in the queue at 8:40 pm with a displayed estimate of 8:30. Nouf checked the timeline, saw the courier had collected the order 25 minutes earlier, opened a Delay case and recorded the last status time.
+
+Common mistakes
+- Opening a case for an order still on time because the customer called early.
+- Opening the case without recording the last status time.
+
+
+
+Section 7: Reusing an open case
+
+When this applies
+This happens when a customer gets in touch about an order that already has an open Delay case.
+
+Rules
+7.1 If the same order already has an open Delay case, add the customer's latest message there and keep its original opening time.
+7.2 Do not merge cases for different orders into one case.
+
+Example from the field
+A customer sent a second message about order SD-301. Khalid found a case opened ten minutes earlier, added the message to it and did not open a new one.
+
+Common mistakes
+- Opening a new case for every customer message.
+- Changing the case opening time to the time of the latest message.
+
+
+
+Section 8: Missing delivery estimate
+
+When this applies
+This happens when the order timeline shows no delivery estimate at all.
+
+Rules
+8.1 If the order timeline shows no delivery estimate, request the last confirmed status from Dispatch and record that the estimate is unavailable.
+8.2 If Dispatch has not answered 10 minutes after you send the request, route the case to the shift supervisor.
+
+Example from the field
+Order SD-315 showed no estimate. Reem sent a request to Dispatch at 2:05 pm, had no answer by 2:15 and routed the case to the shift supervisor.
+
+Common mistakes
+- Giving the customer a guessed delivery time without confirmation from Dispatch.
+- Waiting for Dispatch with no time limit.
+
+
+
+Section 9: Escalating stalled tracking
+
+When this applies
+This happens when the courier's location or the order status stops updating after the case is opened.
+
+Rules
+9.1 If tracking has not refreshed for 8 minutes after the case opens, the support agent must route the case to the shift supervisor. The shift supervisor pages the dispatch desk.
+9.2 If the shift supervisor has not replied 5 minutes after you route the case, call the dispatch desk directly.
+
+[Figure 3: Escalation times counted from when the case opens.]
+
+Escalation summary
+| Time since the case opened | What you do |
+| 8 minutes | Route the case to the shift supervisor |
+| 13 minutes | Call the dispatch desk directly |
+
+Example from the field
+The case for order SD-322 opened at 9:00 pm and tracking stopped after that. At 9:08 Faisal routed the case to the shift supervisor, and at 9:13, with no reply, he called the dispatch desk directly.
+
+Common mistakes
+- Calling the dispatch desk before routing the case to the supervisor.
+- Waiting for tracking to come back without escalating.
+
+
+
+Section 10: Messaging the customer
+
+When this applies
+This applies to every message you send a customer about a late order.
+
+Rules
+10.1 Send the customer a status update from the case. Do not promise a new delivery time until Dispatch confirms it in the case.
+10.2 Write to the customer in the language they used in their last message.
+10.3 Do not share the courier's name, phone number or location with the customer.
+
+Example from the field
+A customer wrote in Arabic asking about her order. Sultan replied in Arabic that the order was on its way and gave no new time, because Dispatch had not confirmed one yet.
+
+Common mistakes
+- Giving a rough time to calm the customer down.
+- Sending the courier's number so the customer can call them.
+
+
+
+Section 11: Repeated customer contact
+
+When this applies
+This happens when the customer comes back about the same delay more than once.
+
+Rules
+11.1 If the customer contacts us again about the same delay, reply in the same case within 3 minutes of the new message.
+11.2 Do not close a case while the customer is waiting for an answer.
+
+Example from the field
+The customer sent three messages in ten minutes. Haya answered each one in the same case within two minutes and kept the case open until the order arrived.
+
+Common mistakes
+- Answering repeated messages with a canned reply that adds nothing.
+- Closing the case because the customer keeps asking the same question.
+
+
+
+Section 12: Transferring a misrouted case
+
+When this applies
+This happens when the order turns out to belong to another branch's queue.
+
+Rules
+12.1 If the order belongs to another branch queue, transfer the existing case to that queue with the status history attached.
+12.2 Tell the customer that another team now handles the case. Do not share internal queue names.
+
+Example from the field
+Mohammed found that order SD-330 belonged to the Al-Yasmin branch. He transferred the case with its history and told the customer that another team was now following the order.
+
+Common mistakes
+- Opening a new case in the other queue instead of transferring the case.
+- Telling the customer the internal queue name.
+
+
+
+Section 13: Cancellation requests
+
+When this applies
+This happens when a customer asks to cancel a late order.
+
+Rules
+13.1 If the customer asks to cancel a late order before the courier has collected it, link a Cancellation Request and route it to the cancellations desk.
+13.2 If the courier has already collected the order, do not cancel it. Route the case to the shift supervisor for a decision.
+13.3 Record the reason the customer gave in the Cancellation Request.
+
+Example from the field
+A customer asked to cancel an order the courier had not yet collected. Lama linked a Cancellation Request, recorded the reason ("it is very late and I will order elsewhere") and routed it to the cancellations desk.
+
+Common mistakes
+- Cancelling the order directly without the cancellations desk.
+- Leaving the cancellation reason empty.
+
+
+
+Section 14: Restored tracking
+
+When this applies
+This happens when tracking starts updating again during an open case.
+
+Rules
+14.1 If tracking resumes during an open Delay case, record the fresh status and notify the case owner that the stalled-tracking alert can be cleared.
+14.2 Keep the case open until the order is delivered, even if tracking has resumed.
+
+Example from the field
+Tracking came back for order SD-322 after a fifteen-minute gap. Faisal recorded the new location, told the case owner, and kept the case open until the timeline confirmed delivery.
+
+Common mistakes
+- Closing the case as soon as tracking returns.
+- Leaving the stalled-tracking alert in place after tracking returns.
+
+
+
+Section 15: Compensation requests
+
+When this applies
+This happens when a customer asks for compensation for the delay.
+
+Rules
+15.1 If the customer asks for compensation, record the request in the case and route it to the refunds team.
+15.2 Do not promise the customer a refund or a voucher yourself.
+15.3 If the delay reaches 45 minutes after the original estimate, tag the case as eligible for refunds team review.
+
+Example from the field
+A customer asked for compensation after a 50-minute delay. Bandar recorded the request, tagged the case as eligible for review and told the customer a specialist team would be in touch.
+
+Common mistakes
+- Promising the customer a discount on their next order.
+- Refusing to record the request because the delay was short.
+
+
+
+Section 16: Customer cannot be reached
+
+When this applies
+This happens when the courier reports that they cannot reach the customer at the address.
+
+Rules
+16.1 If the courier reports that the customer cannot be reached, call the customer twice from the case and record each attempt.
+16.2 If the customer has not answered 5 minutes after the second call, route the case to Dispatch to decide the next step.
+
+Example from the field
+The courier waited outside the building and the customer did not answer. Nouf called twice, waited five minutes with no reply, then routed the case to Dispatch.
+
+Common mistakes
+- Calling once and then closing the case.
+- Not recording the call attempts.
+
+
+
+Section 17: Courier safety reports
+
+When this applies
+This happens when the courier reports an accident or a risk to their safety during the delivery.
+
+Rules
+17.1 If the courier reports an accident or a safety issue, route the case to the shift supervisor immediately.
+17.2 Do not ask the courier to continue the delivery after a safety report.
+
+Example from the field
+A courier reported that his motorbike had slipped in the rain. Sultan routed the case to the shift supervisor at once, and the supervisor reassigned the order to another courier.
+
+Common mistakes
+- Asking the courier first whether they can still finish the order.
+- Treating a safety report like an ordinary delay.
+
+
+
+Section 18: Food quality complaints
+
+When this applies
+This happens when the customer says the food arrived cold or damaged after the delay.
+
+Rules
+18.1 If the customer reports cold or damaged food, record their description and the items affected in the case.
+18.2 Route quality complaints to the partner restaurant support queue.
+
+Example from the field
+An order arrived after a long delay with cold fries and a spilled drink. Reem recorded the affected items and the customer's description and routed the complaint to the partner restaurant queue.
+
+Common mistakes
+- Apologising without recording the affected items.
+- Sending a quality complaint to the dispatch desk.
+
+
+
+Section 19: Closing a recovered delivery
+
+When this applies
+This applies when the timeline confirms the late order has been delivered.
+
+Rules
+19.1 When the timeline confirms delivery, send the customer a closure message and record the confirmation time before closing the case.
+19.2 Do not close a case that still has an open Cancellation Request or compensation request.
+
+Example from the field
+The timeline confirmed delivery of order SD-286 at 9:12 pm. Nouf sent the closure message and recorded the time, but kept the case open because the compensation request was still pending.
+
+Common mistakes
+- Closing the case without a message to the customer.
+- Closing the case while a compensation request is still open.
+
+
+
+Section 20: Shift handover
+
+When this applies
+This applies at the end of every shift to every case that is still open.
+
+Rules
+20.1 Before your shift ends, add a handover note to every open case you own.
+20.2 Assign each open case to an agent on the next shift before you sign out.
+
+Example from the field
+Khalid had four open cases at the end of his shift. He wrote a short note on each with the latest news and assigned them to agents on the next shift.
+
+Common mistakes
+- Leaving cases in his name after the shift ends.
+- Writing one general note for all cases.
+
+
+
+Section 21: Peak-time queue
+
+When this applies
+This applies when the queue fills up with open cases, such as at dinner time and at weekends.
+
+Rules
+21.1 If the queue has 30 or more open Delay cases, tell the shift supervisor so they can add agents.
+21.2 At peak time, work on the oldest case in the queue first.
+
+Example from the field
+At 9 pm on Thursday the queue reached 34 cases. Haya told the shift supervisor, who added two agents, and the team started with the oldest cases.
+
+Common mistakes
+- Picking the easy cases first to bring the count down.
+- Waiting for the supervisor to notice the backlog.
+
+
+
+Section 22: Protecting customer data
+
+When this applies
+These rules apply to every piece of customer data you see in the case system.
+
+Rules
+22.1 Do not copy customer phone numbers or addresses outside the case system.
+22.2 Do not discuss a customer's order in public channels or chat groups.
+
+Example from the field
+A colleague asked Lama for a customer's address to check the area. She sent him the case link inside the system instead of pasting the address in chat.
+
+Common mistakes
+- Copying a customer's number into phone notes to call later.
+- Sharing a screenshot of a case in the team chat group.
+
+
+
+Section 23: Performance indicators
+
+Customer Support reviews the indicators below every month for each queue. The figures in the chart are illustrative.
+
+Indicators
+| Indicator | Target | How it is measured |
+| Time to first customer update | Under 5 minutes | From case opening to the first message |
+| Escalations on time | 95% | Escalations within a minute of the timer |
+| Cases closed without a closure message | 0 | Weekly sample review |
+
+[Figure 4: Average time to the first customer update in the Sidr Square queue (illustrative data).]
+
+
+
+Section 24: Records
+
+Records and retention
+| Record | Where it is kept | Retention |
+| Delay cases and their messages | Case system | Two years |
+| Cancellation and compensation requests | Case system | Two years |
+| Safety reports | Safety team | Five years |
+
+
+
+Section 25: Related documents
+
+Linked documents
+| Number | Title |
+| SD-OPS-030 | Dispatch incidents |
+| SD-OPS-024 | Refunds and compensation |
+| SD-HR-007 | Data protection policy |
+
+
+
+Appendix A: Delay case form (example)
+
+This example shows the fields of a Delay case in the system.
+
+Case fields
+| Field | Example |
+| Order number | SD-286 |
+| Displayed estimate | 8:30 pm |
+| Case opened at | 8:40 pm |
+| Last order status | On the way |
+| Case owner | Nouf |
+
+
+
+Appendix B: Shift handover checklist (example)
+
+Checklist
+| Item | Done |
+| Handover note on every open case | ☐ |
+| Every open case assigned to a next-shift agent | ☐ |
+| No customer message left unanswered | ☐ |
+| Cancellation and compensation requests routed | ☐ |
+
+
+
+Appendix C: Frequently asked questions
+
+What if several orders are late because of one incident?
+Those follow the Dispatch Incident procedure SD-OPS-030, and the shift supervisor will tell you the steps.
+
+Can I give the customer a rough time if they insist?
+No. A new time comes only from Dispatch, as Section 10 explains.
+
+Who decides on compensation?
+The refunds team. Your job is to record the request and tag the case, as Section 15 explains.

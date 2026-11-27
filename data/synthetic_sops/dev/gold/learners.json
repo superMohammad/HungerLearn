@@ -192,6 +192,102 @@
           "score": 1.0
         }
       ]
+    },
+    {
+      "learner_id": "HL-106",
+      "role": "courier",
+      "language": "ar",
+      "organization": "MadarFig Dispatch",
+      "branch": "Fig Gate",
+      "device_type": "android",
+      "mastery": [
+        {
+          "document_family": "courier-pickup-wait",
+          "version": 2,
+          "state": "mastered",
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "learner_id": "HL-107",
+      "role": "courier",
+      "language": "ar",
+      "organization": "MadarFig Dispatch",
+      "branch": "Fig Gate",
+      "device_type": "ios",
+      "mastery": [
+        {
+          "document_family": "courier-pickup-wait",
+          "version": 2,
+          "state": "in_progress",
+          "score": 0.5
+        }
+      ]
+    },
+    {
+      "learner_id": "HL-204",
+      "role": "employee",
+      "language": "en",
+      "organization": "SidrDesk Operations",
+      "branch": "Sidr Square",
+      "device_type": "desktop",
+      "mastery": [
+        {
+          "document_family": "employee-delayed-order",
+          "version": 2,
+          "state": "mastered",
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "learner_id": "HL-205",
+      "role": "employee",
+      "language": "en",
+      "organization": "SidrDesk Operations",
+      "branch": "Sidr Square",
+      "device_type": "desktop",
+      "mastery": [
+        {
+          "document_family": "employee-delayed-order",
+          "version": 2,
+          "state": "in_progress",
+          "score": 0.5
+        }
+      ]
+    },
+    {
+      "learner_id": "HL-305",
+      "role": "partner",
+      "language": "ar",
+      "organization": "Copper Olive Kitchen",
+      "branch": "Olive Lane",
+      "device_type": "shared_tablet",
+      "mastery": [
+        {
+          "document_family": "partner-packing-sealing",
+          "version": 2,
+          "state": "mastered",
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "learner_id": "HL-306",
+      "role": "partner",
+      "language": "ar",
+      "organization": "Copper Olive Kitchen",
+      "branch": "Olive Lane",
+      "device_type": "android",
+      "mastery": [
+        {
+          "document_family": "partner-packing-sealing",
+          "version": 2,
+          "state": "in_progress",
+          "score": 0.5
+        }
+      ]
     }
   ]
 }

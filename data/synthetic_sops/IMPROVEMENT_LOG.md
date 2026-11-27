@@ -270,6 +270,43 @@ Other candidates surfaced by search but not used:
   - The original validator still passes the data.
 - **Still needed.** A native Arabic speaker should read a sample of the Arabic "after" texts for natural wording.
 
+## Addendum (2026-11-27): v3 long SOP uploads
+
+- **Why.** Every dev upload was a one-page memo. Real SOPs are 20–40 pages, with front matter, tables, figures, examples and appendices around the rules, so extraction precision and the v2 → v3 update were never tested on realistic documents.
+- **Change.** Each family that has a v2 gets a v3: courier pickup wait (AR), employee delayed order (EN) and partner packing (AR).
+  - Each v3 comes as six uploads: PDF, DOCX and TXT, in Arabic and English. That makes 18 files, with the PDFs at 28–29 pages.
+  - Hunger Learn logo, tables, three charts drawn as PNG images, and a role photo.
+  - Rules carry over from v2:
+    - courier: 52 rules (6 unchanged, 4 changed, 1 removed, 42 new);
+    - employee: 38 rules (5 unchanged, 4 changed, 1 removed, 29 new);
+    - partner: 34 rules (7 unchanged, 3 changed, 1 removed, 24 new).
+  - Everything is generated from one bilingual authoring record per family (`qa/v3_authoring/`) by `qa/v3_render.py` (Chrome for the PDFs, python-docx for the DOCX files) and `qa/v3_gold.py`.
+- **Labels.**
+  - Manifest variants `format_copy` and `translation` point at the original.
+  - Extraction labels, with PDF pages read from the rendered files.
+  - The v2 → v3 diff and its learner routing (6 new learners who hold v2).
+  - Retrieval distractors for the v3 copy of each answer.
+  - Publication gates G-01…G-06 point at v3, because v2 is now superseded. The three retrieval queries that called v2 "current" or "new" now name version 2.
+  - Not moved: the assessment cases A-C1, A-E1, A-P1 and the flagged draft still cite v2. They test v2 only; do not publish them as current training.
+- **Checks.**
+  - `validate.py` checks v3 rules as numbered lines inside their sections, or by words on the cited page for PDFs. It also checks the copy and translation metadata, and that copies match the original's clauses and facts.
+  - English PDF quotes are matched as written on their cited page. Arabic translations must quote the same text in all three formats.
+  - Nine new mutations; 38/38 seeded errors are caught.
+  - `independent_audit.py` and `header_audit.py` handle v3 PDFs.
+- **Finding.** Chrome writes Arabic PDF text in visual run order:
+  - pypdf returns presentation forms, and NUL for one mark glyph;
+  - pdfplumber reverses the letters;
+  - PyMuPDF splits words at diacritics.
+
+  So the 124 quotes in the three Arabic PDFs are checked only by the validator's word check. docproc detects no «القسم» headings in them. A docproc fix is a separate follow-up.
+- **Eval (`docproc eval --real`, gemma4, RTX 3090, 67 min).**
+  - The v1/v2 documents are unchanged: all at 1.00, and the v1 → v2 diffs are 33/33.
+  - v3 recall is 1.00 everywhere except the Arabic PDFs (0.96, 0.92 and 0.85), and precision is 0.62–0.88. Context, tables and checklists produce extra rules, by design.
+  - v2 → v3 diffs:
+    - courier 52/53: the removed rule went to review because the new version was incomplete;
+    - employee 38/39: a removed rule was matched to a new similar rule;
+    - partner 35/35.
+
 ## Not run, and why
 
 - **OvisOCR:** not installed or cached. No OCR engine is on the machine, and the GPU (RTX 3050 Laptop) was not tested for it.
@@ -291,7 +328,7 @@ From `data/synthetic_sops/`, with Python 3.11+:
 python -m pip install Pillow==13.0.0 pypdf==6.21.4                 # validator
 python -m pip install numpy pypdfium2 pdfplumber python-docx        # QA scripts
 python validate.py                                                 # fixture validation (checks the freeze)
-python qa/mutation_tests.py                                        # 24 seeded errors, all must be caught
+python qa/mutation_tests.py                                        # 38 seeded errors, all must be caught
 python qa/independent_audit.py
 python qa/header_audit.py
 python qa/sop_lint.py

@@ -16,6 +16,8 @@ import { appEnv, FAKE_MODEL, INPUT_TOKENS, runScriptAsync, startFakeLlm, testAdm
 
 const DOCUMENT = "employee-delayed-order-v1";
 const FABRICATED = "نص لا يوجد في المصدر إطلاقا";
+/** The eval never opens the read-only pool; serverEnv() only requires the setting to exist. */
+const UNUSED_READONLY_URL = withCredentials(testAdminUrl(), "unused", "unused");
 
 const adminUrl = testAdminUrl();
 const admin = postgres(adminUrl, { max: 1, onnotice: () => undefined });
@@ -101,7 +103,7 @@ test("pnpm eval:generation scores a dev original with the app's pipeline and lea
   const adminBefore = await adminRows();
   const out = path.join(outDir, "eval_generation_dev.json");
   const port = (llm?.address() as AddressInfo).port;
-  const env = appEnv(adminUrl, withCredentials(adminUrl, "hl_readonly", "hl_readonly"), port);
+  const env = appEnv(adminUrl, UNUSED_READONLY_URL, port);
   const result = await runScriptAsync("scripts/eval-generation.mts", ["--documents", DOCUMENT, "--out", out], env);
   assert.equal(result.status, 0, `eval failed:\n${result.stdout}\n${result.stderr}`);
 
@@ -151,7 +153,7 @@ test("a missing READONLY_DATABASE_URL fails before any eval database is created"
 test("pnpm eval:generation rejects a document that is not a dev original before creating a database", { timeout: 120_000 }, async () => {
   const before = await evalDatabases();
   const port = (llm?.address() as AddressInfo).port;
-  const env = appEnv(adminUrl, withCredentials(adminUrl, "hl_readonly", "hl_readonly"), port);
+  const env = appEnv(adminUrl, UNUSED_READONLY_URL, port);
   const result = await runScriptAsync("scripts/eval-generation.mts", ["--documents", "courier-pickup-wait-v1-scan", "--out", path.join(outDir, "x.json")], env);
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /not a dev original: courier-pickup-wait-v1-scan/);

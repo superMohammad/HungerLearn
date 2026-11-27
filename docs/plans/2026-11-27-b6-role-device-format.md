@@ -1,7 +1,7 @@
 # B6 — Role and device layouts in the learner flow
 
 **Risk tier:** Enhanced. The diff is over 400 changed lines because the implementation and its F05 browser tests ship together. It touches web/ only and no High-risk paths.
-**Approval status:** Pending Mohammad’s review.
+**Approved:** @superMohammad, 2026-11-27
 
 ## Scope
 

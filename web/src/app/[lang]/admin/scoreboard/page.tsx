@@ -12,7 +12,7 @@ type Result = Scoreboard[keyof Scoreboard];
 type Shown = { value: string | null; details: ReactNode; source: string };
 type MetricView = { id: string; title: string; hint: string; result: Result; shown: Shown | null };
 
-/** Left-to-right isolate, so a number keeps its order inside an Arabic sentence ("91.0%", not "%91.0"). */
+/** Left-to-right isolate, so a number or a Latin name keeps its order inside Arabic text ("91.0%", not "%91.0"). */
 const ltr = (text: string): string => `⁦${text}⁩`;
 const pct = (x: number): string => ltr(`${(x * 100).toFixed(1)}%`);
 const usd = (x: number): string => ltr(`$${x.toFixed(4)}`);
@@ -24,35 +24,58 @@ function duration(s: Text, seconds: number): string {
   return s.duration(Math.floor(whole / 60), whole % 60);
 }
 
+/** A detail line: a label in the page's language and its number in monospace. */
+function Line({ label, value }: { label: string; value: string }) {
+  return <p>{label} <bdi dir="ltr" className="num">{value}</bdi></p>;
+}
+
+function Warn({ children }: { children: ReactNode }) {
+  return <p><Pill tone="warn"><WarnIcon />{children}</Pill></p>;
+}
+
 function MetricCard({ metric, s }: { metric: MetricView; s: Text }) {
   const { result, shown } = metric;
   return (
-    <Card className="flex flex-col gap-3">
-      <div data-metric={metric.id}>
-        <h2 className="text-lg font-bold">{metric.title}</h2>
-        <p className="text-sm text-ink-soft">{metric.hint}</p>
-      </div>
-      {result.status === "missing" ? (
-        <div className="grid gap-2">
-          <Pill tone="neutral">{s.notRun}</Pill>
-          <p className="text-sm">{s.notRunHint(result.file)}</p>
-          <code dir="ltr" className="num block rounded-xl bg-surface-2 px-3 py-2 text-sm">{result.command}</code>
+    <section data-metric={metric.id} data-state={result.status} className="flex">
+      <Card className="flex w-full flex-col gap-3">
+        <div>
+          <h2 className="text-lg font-bold">{metric.title}</h2>
+          <p className="text-sm text-ink-soft">{metric.hint}</p>
         </div>
-      ) : result.status === "invalid" ? (
-        <div className="grid gap-2" role="alert">
-          <Pill tone="warn"><WarnIcon />{s.invalid(result.file)}</Pill>
-          <p dir="ltr" className="num break-words text-sm">{result.problem}</p>
-        </div>
-      ) : shown !== null ? (
-        <>
-          {shown.value === null
-            ? <p className="text-xl text-ink-soft">{s.notAvailable}</p>
-            : <p className="num text-5xl font-medium text-brand">{shown.value}</p>}
-          <div className="grid gap-1 text-sm">{shown.details}</div>
-          <p className="mt-auto text-xs text-ink-soft">{s.source} <bdi dir="ltr" className="num">{shown.source}</bdi></p>
-        </>
-      ) : null}
-    </Card>
+        {result.status === "missing" ? (
+          <div className="grid gap-2">
+            <Pill tone="neutral">{s.notRun}</Pill>
+            <p className="text-sm">{s.notRunHint(ltr(result.file))}</p>
+            <code dir="ltr" className="num block rounded-xl bg-surface-2 px-3 py-2 text-sm">{result.command}</code>
+          </div>
+        ) : result.status === "invalid" ? (
+          <div className="grid gap-2" role="alert">
+            <Pill tone="warn"><WarnIcon />{s.invalid(ltr(result.file))}</Pill>
+            <p dir="ltr" className="num break-words text-sm">{result.problem}</p>
+          </div>
+        ) : shown !== null ? (
+          <>
+            {shown.value === null
+              ? <p className="text-xl text-ink-soft">{s.notAvailable}</p>
+              : <p className="num text-5xl font-medium text-brand">{shown.value}</p>}
+            <div className="grid gap-1 text-sm">{shown.details}</div>
+            <p className="mt-auto text-xs text-ink-soft">{s.source} <bdi dir="ltr" className="num">{shown.source}</bdi></p>
+          </>
+        ) : null}
+      </Card>
+    </section>
+  );
+}
+
+/** Failed documents or procedures in the generation run: the card's number covers only part of the dev set. */
+function PartialRun({ gen, s }: { gen: Extract<Scoreboard["generation"], { status: "ok" }>; s: Text }) {
+  if (gen.documentsFailed === 0 && gen.proceduresFailed === 0) return null;
+  return (
+    <>
+      <Warn>{s.partialRun}</Warn>
+      <Line label={s.failedDocuments} value={`${count(gen.documentsFailed)} / ${count(gen.documents)}`} />
+      <Line label={s.failedProcedures} value={count(gen.proceduresFailed)} />
+    </>
   );
 }
 
@@ -66,26 +89,41 @@ function metrics(board: Scoreboard, s: Text): MetricView[] {
       id: "extraction", title: s.extraction.title, hint: s.extraction.hint, result: ex,
       shown: ex.status !== "ok" ? null : {
         value: pct(ex.recall),
-        details: <p>{s.precision(pct(ex.precision))}</p>,
-        source: `${SCOREBOARD_FILES.extraction.file} · ${ex.model}`,
+        details: (
+          <>
+            <Line label={s.precision} value={pct(ex.precision)} />
+            <Line label={s.scored} value={`${count(ex.scored)} / ${count(ex.scored + ex.skipped)}`} />
+            {ex.skipped > 0 ? <Warn>{s.skipped} <bdi dir="ltr" className="num">{count(ex.skipped)}</bdi></Warn> : null}
+          </>
+        ),
+        source: [SCOREBOARD_FILES.extraction.file, ex.date === null ? null : day(ex.date), ex.model].filter((p) => p !== null).join(" · "),
       },
     },
     {
       id: "citation", title: s.citation.title, hint: s.citation.hint, result: gen,
       shown: gen.status !== "ok" ? null : {
         value: gen.citationAccuracy === null ? null : pct(gen.citationAccuracy),
-        details: <><p>{s.items(gen.items)}</p><p>{s.exact(gen.citationAccuracyExact === null ? na : pct(gen.citationAccuracyExact))}</p></>,
+        details: (
+          <>
+            <Line label={s.items} value={count(gen.items)} />
+            <Line label={s.exact} value={gen.citationAccuracyExact === null ? na : pct(gen.citationAccuracyExact)} />
+            <PartialRun gen={gen} s={s} />
+          </>
+        ),
         source: genSource,
       },
     },
     {
       id: "silent", title: s.silent.title, hint: s.silent.hint, result: gen,
       shown: gen.status !== "ok" ? null : {
-        value: String(gen.silentFailures),
+        value: count(gen.silentFailures),
         details: (
           <>
-            <p>{s.items(gen.items)}</p>
-            <p>{gen.publishableWithFailedCheck > 0 ? <Pill tone="warn"><WarnIcon />{s.publishable(gen.publishableWithFailedCheck)}</Pill> : s.publishable(0)}</p>
+            <Line label={s.items} value={count(gen.items)} />
+            {gen.publishableWithFailedCheck > 0
+              ? <Warn>{s.publishable} <bdi dir="ltr" className="num">{count(gen.publishableWithFailedCheck)}</bdi></Warn>
+              : <Line label={s.publishable} value={count(0)} />}
+            <PartialRun gen={gen} s={s} />
           </>
         ),
         source: genSource,
@@ -97,15 +135,15 @@ function metrics(board: Scoreboard, s: Text): MetricView[] {
         value: cost.meanUsd === null ? null : usd(cost.meanUsd),
         details: (
           <>
-            <p>{cost.meanHostedUsd !== null && cost.hostedModel !== null
-              ? <><Pill tone="neutral">{s.estimate}</Pill> {s.hosted(usd(cost.meanHostedUsd), cost.hostedModel)}</>
-              : s.noHosted}</p>
+            {cost.meanHostedUsd !== null && cost.hostedModel !== null
+              ? <p><Pill tone="neutral">{s.estimate}</Pill> {s.hosted(ltr(cost.hostedModel))} <bdi dir="ltr" className="num">{usd(cost.meanHostedUsd)}</bdi></p>
+              : <p>{s.noHosted}</p>}
             {cost.meanInputTokens !== null && cost.meanOutputTokens !== null
-              ? <p className="num">{s.tokens(count(cost.meanInputTokens), count(cost.meanOutputTokens))}</p>
+              ? <Line label={s.tokens} value={`${count(cost.meanInputTokens)} · ${count(cost.meanOutputTokens)}`} />
               : null}
-            <p>{s.versions(cost.versions)}</p>
+            <Line label={s.versions} value={count(cost.versions)} />
             {cost.coverage.docprocCallsNotLogged ? <p className="text-ink-soft">{s.docprocNotLogged}</p> : null}
-            <p className="num text-ink-soft">{s.coverage(cost.coverage.zeroTokenCalls, cost.coverage.failedJobs, cost.coverage.runningJobs)}</p>
+            <div className="text-ink-soft"><Line label={s.coverage} value={[cost.coverage.zeroTokenCalls, cost.coverage.failedJobs, cost.coverage.runningJobs].map(count).join(" · ")} /></div>
           </>
         ),
         source: costSource,
@@ -115,7 +153,12 @@ function metrics(board: Scoreboard, s: Text): MetricView[] {
       id: "time", title: s.time.title, hint: s.time.hint, result: cost,
       shown: cost.status !== "ok" ? null : {
         value: cost.meanProcessingSeconds === null ? null : duration(s, cost.meanProcessingSeconds),
-        details: <><p>{s.elapsed(cost.meanElapsedSeconds === null ? na : duration(s, cost.meanElapsedSeconds))}</p><p>{s.versions(cost.versions)}</p></>,
+        details: (
+          <>
+            <Line label={s.elapsed} value={cost.meanElapsedSeconds === null ? na : duration(s, cost.meanElapsedSeconds)} />
+            <Line label={s.versions} value={count(cost.versions)} />
+          </>
+        ),
         source: costSource,
       },
     },
@@ -125,8 +168,8 @@ function metrics(board: Scoreboard, s: Text): MetricView[] {
         value: cost.savingUsd === null ? null : usd(cost.savingUsd),
         details: (
           <>
-            <p><Pill tone="neutral">{s.estimate}</Pill> {s.updates(cost.updates)}</p>
-            {cost.savingUnknownVersions > 0 ? <p><Pill tone="warn"><WarnIcon />{s.unknownSaving(cost.savingUnknownVersions)}</Pill></p> : null}
+            <p><Pill tone="neutral">{s.estimate}</Pill> {s.updates} <bdi dir="ltr" className="num">{count(cost.updates)}</bdi></p>
+            {cost.savingUnknownVersions > 0 ? <Warn>{s.unknownSaving} <bdi dir="ltr" className="num">{count(cost.savingUnknownVersions)}</bdi></Warn> : null}
           </>
         ),
         source: costSource,

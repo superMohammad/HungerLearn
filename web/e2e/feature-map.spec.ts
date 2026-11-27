@@ -105,10 +105,16 @@ test.describe("F08 scoreboard page", () => {
       const response = await page.goto("/admin/scoreboard");
       expect(response?.status()).toBe(200);
       await expect(page.locator("html")).toHaveAttribute("dir", dir);
-      // Each card shows its number, or (without result files, as in CI) the command that produces them.
+      // Each card shows its number ("ok") or, without its result file (as in CI), the command that produces it.
+      // "invalid" means a result file no longer matches what the page expects, so it fails the row.
       await expect(page.locator("[data-metric]")).toHaveCount(6);
       for (const id of ["extraction", "citation", "silent", "cost", "time", "saving"]) {
-        await expect(page.locator(`[data-metric="${id}"]`), id).toBeVisible();
+        const card = page.locator(`[data-metric="${id}"]`);
+        await expect(card, id).toBeVisible();
+        const state = await card.getAttribute("data-state");
+        expect(["ok", "missing"], `${id} is ${state}`).toContain(state);
+        if (state === "missing") await expect(card.locator("code"), `${id} shows its command`).toBeVisible();
+        else await expect(card.locator(".num").first(), `${id} shows a number`).toBeVisible();
       }
     });
   }

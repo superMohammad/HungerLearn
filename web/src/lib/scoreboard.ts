@@ -16,14 +16,25 @@ type Source = keyof typeof SCOREBOARD_FILES;
 export type ScoreboardSources = Record<Source, string | null>;
 
 const rate = z.number().min(0).max(1).nullable();
-const ExtractionSchema = z.object({ llm_model: z.string(), macro_recall: z.number().min(0).max(1), macro_precision: z.number().min(0).max(1) });
+const count = z.number().int().min(0);
+/** docproc's recall covers only the documents it scored; skipped ones (e.g. scans without OCR) are listed apart. */
+const ExtractionSchema = z.object({
+  llm_model: z.string(),
+  macro_recall: z.number().min(0).max(1),
+  macro_precision: z.number().min(0).max(1),
+  extraction: z.array(z.unknown()),
+  skipped: z.array(z.object({ document_id: z.string(), reason: z.string() })),
+});
 const GenerationSchema = z.object({
-  run: z.object({ date: z.string(), model: z.string() }),
+  run: z.object({ date: z.iso.datetime(), model: z.string() }),
   totals: z.object({
-    items: z.number().int().min(0),
+    items: count,
     citation_accuracy: z.object({ normalized: rate, exact: rate }),
-    silent_failures: z.number().int().min(0),
-    publishable_with_failed_check: z.number().int().min(0),
+    silent_failures: count,
+    publishable_with_failed_check: count,
+    documents: count,
+    documents_failed: count,
+    procedures_failed: count,
   }),
 });
 const SummarySchema = z.object({
@@ -38,7 +49,7 @@ const SummarySchema = z.object({
   carry_over_saving_unknown_versions: z.number().int().min(0),
 });
 const CostSchema = z.object({
-  generated_at: z.string(),
+  generated_at: z.iso.datetime(),
   llm_model: z.string(),
   hosted_model: z.string().nullable(),
   coverage: z.object({
@@ -70,15 +81,29 @@ function parse<S extends z.ZodType, T>(source: Source, text: string | null, sche
   return { status: "ok", ...view(parsed.data) };
 }
 
-export function readScoreboard(sources: ScoreboardSources) {
+/**
+ * `extractionModified` is when eval_dev_real.json was written (its file time): docproc's report carries
+ * no date of its own, and every card names when it was measured.
+ */
+export function readScoreboard(sources: ScoreboardSources, meta: { extractionModified: string | null } = { extractionModified: null }) {
   return {
-    extraction: parse("extraction", sources.extraction, ExtractionSchema, (d) => ({ recall: d.macro_recall, precision: d.macro_precision, model: d.llm_model })),
+    extraction: parse("extraction", sources.extraction, ExtractionSchema, (d) => ({
+      recall: d.macro_recall,
+      precision: d.macro_precision,
+      model: d.llm_model,
+      scored: d.extraction.length,
+      skipped: d.skipped.length,
+      date: meta.extractionModified,
+    })),
     generation: parse("generation", sources.generation, GenerationSchema, (d) => ({
       items: d.totals.items,
       citationAccuracy: d.totals.citation_accuracy.normalized,
       citationAccuracyExact: d.totals.citation_accuracy.exact,
       silentFailures: d.totals.silent_failures,
       publishableWithFailedCheck: d.totals.publishable_with_failed_check,
+      documents: d.totals.documents,
+      documentsFailed: d.totals.documents_failed,
+      proceduresFailed: d.totals.procedures_failed,
       model: d.run.model,
       date: d.run.date,
     })),

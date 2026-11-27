@@ -1,11 +1,22 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { buildCostTimeReport } from "./cost-time";
+import { buildReport } from "./generation-eval";
+import { parseLlmPrices } from "./prices";
 import { readScoreboard, SCOREBOARD_FILES, type ScoreboardSources } from "./scoreboard";
 
-const EXTRACTION = JSON.stringify({ llm: "openai_compat", llm_model: "gemma4:latest", embedding_model: "google/embeddinggemma-2", macro_recall: 0.97, macro_precision: 0.91, extra: 1 });
+const EXTRACTED = Array.from({ length: 12 }, (_, i) => ({ document_id: `doc-${i}`, recall: 0.97 }));
+const EXTRACTION = JSON.stringify({
+  llm: "openai_compat", llm_model: "gemma4:latest", embedding_model: "google/embeddinggemma-2", macro_recall: 0.97, macro_precision: 0.91,
+  extraction: EXTRACTED, skipped: [], extra: 1,
+});
+const MODIFIED = "2026-11-27T11:00:00.000Z";
 const GENERATION = JSON.stringify({
   run: { date: "2026-11-27T12:00:00Z", model: "gemma4:latest", commit: "199c274" },
-  totals: { items: 580, citation_accuracy: { normalized: 0.988, exact: 0.988 }, silent_failures: 0, publishable_with_failed_check: 179 },
+  totals: {
+    items: 580, citation_accuracy: { normalized: 0.988, exact: 0.988 }, silent_failures: 0, publishable_with_failed_check: 179,
+    documents: 12, documents_failed: 0, procedures_failed: 0,
+  },
 });
 const COST = JSON.stringify({
   generated_at: "2026-11-27T13:00:00Z",
@@ -29,11 +40,11 @@ function sources(over: Partial<ScoreboardSources>): ScoreboardSources {
 }
 
 test("the five metrics and the v2 saving are read from the three result files", () => {
-  const s = readScoreboard(sources({}));
-  assert.deepEqual(s.extraction, { status: "ok", recall: 0.97, precision: 0.91, model: "gemma4:latest" });
+  const s = readScoreboard(sources({}), { extractionModified: MODIFIED });
+  assert.deepEqual(s.extraction, { status: "ok", recall: 0.97, precision: 0.91, model: "gemma4:latest", scored: 12, skipped: 0, date: MODIFIED });
   assert.deepEqual(s.generation, {
     status: "ok", items: 580, citationAccuracy: 0.988, citationAccuracyExact: 0.988, silentFailures: 0, publishableWithFailedCheck: 179,
-    model: "gemma4:latest", date: "2026-11-27T12:00:00Z",
+    documents: 12, documentsFailed: 0, proceduresFailed: 0, model: "gemma4:latest", date: "2026-11-27T12:00:00Z",
   });
   assert.equal(s.cost.status, "ok");
   if (s.cost.status !== "ok") return;
@@ -81,4 +92,43 @@ test("values the reports leave null stay null (shown as not available), never 0"
   assert.equal(s.cost.status, "ok");
   if (s.cost.status !== "ok") return;
   assert.deepEqual([s.cost.meanHostedUsd, s.cost.hostedModel, s.cost.meanElapsedSeconds, s.cost.savingUsd], [null, null, null, null]);
+});
+
+test("a generation run with failed documents or procedures is reported, so a partial run cannot pass as a clean 0", () => {
+  const partial = JSON.parse(GENERATION) as { totals: Record<string, unknown> };
+  partial.totals.documents_failed = 1;
+  partial.totals.procedures_failed = 4;
+  const s = readScoreboard(sources({ generation: JSON.stringify(partial) }));
+  assert.equal(s.generation.status, "ok");
+  if (s.generation.status !== "ok") return;
+  assert.deepEqual([s.generation.documents, s.generation.documentsFailed, s.generation.proceduresFailed], [12, 1, 4]);
+});
+
+test("extraction recall says how many documents it covers, including those docproc skipped", () => {
+  const partial = JSON.parse(EXTRACTION) as { extraction: unknown[]; skipped: unknown[] };
+  partial.extraction = partial.extraction.slice(0, 9);
+  partial.skipped = [1, 2, 3].map((i) => ({ document_id: `scan-${i}`, reason: "scan: needs a live OCR engine" }));
+  const s = readScoreboard(sources({ extraction: JSON.stringify(partial) }));
+  assert.equal(s.extraction.status, "ok");
+  if (s.extraction.status !== "ok") return;
+  assert.deepEqual([s.extraction.scored, s.extraction.skipped, s.extraction.date], [9, 3, null]);
+});
+
+test("a malformed date makes the file invalid instead of a garbled label", () => {
+  const bad = JSON.parse(GENERATION) as { run: Record<string, unknown> };
+  bad.run.date = "yesterday";
+  const s = readScoreboard(sources({ generation: JSON.stringify(bad) }));
+  assert.equal(s.generation.status, "invalid");
+  if (s.generation.status === "invalid") assert.match(s.generation.problem, /run\.date/);
+});
+
+test("the real producers' output is read as ok (contract with generation-eval and cost-time)", () => {
+  const generation = JSON.stringify(buildReport({ date: "2026-11-27T12:00:00.000Z", model: "gemma4:latest" }, []));
+  const prices = parseLlmPrices('{"gemma4:latest":{"input":0,"output":0}}', "gemma4:latest");
+  const cost = JSON.stringify({ generated_at: "2026-11-27T13:00:00.000Z", llm_model: "gemma4:latest", ...buildCostTimeReport([], prices, null) });
+  const s = readScoreboard(sources({ generation, cost }));
+  assert.equal(s.generation.status, "ok", JSON.stringify(s.generation));
+  assert.equal(s.cost.status, "ok", JSON.stringify(s.cost));
+  if (s.generation.status === "ok") assert.equal(s.generation.citationAccuracy, null, "no items: null, not 0");
+  if (s.cost.status === "ok") assert.equal(s.cost.meanUsd, null, "no versions: null, not 0");
 });

@@ -1,5 +1,5 @@
 /** Shared by the DB test suites: database URLs, a fake OpenAI-compatible LLM, and running web scripts with tsx. */
-import { spawnSync, type SpawnSyncReturns } from "node:child_process";
+import { spawn, spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { createServer, type Server } from "node:http";
 import path from "node:path";
 
@@ -85,5 +85,22 @@ export function runScript(script: string, args: string[], env: Record<string, st
     cwd: WEB,
     env: { ...process.env, ...env },
     encoding: "utf8",
+  });
+}
+
+/**
+ * Like runScript, but without blocking this process, so a fake LLM served from this process can answer
+ * the script's requests (spawnSync would deadlock them). Resolves with the exit status and output.
+ */
+export function runScriptAsync(script: string, args: string[], env: Record<string, string>): Promise<{ status: number | null; stdout: string; stderr: string }> {
+  const tsx = path.join(WEB, "node_modules", "tsx", "dist", "cli.mjs");
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, [tsx, "--conditions=react-server", script, ...args], { cwd: WEB, env: { ...process.env, ...env } });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (chunk: Buffer) => (stdout += chunk.toString("utf8")));
+    child.stderr.on("data", (chunk: Buffer) => (stderr += chunk.toString("utf8")));
+    child.on("error", reject);
+    child.on("close", (status) => resolve({ status, stdout, stderr }));
   });
 }

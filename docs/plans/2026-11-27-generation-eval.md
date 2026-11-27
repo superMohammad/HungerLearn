@@ -92,3 +92,14 @@ This PR adds an eval and changes no pipeline code, so `docproc eval --real` befo
 - Changing the generator, its prompt, or the publication gates (C's lane).
 - Human review of scenario realism and Arabic quality (AGENTS.md lists it as a human rubric, not an automatic score).
 - Logging docproc's LLM calls (Mohammad's decision on A2b: separate PR).
+
+## Implementation notes (2026-11-27, for review)
+Where the code differs from the approach above, and why:
+- **`canPublishWithFlags` lives in a new pure file, `web/src/lib/publication-rules.ts`, not in `review.ts` itself.** `review.ts` is `server-only` and imports the database, so neither the pure scorer nor `pnpm test` could load it. `review.ts` imports it and uses it in `approveItem` (it would refuse an item it returns `false` for) and `approvePackage` (it would skip such items). Today it returns `true`, so behaviour is unchanged, and C's gates still change one function that the eval calls.
+- **The verified/draft rule moved to the same file** as `initialItemState(packageStatus, flags)`, and `pipeline.ts` uses it (two lines replaced, no behaviour change). The eval gives each item the status the app would give it from the same function, instead of a copy.
+- **Silent failures and publishable-with-failed-check:** an item's failed checks are the app's flags plus `quote_not_exact` (the quote matches its clause only after normalization, e.g. `15` against a printed `١٥`). A silent failure is a `verified` item with a failed check, so today it can only be `quote_not_exact`. Publishable-with-failed-check counts every item with a failed check that `canPublishWithFlags` allows, so silent failures are a subset of it.
+- **An item with no citation does not pass** citation accuracy (there is no evidence to check).
+- **A question with an unknown clause ref** is shown with no cited clause. `buildPackage` falls back to the procedure's first clause for such an item, but the generator did not cite it.
+- **The test helpers have an async script runner** (`runScriptAsync`). With `spawnSync`, the test process blocks while the script runs, so the fake LLM in that process cannot answer: a deadlock. The first try hung exactly like that, and the killed run left one `hl_eval_*` database, which was dropped by hand. That is the crash case named under Risks.
+- **v3 grouping is checked against the gold:** a unit test shows that `groupBySection` on the gold clauses forms exactly the gold procedures for a v3 document (several clauses per section) and for a v1 document.
+

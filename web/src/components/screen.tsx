@@ -167,7 +167,7 @@ function Question({ spec }: { spec: QuestionScreen }) {
           <div className="mt-5">
             <p className="mb-2 text-sm font-semibold text-ink-soft">{t.screen.confidence}</p>
             <div className="grid grid-cols-2 gap-3">
-              <button type="button" onClick={() => submit("sure", false)} disabled={!ready || pending} className="min-h-12 cursor-pointer rounded-2xl bg-accent text-lg font-bold text-on-accent hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50">
+              <button type="button" onClick={() => submit("sure", false)} disabled={!ready || pending} aria-busy={pending} className="min-h-12 cursor-pointer rounded-2xl bg-accent text-lg font-bold text-on-accent hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50">
                 {pending ? t.screen.grading : t.screen.sure}
               </button>
               <button type="button" onClick={() => submit("unsure", false)} disabled={!ready || pending} className="min-h-12 cursor-pointer rounded-2xl border-2 border-brand text-lg font-bold text-brand disabled:cursor-not-allowed disabled:opacity-50">

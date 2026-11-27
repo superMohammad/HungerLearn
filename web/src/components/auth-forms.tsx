@@ -36,6 +36,7 @@ function SubmitButton({ pending, idle, busy }: { pending: boolean; idle: string;
     <button
       type="submit"
       disabled={pending}
+      aria-busy={pending}
       className="min-h-12 w-full cursor-pointer rounded-2xl bg-accent px-5 text-lg font-bold text-on-accent transition-colors hover:bg-accent-strong disabled:cursor-wait disabled:opacity-70"
     >
       {pending ? busy : idle}

@@ -24,7 +24,7 @@ export function AskBox() {
           defaultValue={a.examples[0]}
           className="min-h-12 flex-1 rounded-2xl border border-line bg-bg px-4 text-lg"
         />
-        <button type="submit" disabled={pending} className="min-h-12 cursor-pointer rounded-2xl bg-accent px-6 font-bold text-on-accent hover:bg-accent-strong disabled:opacity-60">
+        <button type="submit" disabled={pending} aria-busy={pending} className="min-h-12 cursor-pointer rounded-2xl bg-accent px-6 font-bold text-on-accent hover:bg-accent-strong disabled:opacity-60">
           {pending ? a.searching : a.ask}
         </button>
       </form>

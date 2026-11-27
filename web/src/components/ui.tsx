@@ -82,6 +82,11 @@ export function Meter({ value, total, label }: { value: number; total: number; l
   );
 }
 
+/** Text with only its digit runs in the monospace `.num` style, so Arabic words keep the body font. */
+export function NumText({ text }: { text: string }) {
+  return <>{text.split(/(\d+)/).map((part, i) => (i % 2 === 1 ? <span key={i} className="num">{part}</span> : part))}</>;
+}
+
 export function Pill({ children, tone }: { children: ReactNode; tone: "neutral" | "accent" | "warn" | "brand" }) {
   const tones = {
     neutral: "bg-surface-2 text-ink-soft",

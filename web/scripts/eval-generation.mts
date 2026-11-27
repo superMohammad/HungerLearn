@@ -40,7 +40,8 @@ function requiredEnv(name: string): string {
 
 function gitCommit(): string {
   const r = spawnSync("git", ["rev-parse", "HEAD"], { cwd: REPO, encoding: "utf8" });
-  return r.status === 0 ? r.stdout.trim() : `unknown (${r.stderr.trim()})`;
+  if (r.status !== 0) throw new Error(`git rev-parse HEAD failed (the report must name the commit it scored): ${r.stderr.trim() || r.error?.message}`);
+  return r.stdout.trim();
 }
 
 function migrate(url: string): void {
@@ -55,7 +56,7 @@ function pct(x: number | null): string {
 
 function line(label: string, s: Summary): string {
   return `${label.padEnd(8)} items ${String(s.items).padStart(4)}  citation accuracy ${pct(s.citation_accuracy.normalized)} (exact ${pct(s.citation_accuracy.exact)})  `
-    + `silent failures ${s.silent_failures}  publishable with failed check ${s.publishable_with_failed_check}  `
+    + `silent failures ${s.silent_failures} (digits ${s.silent_failures_by_check.quote_digits_differ ?? 0})  publishable with failed check ${s.publishable_with_failed_check}  `
     + `procedures ${s.procedures} (failed ${s.procedures_failed}, skipped ${s.packages_skipped})`;
 }
 
@@ -64,6 +65,8 @@ async function main(): Promise<void> {
   const documents = await loadDevOriginals(DATASET, { only });
   if (documents.length === 0) throw new Error("no dev originals selected");
 
+  // Fails before any database or LLM call, so a missing commit never throws away a paid run.
+  const commit = gitCommit();
   const adminUrl = requiredEnv("DATABASE_URL");
   const dbName = `hl_eval_${randomBytes(6).toString("hex")}`;
   // Everything that can fail on configuration is computed before CREATE DATABASE, so a config mistake
@@ -130,7 +133,7 @@ async function main(): Promise<void> {
     const report = buildReport(
       {
         date: new Date().toISOString(),
-        commit: gitCommit(),
+        commit,
         model: env.llmModel,
         llm_host: new URL(env.llmBaseUrl).host,
         reasoning_effort: env.llmReasoningEffort,

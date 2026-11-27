@@ -16,7 +16,7 @@ Order: the courier family first, reviewed by Mohammad for look and language, the
 ## Design
 - **One authoring record per family** (`data/synthetic_sops/qa/v3_authoring/<family>.py`, typed in `model.py`) holds every visible string as an Arabic/English pair:
   - front matter: document control, revision history, approval, purpose and scope, definitions, RACI, overview with a flowchart;
-  - 17–20 procedures, each with when-it-applies, numbered rules, an example from the field, common mistakes, and an optional table or chart;
+  - 16–17 procedures, each with when-it-applies, numbered rules, an example from the field, common mistakes, and an optional table or chart;
   - performance indicators with a chart, records, related documents, and appendices (form, checklist, FAQ).
 - **Only numbered rules are gold clauses.**
   - v2 rules keep their clause IDs.

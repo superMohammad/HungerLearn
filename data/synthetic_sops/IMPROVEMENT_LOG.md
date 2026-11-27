@@ -286,10 +286,12 @@ Other candidates surfaced by search but not used:
   - Extraction labels, with PDF pages read from the rendered files.
   - The v2 → v3 diff and its learner routing (6 new learners who hold v2).
   - Retrieval distractors for the v3 copy of each answer.
-  - Publication gates G-01…G-06 point at v3, because v2 is now superseded.
+  - Publication gates G-01…G-06 point at v3, because v2 is now superseded. The three retrieval queries that called v2 "current" or "new" now name version 2.
+  - Not moved: the assessment cases A-C1, A-E1, A-P1 and the flagged draft still cite v2. They test v2 only; do not publish them as current training.
 - **Checks.**
   - `validate.py` checks v3 rules as numbered lines inside their sections, or by words on the cited page for PDFs. It also checks the copy and translation metadata, and that copies match the original's clauses and facts.
-  - Seven new mutations; 36/36 seeded errors are caught.
+  - English PDF quotes are matched as written on their cited page. Arabic translations must quote the same text in all three formats.
+  - Nine new mutations; 38/38 seeded errors are caught.
   - `independent_audit.py` and `header_audit.py` handle v3 PDFs.
 - **Finding.** Chrome writes Arabic PDF text in visual run order:
   - pypdf returns presentation forms, and NUL for one mark glyph;
@@ -326,7 +328,7 @@ From `data/synthetic_sops/`, with Python 3.11+:
 python -m pip install Pillow==13.0.0 pypdf==6.21.4                 # validator
 python -m pip install numpy pypdfium2 pdfplumber python-docx        # QA scripts
 python validate.py                                                 # fixture validation (checks the freeze)
-python qa/mutation_tests.py                                        # 36 seeded errors, all must be caught
+python qa/mutation_tests.py                                        # 38 seeded errors, all must be caught
 python qa/independent_audit.py
 python qa/header_audit.py
 python qa/sop_lint.py

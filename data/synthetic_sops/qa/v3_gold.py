@@ -21,6 +21,8 @@ It replaces any earlier v3 rows, so it can run again after an edit:
 from __future__ import annotations
 
 import json
+import unicodedata
+from collections import Counter
 from pathlib import Path
 
 from pypdf import PdfReader
@@ -28,8 +30,16 @@ from pypdf import PdfReader
 from qa.v3_authoring.model import FamilyV3, Language, LANGUAGES, Rules
 from qa.v3_render import FAMILIES, FORMATS, heading, upload_path
 from validate import (
-    ROOT, expected_learner_action, fields, load, match_key, trigram_similarity, word_bag,
+    ROOT, expected_learner_action, fields, load, match_key, pdf_compact, trigram_similarity, word_bag,
 )
+
+# Queries written when v2 was current; v3 supersedes v2, so they now name version 2.
+VERSION_2_QUERIES = {
+    "dev-courier-01": "In version 2 of the pickup procedure, how long after my branch check-in do I alert Dispatch "
+                      "if the bag is still being prepared?",
+    "dev-employee-01": "في الإصدار الثاني، من يتواصل مع مكتب التوزيع إذا بقي التتبع بلا تحديث بعد فتح حالة التأخر؟",
+    "dev-partner-03": "في الإصدار الثاني من إجراء التعبئة، متى أسجل عدد الأكياس وأين أسجله؟",
+}
 
 # Gate claims rewritten for the rule that is current in v3; each keeps the trap it was written to test.
 GATES_ON_V3 = {
@@ -90,21 +100,37 @@ def manifest_rows(family: FamilyV3, v2: dict) -> list[dict]:
     return rows
 
 
+def on_page(text: str, bag: Counter[str], page_text: str, language: Language) -> bool:
+    """Arabic PDF text comes out in visual run order, so it is matched by words; English is matched as written."""
+    if language == "ar":
+        return word_bag(text) <= bag
+    return pdf_compact(text) in pdf_compact(page_text)
+
+
 def pdf_pages(family: FamilyV3, language: Language) -> dict[str, int]:
     """Page of every section heading and every rule in the rendered PDF, searched in document order."""
-    bags = [word_bag(page.extract_text() or "") for page in PdfReader(upload_path(family, language, "pdf")).pages]
+    texts = [unicodedata.normalize("NFKC", page.extract_text() or "")
+             for page in PdfReader(upload_path(family, language, "pdf")).pages]
+    bags = [word_bag(text) for text in texts]
     found: dict[str, int] = {}
     page = 0
     for n, section in family.numbered():
         line = heading(section, n, language)
-        page = next(p for p in range(page, len(bags)) if word_bag(line) <= bags[p])
+        page = next((p for p in range(page, len(bags)) if on_page(line, bags[p], texts[p], language)), None)
+        if page is None:
+            raise ValueError(f"{family.family}/{language}: heading {line!r} not found in the PDF")
         found[line] = page + 1
         rule_page = page
         for block in section.blocks:
             if isinstance(block, Rules):
                 for rule in block.rules:
                     quote = rule.text.get(language)
-                    rule_page = next(p for p in range(rule_page, len(bags)) if word_bag(quote) <= bags[p])
+                    found_page = next((p for p in range(rule_page, len(bags))
+                                       if on_page(quote, bags[p], texts[p], language)), None)
+                    if found_page is None:
+                        raise ValueError(f"{family.family}/{language}: rule {rule.clause_id} not found on or after "
+                                         f"PDF page {rule_page + 1}")
+                    rule_page = found_page
                     found[rule.clause_id] = rule_page + 1
     return found
 
@@ -132,6 +158,12 @@ def extraction_row(family: FamilyV3, language: Language, fmt: str, v2_facts: dic
 def diff_row(family: FamilyV3, v2_doc: dict, v2_row: dict, v3_row: dict, learners: list[dict]) -> dict:
     before = {c["clause_id"]: c for c in v2_row["clauses"]}
     after = {c["clause_id"]: c for c in v3_row["clauses"]}
+    unaccounted = set(before) - set(family.changes) - set(family.removed)
+    unknown = (set(family.changes) | set(family.removed)) - set(before)
+    revived = set(family.removed) & set(after)
+    if unaccounted or unknown or revived:
+        raise ValueError(f"{family.family}: v2 rules missing from changes/removed {sorted(unaccounted)}, "
+                         f"changes/removed not in v2 {sorted(unknown)}, removed but still in v3 {sorted(revived)}")
     entries, reassess = [], []
     for cid in [*before, *(c for c in after if c not in before)]:
         prior, current = before.get(cid), after.get(cid)
@@ -247,6 +279,8 @@ def main() -> None:
 
     queries = load("dev/gold/retrieval.json")
     for query in queries:
+        # v3 supersedes v2, so a query scoped to v2 names its version instead of calling it current or new.
+        query["query"] = VERSION_2_QUERIES.get(query["query_id"], query["query"])
         for family in FAMILIES:
             original = rows[document_id(family, family.original_language, family.original_format)]
             v3_quotes = {c["clause_id"]: c["quote"] for c in original["clauses"]}

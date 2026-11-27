@@ -222,7 +222,7 @@ PROCEDURES = (
     procedure(
         T("اختيار رف التجهيز", "Choosing the ready shelf"),
         T("تنطبق هذه الحالة عند نقل الطلب المختوم إلى رف التجهيز.", "This applies when a sealed order is moved to the ready shelf."),
-        (Rule("PP-16", T("بعد ختم الأكياس وتسجيل عددها، ضع الطلب في رف الفئة المبيّنة على شاشة التجهيز واجعل ملصق الرقم ظاهراً من جهة الممر.",
+        (Rule("PP-16", T("بعد ختم الأكياس وعدّها، ضع الطلب في رف الفئة المبيّنة على شاشة التجهيز واجعل ملصق الرقم ظاهراً من جهة الممر.",
                          "After the bags are sealed and counted, place the order on the category shelf shown on the prep screen with the number label facing the aisle.")),
          Rule("PP-30", T("لا تضع الطلب على رف فئة أخرى حتى لو كان رفه ممتلئاً، وأبلغ مشرف الوردية بامتلائه.",
                          "Do not place the order on another category's shelf, even if its own shelf is full. Tell the shift supervisor that it is full."))),

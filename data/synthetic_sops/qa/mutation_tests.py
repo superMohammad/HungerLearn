@@ -251,6 +251,23 @@ def v3_quote_drift(r):
             c = clause(rows, doc_id, "CW-24"); c["quote"] = c["quote"].replace("20 دقيقة", "25 دقيقة")
     jedit(r / "dev/gold/extraction.json", go)
 
+@mutation(12, "an English v3 PDF quote with its words reordered")
+def v3_en_pdf_word_order(r):
+    # The same words in another order pass a word-bag check; English PDFs must match as written.
+    def go(rows):
+        c = clause(rows, "courier-pickup-wait-v3-en-pdf", "CW-24")
+        c["quote"] = c["quote"].replace("phone dispatch. Do not rely", "phone dispatch. Rely do not")
+    jedit(r / "dev/gold/extraction.json", go)
+
+@mutation(12, "an Arabic v3 translation PDF whose quote disagrees with its DOCX and TXT")
+def v3_translation_disagrees(r):
+    # Arabic PDFs are checked by words, so a reordered quote is caught only against the other Arabic translations.
+    def go(rows):
+        c = next(c for c in v3_row(rows, "employee-delayed-order-v3-ar-pdf")["clauses"] if len(c["quote"].split()) > 3)
+        words = c["quote"].split()
+        c["quote"] = " ".join([words[1], words[0], *words[2:]])
+    jedit(r / "dev/gold/extraction.json", go)
+
 @mutation(12, "a v3 Arabic PDF rule cited on the wrong page")
 def v3_pdf_wrong_page(r):
     def go(rows):

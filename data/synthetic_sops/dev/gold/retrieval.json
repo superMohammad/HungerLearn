@@ -2,7 +2,7 @@
   {
     "query_id": "dev-courier-01",
     "query_language": "en",
-    "query": "Under the current pickup procedure, how long after my branch check-in do I alert Dispatch if the bag is still being prepared?",
+    "query": "In version 2 of the pickup procedure, how long after my branch check-in do I alert Dispatch if the bag is still being prepared?",
     "scope": {
       "role": "courier",
       "organization": "MadarFig Dispatch",
@@ -257,7 +257,7 @@
   {
     "query_id": "dev-employee-01",
     "query_language": "ar",
-    "query": "في الإصدار الحالي، من يتواصل مع مكتب التوزيع إذا بقي التتبع بلا تحديث بعد فتح حالة التأخر؟",
+    "query": "في الإصدار الثاني، من يتواصل مع مكتب التوزيع إذا بقي التتبع بلا تحديث بعد فتح حالة التأخر؟",
     "scope": {
       "role": "employee",
       "organization": "SidrDesk Operations",
@@ -552,7 +552,7 @@
   {
     "query_id": "dev-partner-03",
     "query_language": "ar",
-    "query": "في إجراء التعبئة الجديد، متى أسجل عدد الأكياس وأين أسجله؟",
+    "query": "في الإصدار الثاني من إجراء التعبئة، متى أسجل عدد الأكياس وأين أسجله؟",
     "scope": {
       "role": "partner",
       "organization": "Copper Olive Kitchen",

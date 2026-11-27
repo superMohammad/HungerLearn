@@ -7,6 +7,9 @@ PDF: HTML printed by headless Chrome (Arabic shaping and RTL), the Hunger Learn 
 page numbers in the footer. DOCX: python-docx with Word heading styles (what Mammoth reads as headings), RTL
 paragraphs and tables for Arabic, the logo in the page header. TXT: the same content as plain text; figures become
 a one-line caption. Charts are PNG images in every format, so their labels never enter the extracted text.
+
+Chrome and python-docx stamp the render time into each PDF and DOCX, so a re-render changes their bytes even
+when the text is the same: regenerate the gold and the freeze (`python qa/freeze.py`) after every render.
 """
 from __future__ import annotations
 
@@ -181,7 +184,7 @@ def bar_svg(chart: BarChart, language: Language) -> tuple[str, int, int]:
     parts.append(f'<line x1="{left}" y1="{ty:.1f}" x2="{right}" y2="{ty:.1f}" stroke="#71717A" stroke-width="1.5"/>')
     # The target is named in a key above the plot, so it never collides with a bar or its value label.
     kx = right - 30 if language == "ar" else left + 30
-    parts.append(f'<line x1="{kx - 24 if language == "ar" else kx - 24:.1f}" y1="14" x2="{kx:.1f}" y2="14" '
+    parts.append(f'<line x1="{kx - 24:.1f}" y1="14" x2="{kx:.1f}" y2="14" '
                  f'stroke="#71717A" stroke-width="1.5" transform="translate({30 if language == "ar" else -6},0)"/>')
     tx = kx - 4 if language == "ar" else kx + 4
     parts.append(_text(tx, 19, chart.target_label.get(language), 14, "start", 700, "#3F3F46"))

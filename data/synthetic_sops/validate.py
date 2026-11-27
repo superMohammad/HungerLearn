@@ -169,10 +169,10 @@ def validate_manifest():
         check(10 <= doc["procedure_count"] <= 20, f"Expected 10 to 20 procedures: {doc_id}")
         family_groups[family].append(doc)
     for family, group in family_groups.items():
+        fingerprint = {(g["split"], g["role"], g["organization"], g["branch"]) for g in group}
         # A v3 translation is the one upload allowed to change language inside a family.
-        fingerprint = {(g["split"], g["role"], g["organization"], g["branch"], g["language"])
-                       for g in group if g["variant"] != "translation"}
-        check(len(fingerprint) == 1, f"Document family crosses splits or scopes: {family}")
+        languages = {g["language"] for g in group if g["variant"] != "translation"}
+        check(len(fingerprint) == 1 and len(languages) == 1, f"Document family crosses splits or scopes: {family}")
         versions = sorted((d["version"], d["variant"]) for d in group if d["version"] < 3)
         check(versions in ([(1, "original")], [(1, "original"), (1, "scan"), (2, "original")]),
               f"Invalid version or scan set: {family}")
@@ -338,12 +338,24 @@ def validate_v1_quote(pages, section_names, section, quote, locator, table_rows,
         check(2 <= row <= len(table_rows) and table_rows[row - 1] == [section, quote], f"Wrong table row: {context}")
 
 
-def validate_v3_quote(fmt, pages, section, quote, locator, context):
+def on_pdf_page(language, text, lines):
+    # Chrome writes Arabic runs in visual order, so Arabic is matched by words; English must appear as written.
+    if language == "ar":
+        return word_bag(text) <= word_bag(" ".join(lines))
+    return pdf_compact(text) in pdf_compact(" ".join(lines))
+
+
+def pdf_compact(text):
+    # A PDF line may wrap right after a hyphen ("SD-" / "286"); that wrap is the only whitespace change allowed.
+    return re.sub(r"-\s+", "-", compact(text))
+
+
+def validate_v3_quote(fmt, language, pages, section, quote, locator, context):
     # v3: a section holds context, rules, tables and examples, so a rule is one numbered line inside its section.
     if fmt == "pdf":
         page = locator["page"]
-        check(word_bag(quote) <= word_bag(" ".join(pages[page - 1])), f"Quote not on its locator page: {context}")
-        heading_pages = [n for n, lines in enumerate(pages, start=1) if word_bag(section) <= word_bag(" ".join(lines))]
+        check(on_pdf_page(language, quote, pages[page - 1]), f"Quote not on its locator page: {context}")
+        heading_pages = [n for n, lines in enumerate(pages, start=1) if on_pdf_page(language, section, lines)]
         check(heading_pages and heading_pages[0] <= page, f"Section heading missing before its rule: {context}")
         return
     lines = [line.strip() for line in pages[0] if line.strip()]
@@ -365,9 +377,25 @@ def validate_v3_copy(doc, label, origin):
     check(all(a["facts"] == b["facts"] for a, b in zip(label["clauses"], origin["clauses"])),
           f"v3 copy facts differ from the original: {doc_id}")
     if doc["variant"] == "format_copy":
-        check(all(a["quote"] == b["quote"] and a["locator"]["section"] == b["locator"]["section"]
-                  for a, b in zip(label["clauses"], origin["clauses"])) and label["title"] == origin["title"],
-              f"A format copy must quote the original word for word: {doc_id}")
+        check(same_text(label, origin), f"A format copy must quote the original word for word: {doc_id}")
+
+
+def same_text(label, other):
+    return label["title"] == other["title"] and all(
+        a["quote"] == b["quote"] and a["locator"]["section"] == b["locator"]["section"]
+        for a, b in zip(label["clauses"], other["clauses"]))
+
+
+def validate_v3_translations(docs, extraction):
+    # Every translation in one language carries the same text whatever its format (the TXT is checked line by line).
+    groups = defaultdict(list)
+    for doc_id, doc in docs.items():
+        if doc["variant"] == "translation":
+            groups[(doc["document_family"], doc["language"])].append(doc_id)
+    for key, ids in groups.items():
+        first = extraction[ids[0]]
+        check(all(same_text(extraction[other], first) for other in ids[1:]),
+              f"v3 translations in one language quote different text: {key}")
 
 
 def validate_procedures(doc, label, clauses, visible):
@@ -408,6 +436,10 @@ def validate_extraction(docs):
         elif fmt == "docx":
             lines, table_rows = word_text(path, doc["language"])
             pages = [lines]
+        elif fmt == "pdf" and doc["version"] == 3:
+            # NFKC folds Chrome's ligatures (ﬁ, ﬀ) and Arabic presentation forms back to plain letters.
+            pages = [unicodedata.normalize("NFKC", page.extract_text() or "").splitlines()
+                     for page in PdfReader(path).pages]
         elif fmt == "pdf":
             pages = [(page.extract_text() or "").splitlines() for page in PdfReader(path).pages]
         else:
@@ -415,9 +447,12 @@ def validate_extraction(docs):
         source_pages[doc_id] = pages
         source_tables[doc_id] = table_rows
         whole = compact(" ".join(line for page in pages for line in page))
-        if doc["version"] == 3 and fmt == "pdf":
+        if doc["version"] == 3 and fmt == "pdf" and doc["language"] == "ar":
             bag = word_bag(whole)
             visible = lambda text, bag=bag: word_bag(text) <= bag
+        elif doc["version"] == 3 and fmt == "pdf":
+            pdf_whole = pdf_compact(whole)
+            visible = lambda text, pdf_whole=pdf_whole: pdf_compact(text) in pdf_whole
         else:
             visible = lambda text, whole=whole: compact(text) in whole
         check(visible(MARKERS[doc["language"]]) and visible(doc["organization_local"]),
@@ -455,7 +490,7 @@ def validate_extraction(docs):
             if fmt in {"pdf", "image_pdf", "png"}:
                 check(1 <= locator["page"] <= len(pages), f"Bad page locator: {context}")
             if doc["version"] == 3:
-                validate_v3_quote(fmt, pages, section, quote, locator, context)
+                validate_v3_quote(fmt, doc["language"], pages, section, quote, locator, context)
             else:
                 validate_v1_quote(pages, section_names, section, quote, locator, table_rows, context)
             if doc["variant"] == "scan":
@@ -482,6 +517,7 @@ def validate_extraction(docs):
                     check(TIMER_ANCHOR.search(quote), f"Deadline or wait has no stated start event: {context}")
     transcriptions = {f"dev/gold/transcriptions/{doc_id}.json" for doc_id, d in docs.items() if d["variant"] == "scan"}
     check(transcriptions == files_in("dev/gold/transcriptions"), "Unexpected or missing transcription file")
+    validate_v3_translations(docs, extraction)
     return clause_index, source_pages
 
 

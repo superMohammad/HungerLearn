@@ -17,7 +17,7 @@ Each upload contains 10 or 11 named procedures. Each procedure addresses a disti
 
 ## v3 uploads (long SOPs)
 
-Each family with a v2 also has a v3: a full 20–40 page SOP with a cover, document control, definitions, a responsibility matrix, 17–20 procedures (rules, an example, common mistakes, tables), performance indicators, records and appendices. It carries the Hunger Learn logo, plus charts and photos as images. It comes as six uploads: PDF, DOCX and TXT, each in Arabic and English.
+Each family with a v2 also has a v3: a full 20–40 page SOP with a cover, document control, definitions, a responsibility matrix, 16–17 procedures (rules, an example, common mistakes, tables), performance indicators, records and appendices. It carries the Hunger Learn logo, plus charts and photos as images. It comes as six uploads: PDF, DOCX and TXT, each in Arabic and English.
 
 | Variant | Meaning |
 | --- | --- |
@@ -31,7 +31,7 @@ Copies and translations point at the original through `source_document_id`, and 
 
 **PDF locators.** Locators give the section heading line, plus the page for PDFs. Headings read «القسم N: …» / "Section N: …".
 
-**Arabic PDFs.** Chrome writes Arabic text in visual run order, so the validator checks those quotes by words on the cited page.
+**PDFs.** English PDF quotes must appear on the cited page as written (a line may wrap after a hyphen). Chrome writes Arabic text in visual run order, so the validator checks Arabic PDF quotes by words on the cited page, and requires every Arabic translation to quote the same text as its DOCX and TXT.
 
 **Rebuilding.** Everything is generated from one authoring record per family in `qa/v3_authoring/`:
 
@@ -75,7 +75,7 @@ For held-out evaluation, freeze the configuration and create a fresh index from 
 
 - **OvisOCR.** Use the three dev scans for OCR checks. The Arabic courier scan has a 1.2° tilt and mild noise. The Arabic partner PDF and English PNG are clean grayscale. Score against the transcribed logical text, permitting line-wrap whitespace changes. Check table reading order by reading the right-hand condition before the left-hand action in each Arabic row. Preserve Arabic-Indic digits and ASCII digits as printed when scoring exact character fidelity. Compare `١٥` on the courier v1 scan with `10` in the selectable-text v2 DOCX.
 - **BGE-M3.** Each split includes questions for all three roles and both languages. There are 30 dev questions and nine held-out questions, with 24 cross-language questions across both splits. With a scope filter, use role, organization, family, and version. Every dev query scoped to one version of a two-version family lists the other version's occurrence of the same rule as a wrong match; for unchanged rules the text is identical, so only the version filter can exclude it. For unfiltered dev runs, use the labeled wrong matches to inspect cross-role and stale-version ranking errors. Dev query targets use original documents. If you also index scans, canonicalize scan hits to `source_document_id` before scoring and deduplicate by clause occurrence.
-- **Updates and learner routing.** Apply each dev v2 to its original family. Changed items require reapproval, added items require initial approval, removed items retire, and unchanged items remain valid. Use the new document ID for current citations and refresh the quote or locator wherever `update_citation` is true. For mastered learners assigned the replaced SOP at the applicable branch, use `reassessment_clause_ids` to test the changed or added rules. In-progress learners receive the updated assignment. Out-of-scope or unassigned learners retain their existing mastery states.
+- **Updates and learner routing.** Apply each dev v2 to its v1, then each v3 original to its v2. v3 supersedes v2: the publication gates cite v3, while the assessment cases and the flagged draft still cite v2 and test that version only. Changed items require reapproval, added items require initial approval, removed items retire, and unchanged items remain valid. Use the new document ID for current citations and refresh the quote or locator wherever `update_citation` is true. For mastered learners assigned the replaced SOP at the applicable branch, use `reassessment_clause_ids` to test the changed or added rules. In-progress learners receive the updated assignment. Out-of-scope or unassigned learners retain their existing mastery states.
 
 ## Live judge demo
 
@@ -120,7 +120,7 @@ Report these separately:
 | Kind | Command (from this directory) | Status at freeze |
 | --- | --- | --- |
 | Fixture validation | `python validate.py` | PASS |
-| Seeded-error tests | `python qa/mutation_tests.py` | 36/36 caught |
+| Seeded-error tests | `python qa/mutation_tests.py` | 38/38 caught |
 | Change pairs (rebuild from authoring record) | `python qa/change_pairs_authoring.py`, then `python qa/freeze.py` | 106 pairs, each accepted only under its own label |
 | Independent re-parse | `python qa/independent_audit.py` | 776 quotes, 126 references, 0 problems (124 quotes in Arabic v3 PDFs are checked only by `validate.py`) |
 | Scan checks (no OCR model) | `python qa/scan_qa.py` | 3 scans pass |

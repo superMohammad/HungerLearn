@@ -62,7 +62,7 @@ export async function editQuestion(itemId: string, actor: string, edit: { prompt
   const [doc, clauses] = await Promise.all([getDocument(item.documentId), listClauses(item.documentId, item.versionId)]);
   const clause = clauses.find((c) => c.stableId === item.stableId);
   if (clause === undefined) throw new Error(`Clause ${item.stableId} not found in ${item.documentId} ${item.versionId}`);
-  const verdict = await verifyEditedQuestion(doc, payload, item.quote, clause);
+  const verdict = await verifyEditedQuestion(doc, item.versionId, payload, item.quote, clause);
   await sql()`
     UPDATE training_items SET payload = ${sql().json(payload)}, flags = ${sql().json(verdict.flags)}, judge_reason = ${verdict.judgeReason},
            updated_at = now()

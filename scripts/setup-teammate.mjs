@@ -6,11 +6,13 @@
  *
  * Needs: git, Node 22+, pnpm, uv, Docker (running).
  * Usage (bash/zsh):
- *   LLM_BASE_URL=<…/v1> LLM_MODEL=<model> LLM_API_KEY=<key> DEMO_PASSWORD=<min 8 chars> node scripts/setup-teammate.mjs
+ *   LLM_BASE_URL=<…/v1> LLM_MODEL=<model> LLM_API_KEY=<key> DEMO_PASSWORD=<min 8 chars> LLM_PRICES_USD_PER_MTOK='<json>' node scripts/setup-teammate.mjs
  * Usage (PowerShell):
- *   $env:LLM_BASE_URL="…"; $env:LLM_MODEL="…"; $env:LLM_API_KEY="…"; $env:DEMO_PASSWORD="…"; node scripts/setup-teammate.mjs
+ *   $env:LLM_BASE_URL="…"; $env:LLM_MODEL="…"; $env:LLM_API_KEY="…"; $env:DEMO_PASSWORD="…"; $env:LLM_PRICES_USD_PER_MTOK='…'; node scripts/setup-teammate.mjs
  * Examples: OpenRouter  LLM_BASE_URL=https://openrouter.ai/api/v1  LLM_MODEL=google/gemma-4-…  LLM_API_KEY=sk-or-…
  *           Ollama      LLM_BASE_URL=http://localhost:11434/v1  LLM_MODEL=gemma4:latest  LLM_API_KEY=ollama
+ * LLM_PRICES_USD_PER_MTOK: USD per million tokens for that model, e.g. '{"gemma4:latest":{"input":0,"output":0}}' for
+ * local Ollama (an explicit 0), or the endpoint's published price. There is no default price.
  */
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
@@ -50,6 +52,24 @@ runMain(() => {
   const llmBaseUrl = requiredEnv("LLM_BASE_URL", "an OpenAI-compatible base URL ending in /v1 (OpenRouter, your own Ollama, …)");
   const llmModel = requiredEnv("LLM_MODEL", "the model name at that endpoint");
   const llmApiKey = requiredEnv("LLM_API_KEY", "the endpoint's API key (any non-empty value for Ollama)");
+  const llmPrices = requiredEnv("LLM_PRICES_USD_PER_MTOK", `USD per million tokens as JSON, e.g. {"${llmModel}":{"input":0,"output":0}} for local Ollama`);
+  /** @type {unknown} */
+  let priceTable;
+  try {
+    priceTable = JSON.parse(llmPrices);
+  } catch (error) {
+    throw new CheckFailed(`LLM_PRICES_USD_PER_MTOK is not valid JSON: ${error instanceof Error ? error.message : String(error)}`);
+  }
+  // The full check (non-negative numbers, no unknown fields) runs in web/src/lib/prices.ts; this one fails before any setup work.
+  if (typeof priceTable !== "object" || priceTable === null || Array.isArray(priceTable)) {
+    throw new CheckFailed('LLM_PRICES_USD_PER_MTOK must be a JSON object: {"<model>":{"input":<USD/Mtok>,"output":<USD/Mtok>}}');
+  }
+  if (!Object.hasOwn(priceTable, llmModel)) {
+    throw new CheckFailed(`LLM_PRICES_USD_PER_MTOK has no price for model "${llmModel}" (LLM_MODEL)`);
+  }
+  // Written re-serialized on one line inside single quotes, so no newline from the input reaches .env.local.
+  const llmPricesLine = JSON.stringify(priceTable);
+  if (llmPricesLine.includes("'")) throw new CheckFailed("LLM_PRICES_USD_PER_MTOK must not contain a single quote");
   const demoPassword = requiredEnv("DEMO_PASSWORD", "at least 8 characters, shared by the seeded demo accounts");
   if (demoPassword.length < 8) throw new CheckFailed("DEMO_PASSWORD must be at least 8 characters");
   const missing = ["git", "docker", "uv", "pnpm"].filter((c) => !hasCommand(c));
@@ -105,6 +125,7 @@ runMain(() => {
     `LLM_MODEL=${llmModel}`,
     `LLM_API_KEY=${llmApiKey}`,
     "LLM_REASONING_EFFORT=high",
+    `LLM_PRICES_USD_PER_MTOK='${llmPricesLine}'`,
     `DOCPROC_DIR=${DOCPROC}`,
     `DOCPROC_BIN=${venvTool(venvBin(DOCPROC, venv), "docproc")}`,
     "# hlmedia needs CUDA: lesson video renders fail on this laptop. That is expected.",

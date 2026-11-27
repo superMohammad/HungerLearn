@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pymupdf as fitz  # PyMuPDF
 
+from docproc.loaders.pdf_bidi import Glyph, logical_rows, rebuilds, restore_unmapped
 from docproc.normalize import is_arabic_char, repair_arabic_order
 
 
@@ -35,37 +36,56 @@ def _usable(text: str, min_chars: int, min_letter_ratio: float) -> tuple[bool, s
     return True, ""
 
 
-def _page_text(page: "fitz.Page") -> str:
-    """Extract text block by block in reading order, preserving logical Arabic order.
+def _stream_line(line: dict) -> str:
+    """One PyMuPDF line as the PDF stream gives it (the reading order for left-to-right text)."""
+    t = unicodedata.normalize("NFC", "".join(c["c"] for s in line["spans"] for c in s["chars"])).strip()
+    if t.startswith("\u00ad"):  # bullet dash rendered as a soft-hyphen glyph
+        t = "- " + t.lstrip("\u00ad").lstrip()
+    return t
 
-    PyMuPDF returns characters in content-stream (logical) order for properly encoded
-    PDFs. For right-to-left blocks we sort lines top-to-bottom only, never re-ordering
-    characters within a line.
+
+def _glyphs(block: dict) -> list[list[Glyph]]:
+    """Each line's glyphs in stream order, with their boxes."""
+    return [[Glyph(c["c"], *c["bbox"], s["size"]) for s in line["spans"] for c in s["chars"]] for line in block["lines"]]
+
+
+def _text_blocks(page: "fitz.Page", flags: int) -> list[dict]:
+    return [b for b in page.get_text("rawdict", flags=flags)["blocks"] if b.get("type") == 0]
+
+
+def _page_text(page: "fitz.Page") -> tuple[str, int]:
+    """Text block by block in reading order, and how many blocks needed right-to-left reordering.
+
+    Left-to-right blocks keep the PDF stream order. A right-to-left block drawn right to left is rebuilt from glyph
+    positions (pdf_bidi), because browser-made PDFs write right-to-left runs in visual order. It is read with
+    ActualText off: Chrome wraps letters carrying a shadda or tanween in ActualText, which yields zero-width glyphs
+    between placeholder spaces; the ActualText reading only supplies marks for glyphs the font cannot map.
+    Right-to-left blocks on one row go right to left.
     """
-    lines_out: list[str] = []
-    data = page.get_text("dict", flags=fitz.TEXT_PRESERVE_WHITESPACE | fitz.TEXT_MEDIABOX_CLIP)
-    blocks = [b for b in data["blocks"] if b.get("type") == 0]
-    blocks.sort(key=lambda b: (round(b["bbox"][1], 1), b["bbox"][0]))
+    flags = fitz.TEXT_PRESERVE_WHITESPACE | fitz.TEXT_MEDIABOX_CLIP
+    blocks = _text_blocks(page, flags | fitz.TEXT_IGNORE_ACTUALTEXT)
+    marks = [g for b in _text_blocks(page, flags) for line in _glyphs(b) for g in line if unicodedata.combining(g.char)]
+    glyphs = [g for b in blocks for line in _glyphs(b) for g in line]
+    left = min((g.x0 for g in glyphs), default=0.0)
+    right = max((g.x1 for g in glyphs), default=0.0)
+    entries: list[tuple[float, float, str, bool]] = []
     for b in blocks:
-        block_lines = []
-        for line in b["lines"]:
-            t = "".join(s["text"] for s in line["spans"])
-            t = unicodedata.normalize("NFC", t).strip()
-            if t.startswith("­"):  # bullet dash rendered as a soft-hyphen glyph
-                t = "- " + t.lstrip("­").lstrip()
-            block_lines.append(t)
-        text = " ".join(l for l in block_lines if l)
-        if text:
-            lines_out.append(text)
-    return "\n".join(lines_out)
+        top = round(b["bbox"][1], 1)
+        if rebuilds(_glyphs(b), left, right):
+            rows = logical_rows(restore_unmapped(_glyphs(b), marks))
+            entries.append((top, -b["bbox"][2], " ".join(r for r in rows if r), True))
+        else:
+            entries.append((top, b["bbox"][0], " ".join(t for t in (_stream_line(line) for line in b["lines"]) if t), False))
+    entries.sort(key=lambda e: (e[0], e[1]))
+    return "\n".join(e[2] for e in entries if e[2]), sum(e[3] for e in entries)
 
 
 def probe_pdf(path: str | Path, min_chars: int = 40, min_letter_ratio: float = 0.5) -> list[PdfPage]:
     pages: list[PdfPage] = []
     with fitz.open(str(path)) as doc:
         for i, page in enumerate(doc, start=1):
-            text = _page_text(page)
-            lines, fixed = [], 0
+            text, fixed = _page_text(page)
+            lines = []
             for line in text.splitlines():
                 line, rep = repair_arabic_order(line)
                 lines.append(line)

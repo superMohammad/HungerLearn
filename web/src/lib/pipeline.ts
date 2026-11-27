@@ -5,6 +5,7 @@ import { carriesOver, changeLines, clauseStatuses } from "@/lib/carry-over";
 import { getComparison, listClauses, listVersionIssues, runDocproc } from "@/lib/docproc";
 import { zeroClausesError } from "@/lib/docproc-issues";
 import { buildPackage, groupProcedures } from "@/lib/generation";
+import { flagAffectedLearners } from "@/lib/learning";
 import { copyLessonVideo, queueLessonVideo } from "@/lib/media";
 import { initialItemState } from "@/lib/publication-rules";
 import { DICTIONARIES } from "@/lib/i18n";
@@ -159,13 +160,7 @@ async function applyNewVersion(doc: HlDocument, oldVersionId: string, newVersion
     const labels = DICTIONARIES[doc.language].reasons;
     const lines = changeLines(report, new Set([...old.stableIds, ...next.stableIds]), labels);
     const message = `${labels.update(old.title, newVersionId)}\n${lines.join("\n")}`;
-    const affected = await sql()<{ learner_id: string }[]>`
-      UPDATE mastery SET state = 'needs_refresh', version_id = ${newVersionId}, updated_at = now()
-      WHERE document_id = ${doc.documentId} AND procedure_key = ${old.procedureKey} AND state IN ('mastered', 'in_progress')
-      RETURNING learner_id`;
-    for (const r of affected) {
-      await sql()`INSERT INTO notifications (learner_id, document_id, version_id, message) VALUES (${r.learner_id}, ${doc.documentId}, ${newVersionId}, ${message})`;
-    }
+    await flagAffectedLearners(doc.documentId, old.procedureKey, newVersionId, message);
   }
   await markOutdated(await listVersionItems(doc.documentId, oldVersionId), newVersionId);
 }

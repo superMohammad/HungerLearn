@@ -7,9 +7,11 @@ import { answerAction } from "@/app/actions";
 import type { QuestionScreen, ScreenSpec } from "@/lib/compose";
 import type { AnswerResult } from "@/lib/learning";
 import { useDict } from "@/components/i18n-provider";
+import { WhatChanged } from "@/components/what-changed";
 
 /** Renders a validated screen spec. It only arranges approved content; grading happens on the server. */
 export function Screen({ spec }: { spec: ScreenSpec }) {
+  if (spec.kind === "what_changed") return <WhatChanged spec={spec} />;
   return spec.kind === "lesson" ? <Lesson spec={spec} /> : <Question spec={spec} />;
 }
 

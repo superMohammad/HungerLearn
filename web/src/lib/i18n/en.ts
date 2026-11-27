@@ -220,6 +220,17 @@ export const en: Dict = {
     reviewLesson: "Review the lesson and video",
     empty: "Nothing has been published here yet.",
     loadingScreen: "Getting your screen ready…",
+    changes: {
+      intro: "This procedure has been updated. Go through what changed before you take the new exam; your badge comes back when you pass it.",
+      range: (from: string, to: string) => `From ${from} to ${to}`,
+      before: "Before",
+      after: "After",
+      added: "New rule",
+      removed: "No longer applies",
+      continueToLesson: "Continue to the lesson",
+      review: "Review what changed",
+      recheck: "Your badge is on hold until you pass the new exam.",
+    },
   },
   screen: {
     lesson: "Lesson",

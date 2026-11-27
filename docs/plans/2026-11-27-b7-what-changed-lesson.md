@@ -125,6 +125,8 @@ Unit tests come first and must fail before the change (`web/src/lib/carry-over.t
   - `updated_at` is when it was earned.
 - **No migration for B9 as decided.** B7 keeps that meaning: a suspended badge is `needs_refresh` and a restored one is `mastered` on the new version.
 
+**Decision (2026-11-27):** Mohammad approved option A for D1, with no migration. D2 is not needed for B9 as decided.
+
 ### Gaps needing Mohammad's decision
 
 - **D1, recording that the lesson was viewed.**

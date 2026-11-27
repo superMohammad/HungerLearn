@@ -226,6 +226,17 @@ export const ar = {
     reviewLesson: "راجع الشرح والفيديو",
     empty: "لا يوجد محتوى منشور بعد.",
     loadingScreen: "جارٍ تجهيز الشاشة…",
+    changes: {
+      intro: "تم تحديث هذا الإجراء. اطّلع على ما تغيّر قبل أن تبدأ الاختبار الجديد، وتعود شارتك عند اجتيازه.",
+      range: (from: string, to: string) => `من ${from} إلى ${to}`,
+      before: "قبل",
+      after: "بعد",
+      added: "قاعدة جديدة",
+      removed: "لم تعد مطبّقة",
+      continueToLesson: "تابع إلى الدرس",
+      review: "راجع ما تغيّر",
+      recheck: "شارتك قيد المراجعة حتى تجتاز الاختبار الجديد.",
+    },
   },
   screen: {
     lesson: "الشرح",

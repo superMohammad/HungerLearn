@@ -13,7 +13,34 @@ This corpus exercises SOP ingestion, role-specific rule extraction with citation
 
 The uploads include three selectable-text PDFs, five DOCX files, four UTF-8 TXT files, two image-only PDFs, and one PNG. Each role has two independently authored dev v1 SOPs, one in Arabic and one in English. One of those families also has a v2 and a scan of its v1. Each role has one additional document family reserved for held-out evaluation.
 
-Each upload contains 10 or 11 named procedures. Each procedure addresses a distinct operational situation and has its own source citation. All 15 files contain 156 procedure occurrences, including the matching occurrences in the scans and revisions.
+Each upload contains 10 or 11 named procedures. Each procedure addresses a distinct operational situation and has its own source citation. All 15 files contain 156 procedure occurrences, including the matching occurrences in the scans and revisions. These counts cover the v1/v2 corpus; the v3 uploads below add six files per family that has a v2.
+
+## v3 uploads (long SOPs)
+
+Each family with a v2 also has a v3: a full 20–40 page SOP with a cover, document control, definitions, a responsibility matrix, 16–17 procedures (rules, an example, common mistakes, tables), performance indicators, records and appendices. It carries the Hunger Learn logo, plus charts and photos as images. It comes as six uploads: PDF, DOCX and TXT, each in Arabic and English.
+
+| Variant | Meaning |
+| --- | --- |
+| `original` | The family's language and v2's format. The v2 → v3 diff targets this upload. |
+| `format_copy` | The same text in another format. |
+| `translation` | The other language. It has the same clauses, procedures and facts, and the quotes are in its own language. |
+
+Copies and translations point at the original through `source_document_id`, and eval scores each under its own document ID.
+
+**Gold quotes.** Only the numbered rules ("6.1", «٦.١») are gold clauses. A quote is the rule text without its number. Context, examples, mistakes, tables and appendices are realistic but unlabelled, so they test extraction precision.
+
+**PDF locators.** Locators give the section heading line, plus the page for PDFs. Headings read «القسم N: …» / "Section N: …".
+
+**PDFs.** English PDF quotes must appear on the cited page as written (a line may wrap after a hyphen). Chrome writes Arabic text in visual run order, so the validator checks Arabic PDF quotes by words on the cited page, and requires every Arabic translation to quote the same text as its DOCX and TXT.
+
+**Rebuilding.** Everything is generated from one authoring record per family in `qa/v3_authoring/`:
+
+```sh
+uv run --no-project --with python-docx==1.2.0 --with Pillow==13.0.0 --with pypdf==6.21.4 python -m qa.v3_render
+uv run --no-project --with python-docx==1.2.0 --with Pillow==13.0.0 --with pypdf==6.21.4 python -m qa.v3_gold
+```
+
+Rendering needs Google Chrome or Chromium. The gold step also adds learners who hold v2, retrieval distractors for the v3 copy of each answer, and re-points the publication gates from v2 (now superseded) to v3.
 
 ## Files and labels
 
@@ -48,7 +75,7 @@ For held-out evaluation, freeze the configuration and create a fresh index from 
 
 - **OvisOCR.** Use the three dev scans for OCR checks. The Arabic courier scan has a 1.2° tilt and mild noise. The Arabic partner PDF and English PNG are clean grayscale. Score against the transcribed logical text, permitting line-wrap whitespace changes. Check table reading order by reading the right-hand condition before the left-hand action in each Arabic row. Preserve Arabic-Indic digits and ASCII digits as printed when scoring exact character fidelity. Compare `١٥` on the courier v1 scan with `10` in the selectable-text v2 DOCX.
 - **BGE-M3.** Each split includes questions for all three roles and both languages. There are 30 dev questions and nine held-out questions, with 24 cross-language questions across both splits. With a scope filter, use role, organization, family, and version. Every dev query scoped to one version of a two-version family lists the other version's occurrence of the same rule as a wrong match; for unchanged rules the text is identical, so only the version filter can exclude it. For unfiltered dev runs, use the labeled wrong matches to inspect cross-role and stale-version ranking errors. Dev query targets use original documents. If you also index scans, canonicalize scan hits to `source_document_id` before scoring and deduplicate by clause occurrence.
-- **Updates and learner routing.** Apply each dev v2 to its original family. Changed items require reapproval, added items require initial approval, removed items retire, and unchanged items remain valid. Use the new document ID for current citations and refresh the quote or locator wherever `update_citation` is true. For mastered learners assigned the replaced SOP at the applicable branch, use `reassessment_clause_ids` to test the changed or added rules. In-progress learners receive the updated assignment. Out-of-scope or unassigned learners retain their existing mastery states.
+- **Updates and learner routing.** Apply each dev v2 to its v1, then each v3 original to its v2. v3 supersedes v2: the publication gates cite v3, while the assessment cases and the flagged draft still cite v2 and test that version only. Changed items require reapproval, added items require initial approval, removed items retire, and unchanged items remain valid. Use the new document ID for current citations and refresh the quote or locator wherever `update_citation` is true. For mastered learners assigned the replaced SOP at the applicable branch, use `reassessment_clause_ids` to test the changed or added rules. In-progress learners receive the updated assignment. Out-of-scope or unassigned learners retain their existing mastery states.
 
 ## Live judge demo
 
@@ -82,7 +109,7 @@ It also enforces the label conventions above. That covers:
 
 ### Freeze
 
-`FREEZE.sha256` pins the SHA-256 of all 30 data files (manifest, uploads, gold). While it exists, any edit to a pinned file, or an added or removed data file, fails validation. After a reviewed change, regenerate it on purpose with `python qa/freeze.py`.
+`FREEZE.sha256` pins the SHA-256 of all 48 data files (manifest, uploads, gold). While it exists, any edit to a pinned file, or an added or removed data file, fails validation. After a reviewed change, regenerate it on purpose with `python qa/freeze.py`.
 
 ### QA scripts and reports
 
@@ -93,11 +120,11 @@ Report these separately:
 | Kind | Command (from this directory) | Status at freeze |
 | --- | --- | --- |
 | Fixture validation | `python validate.py` | PASS |
-| Seeded-error tests | `python qa/mutation_tests.py` | 29/29 caught |
+| Seeded-error tests | `python qa/mutation_tests.py` | 38/38 caught |
 | Change pairs (rebuild from authoring record) | `python qa/change_pairs_authoring.py`, then `python qa/freeze.py` | 106 pairs, each accepted only under its own label |
-| Independent re-parse | `python qa/independent_audit.py` | 156 quotes, 109 references, 0 problems |
+| Independent re-parse | `python qa/independent_audit.py` | 776 quotes, 126 references, 0 problems (124 quotes in Arabic v3 PDFs are checked only by `validate.py`) |
 | Scan checks (no OCR model) | `python qa/scan_qa.py` | 3 scans pass |
-| Diff recomputation | `python qa/diff_check.py` | 3 diffs reproduced |
+| Diff recomputation | `python qa/diff_check.py` | 6 diffs reproduced (v1 → v2 and v2 → v3) |
 | Dense retrieval (model run) | `python qa/retrieval_baseline.py --model intfloat/multilingual-e5-small` | dev, proxy model only |
 | BGE-M3 retrieval | `python qa/retrieval_baseline.py --model BAAI/bge-m3` | not run (model not installed) |
 | OvisOCR | — | not run (no OCR engine installed) |

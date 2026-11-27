@@ -1,0 +1,454 @@
+Packing orders and sealing bags
+Synthetic training data
+Copper Olive Kitchen | Olive Lane branch | Version 3
+To: Partner restaurant staff
+Standard operating procedure for partner restaurant packing staff
+Document number: CO-KIT-012 | Effective date: 2026-12-01
+
+
+Section 1: Document control
+
+Document details
+| Item | Value |
+| Document number | CO-KIT-012 |
+| Owner | Kitchen Management |
+| Effective date | 2026-12-01 |
+| Next review | 2027-06-01 |
+| Classification | Internal |
+
+Revision history
+| Version | Date | Summary of change |
+| 1 | 2026-03-05 | First issue. |
+| 2 | 2026-08-18 | Added content checks, hot and cold separation, drinks and allergy notes. |
+| 3 | 2026-12-01 | Full rewrite: new cases for handover, hygiene, supplies and cancellation, with supervision moved to the shift supervisor. |
+
+Approval
+| Name | Role | Date |
+| Abdulrahman Al-Shehri | Kitchen Manager | 2026-11-18 |
+| Amal Al-Zahrani | Food Safety Lead | 2026-11-20 |
+
+
+
+Section 2: Purpose and scope
+
+Packing staff use these procedures before moving an order, such as ZN-358, to the pickup point.
+
+This document explains how packing staff check, pack, seal and hand over an order, and how to handle allergies, damaged bags and cancellations. The aim is that every order leaves complete, intact and sealed, and is collected from the shelf without mistakes.
+
+Out of scope
+- Cooking and preparing dishes, which follow the kitchen procedures.
+- Delivery after the order leaves the restaurant, which the delivery company handles.
+- Customer complaints, which customer service handles.
+
+[Figure 1: A packing staff member getting an order ready for handover.]
+
+
+
+Section 3: Definitions
+
+The terms below have the meaning shown wherever they appear in this document.
+
+Terms
+| Term | Meaning |
+| Prep screen | The screen that shows each order's items, quantities and status. |
+| Seal | A sticker that closes the bag opening and tears if the bag is opened. |
+| Prep station | Where dishes are made ready before packing. |
+| Ready shelf | The shelf where a sealed order waits for the courier. |
+| Shift supervisor | The person in charge of packing staff on a shift. |
+| Allergy note | A note from the customer about an ingredient their order must not contain. |
+
+
+
+Section 4: Roles and responsibilities
+
+The table shows who does each activity, who is accountable, who is consulted and who is informed.
+
+Responsibility matrix (R: responsible, A: accountable, C: consulted, I: informed)
+| Activity | Packing staff | Shift supervisor | Prep station | Courier |
+| Checking contents | R | A | C | - |
+| Allergy orders | R | A | C | - |
+| Sealing and packing | R | A | - | I |
+| Handover to the courier | R | A | - | C |
+| Ordering supplies | I | R | - | - |
+
+
+
+Section 5: Overview of the packing journey
+
+Every order goes through five stages: taking it from the prep station, checking, packing, sealing and handing it to the courier. Sections 6 to 21 cover each stage and the situations that come up in it.
+
+[Figure 2: Packing stages from the prep station to handover.]
+
+How to use this document
+Each procedure section starts with the situation, then the numbered rules, then an example from the field and common mistakes. The numbered rules are what your work is measured against; the examples are only there to explain them.
+
+
+
+Section 6: Matching the label
+
+When this applies
+This applies to every bag before it is closed.
+
+Rules
+6.1 Match the order number on each bag's label with the prep screen before closing it. If the number differs, take the bag back to the packing table.
+6.2 Print the order label from the prep screen. Do not handwrite the order number.
+
+Example from the field
+Ghada noticed that one of two bags was labelled ZN-385 while the order was ZN-358. She took the bag back to the packing table and printed a new label from the screen.
+
+Common mistakes
+- Correcting the number on the label with a pen.
+- Checking only the first bag in a multi-bag order.
+
+
+
+Section 7: Checking the order contents
+
+When this applies
+This applies to every order that arrives from the prep station, before it is packed.
+
+Rules
+7.1 Before closing the bag, check every item and its quantity against the prep screen. Send an incomplete order back to the prep station to be completed.
+7.2 If an item in the order has run out, tell the shift supervisor before closing. Do not swap it for another item on your own.
+
+What to check before closing
+| Item | Where to find it |
+| Items | Prep screen |
+| Quantities | Prep screen |
+| Extras and sauces | Order notes |
+
+Example from the field
+The customer ordered three chicken pieces and two arrived. Saad sent the order back to the prep station and checked it again before closing.
+
+Common mistakes
+- Closing an incomplete order to be completed later.
+- Swapping a sold-out item for a similar one without telling anyone.
+
+
+
+Section 8: Separating hot and cold items
+
+When this applies
+This applies to orders that combine hot and cold items.
+
+Rules
+8.1 If the order combines hot and cold items, pack each group in its own bag and put the order number on both bags.
+8.2 Put cold sauces and extras in the cold-items bag.
+
+Example from the field
+An order had a burger, a salad and a juice. Majed put the burger in one bag and the salad, juice and garlic sauce in another, and labelled both bags.
+
+Common mistakes
+- Putting the salad on top of the hot burger.
+- Leaving the cold bag without a label.
+
+
+
+Section 9: Securing drinks
+
+When this applies
+This applies to every order that includes a drink.
+
+Rules
+9.1 If the order includes a drink, fix the cup upright in a holder inside a separate bag and check the lid is tight before closing.
+9.2 Do not put more than 4 cups in one holder.
+
+Example from the field
+An office ordered six drinks. Rima split the cups across two holders, four in the first and two in the second, and checked every lid.
+
+Common mistakes
+- Putting a cup in the bag without a holder.
+- Squeezing six cups into one holder.
+
+
+
+Section 10: Handling an allergy note
+
+When this applies
+This applies to every order that shows an allergy note.
+
+Rules
+10.1 If the order shows an allergy note, show it to the shift supervisor before closing and wait for them to confirm the contents.
+10.2 Use clean, separate packing tools for allergy orders.
+10.3 Do not close an allergy order before the shift supervisor confirms it on the prep screen.
+
+Example from the field
+An order carried the note "nut allergy". Khalid showed it to the shift supervisor, who checked the sauce was nut-free and confirmed the order on the screen; then Khalid closed it.
+
+Common mistakes
+- Relying on memory for sauce ingredients.
+- Using the same packing spoon for every order.
+
+
+
+Section 11: Closing the bags
+
+When this applies
+This applies to every bag after it is checked and before it goes to the shelf.
+
+Rules
+11.1 Close the bag openings with a visible seal. If a paper bag will not take the seal, put it inside an outer bag and seal the outer bag.
+11.2 Use one seal per opening. Do not use ordinary tape instead of a seal.
+
+Example from the field
+The seal would not stick to a paper bag with a damp edge. Amal put the bag inside a plastic bag and sealed the outer bag.
+
+Common mistakes
+- Wrapping tape around the bag instead of sealing it.
+- Putting one seal across two openings.
+
+
+
+Section 12: Checking the seal
+
+When this applies
+This applies from the moment a bag is sealed until it is handed to the courier.
+
+Rules
+12.1 If a seal tears before the order is handed to the courier, reseal the bag with a new seal. Do not hand over any bag whose seal is torn.
+12.2 If seals keep tearing on the same order, tell the shift supervisor so they can check the batch of seals.
+
+Example from the field
+Two seals tore on the same order as it was moved to the shelf. Saad resealed it and told the shift supervisor, who found the new batch was faulty and replaced it.
+
+Common mistakes
+- Handing over the bag because the tear is small.
+- Carrying on with seals that keep tearing.
+
+
+
+Section 13: Replacing a wet bag
+
+When this applies
+This happens when a bag gets wet from a drink or sauce during packing.
+
+Rules
+13.1 If a bag gets wet during packing, check the containers inside and replace the bag before sealing. Tell the supervisor if a container inside is damaged.
+13.2 Do not dry a wet bag to use it again.
+
+Example from the field
+A little sauce spilled on a paper bag. Rima checked the containers, found them intact, and moved them into a new bag before sealing.
+
+Common mistakes
+- Wiping the bag with a tissue and carrying on.
+- Sealing the bag before checking the containers.
+
+
+
+Section 14: Recording the bags
+
+When this applies
+This applies to orders made up of several bags.
+
+Rules
+14.1 If the order has 3 bags or more, record the number of bags on the prep screen before moving it to the pickup point.
+14.2 Write each bag's position on its label, such as "1 of 3".
+
+Example from the field
+A family order came in four bags. Majed recorded the count on the screen and wrote "1 of 4" to "4 of 4" on the labels.
+
+Common mistakes
+- Recording the count after the order is already on the shelf.
+- Leaving the bags unnumbered so the courier takes only some of them.
+
+
+
+Section 15: Choosing the ready shelf
+
+When this applies
+This applies when a sealed order is moved to the ready shelf.
+
+Rules
+15.1 After the bags are sealed and counted, place the order on the category shelf shown on the prep screen with the number label facing the aisle.
+15.2 Do not place the order on another category's shelf, even if its own shelf is full. Tell the shift supervisor that it is full.
+
+Example from the field
+The large-orders shelf filled up at peak time. Ghada told the shift supervisor, who added a mobile shelf for that category instead of mixing orders.
+
+Common mistakes
+- Putting the order on the nearest empty shelf.
+- Turning the label to face the wall.
+
+
+
+Section 16: Orders waiting on the shelf
+
+When this applies
+This happens when the courier is late and the sealed order stays on the shelf.
+
+Rules
+16.1 If the order is still on the shelf 15 minutes after the bags are sealed, tell the shift supervisor.
+16.2 Do not open a sealed bag to reheat what is inside.
+
+[Figure 3: The wait is counted from when the bags are sealed.]
+
+Example from the field
+An order was sealed at 1:10 pm and no courier came. At 1:25 Saad told the shift supervisor, who contacted the delivery company.
+
+Common mistakes
+- Opening the bag to warm the fries before the courier arrives.
+- Moving the order to the back and waiting without telling anyone.
+
+
+
+Section 17: Handing over to the courier
+
+When this applies
+This applies when the courier arrives to collect the order.
+
+Rules
+17.1 Hand the order to the courier after matching the order number in their app with the label.
+17.2 Do not hand the order to anyone who cannot show the order number in the delivery app.
+17.3 If the courier tells you the bag does not match their order, put the bag back on the shelf and find the matching bag by order number.
+
+Example from the field
+Someone asked to collect an order without showing the app. Amal politely waited until he showed the order number in the delivery app, then handed over the two bags.
+
+Common mistakes
+- Handing over because the name the person says matches the label.
+- Giving the courier the nearest bag that looks like theirs.
+
+
+
+Section 18: Hygiene in the packing area
+
+When this applies
+These rules apply in the packing area for the whole shift.
+
+Rules
+18.1 Wash your hands and put on new gloves at the start of every shift and after any break.
+18.2 Do not put bags on the floor in the packing area.
+
+Example from the field
+Majed came back from his break, washed his hands and put on new gloves before going back to packing.
+
+Common mistakes
+- Carrying on in the same gloves after a break.
+- Putting bags on the floor when the table is full.
+
+
+
+Section 19: Supplies
+
+When this applies
+This applies to the bags, seals and holders used for packing.
+
+Rules
+19.1 If 50 seals or fewer are left in stock, tell the shift supervisor to order more.
+19.2 Do not use bags from a supplier that is not approved.
+
+Example from the field
+Rima counted the seals at the end of the morning and found 45. She told the shift supervisor, who ordered more stock that arrived before dinner.
+
+Common mistakes
+- Waiting until the seals run out before saying anything.
+- Using bags from a nearby shop when stock runs low.
+
+
+
+Section 20: Cancellation during packing
+
+When this applies
+This happens when the screen shows the order was cancelled while you are packing it.
+
+Rules
+20.1 If the order is cancelled during packing, stop working on it and put the bags on the cancelled-orders shelf.
+20.2 Do not hand a cancelled order to any courier.
+
+Example from the field
+Order ZN-372 was cancelled after one bag had been packed. Khalid stopped, put the bag on the cancelled-orders shelf, and told a courier who came for it that it had been cancelled.
+
+Common mistakes
+- Finishing the packing in case the order is reinstated.
+- Handing the cancelled order to the courier because it is ready.
+
+
+
+Section 21: Shift handover
+
+When this applies
+This applies at the end of every shift.
+
+Rules
+21.1 Before your shift ends, hand the open orders to the next shift's packing staff, naming each order number.
+21.2 Record any shortage of supplies in the shift log.
+
+Example from the field
+Ghada's shift ended with three orders on the table. She handed them to her colleague with each order number and noted in the shift log that cup holders were running low.
+
+Common mistakes
+- Leaving orders on the table without a handover.
+- Mentioning a shortage out loud without recording it.
+
+
+
+Section 22: Performance indicators
+
+Kitchen Management reviews the indicators below every month. The figures in the chart are illustrative.
+
+Indicators
+| Indicator | Target | How it is measured |
+| Packing errors | Under 3 per 1,000 orders | Missing or wrong item reports from customers |
+| Bags handed over with an intact seal | 100% | Daily sample check at handover |
+| Allergy orders confirmed before closing | 100% | Prep screen log |
+
+[Figure 4: Packing errors per 1,000 orders at the Olive Lane branch (illustrative data).]
+
+
+
+Section 23: Records
+
+Records and retention
+| Record | Where it is kept | Retention |
+| Prep screen log | Kitchen system | One year |
+| Shift log | Supervisor's office | Six months |
+| Allergy order confirmations | Kitchen system | Two years |
+
+
+
+Section 24: Related documents
+
+Linked documents
+| Number | Title |
+| CO-KIT-004 | Kitchen food safety |
+| CO-KIT-009 | Managing allergens |
+| CO-SUP-002 | Approved suppliers |
+
+
+
+Appendix A: Shift log form (example)
+
+This example shows one page of the shift log.
+
+Log fields
+| Field | Example |
+| Date | 2026-12-03 |
+| Shift | Evening |
+| Orders handed to the next shift | ZN-401, ZN-404 |
+| Supply shortages | Cup holders |
+| Notes | New batch of seals |
+
+
+
+Appendix B: Pre-handover checklist (example)
+
+Checklist
+| Item | Done |
+| Items and quantities match the screen | ☐ |
+| Every bag has an intact seal | ☐ |
+| Labels printed and numbered | ☐ |
+| Drinks in holders with tight lids | ☐ |
+| Order number in the courier's app matches | ☐ |
+
+
+
+Appendix C: Frequently asked questions
+
+What if the customer asks to swap an item after the bag is closed?
+Do not open the bag; tell the shift supervisor, who decides, as Sections 7 and 12 explain.
+
+Do the rules change at peak time?
+No. The same rules apply at all times, although the supervisor may add shelves or staff.
+
+Who orders new supplies?
+The shift supervisor. Your job is to report the shortage, as Section 19 explains.

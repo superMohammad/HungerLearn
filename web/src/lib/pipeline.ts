@@ -1,12 +1,12 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { sql } from "@/lib/db";
-import { getComparison, listClauses, listVersionIssues, runDocproc, type ComparisonReport } from "@/lib/docproc";
+import { carriesOver, changeLines, clauseStatuses } from "@/lib/carry-over";
+import { getComparison, listClauses, listVersionIssues, runDocproc } from "@/lib/docproc";
 import { zeroClausesError } from "@/lib/docproc-issues";
 import { buildPackage, groupProcedures } from "@/lib/generation";
 import { copyLessonVideo, queueLessonVideo } from "@/lib/media";
-import { DICTIONARIES, type Dict } from "@/lib/i18n";
-import { reasonLabel } from "@/lib/reasons";
+import { DICTIONARIES } from "@/lib/i18n";
 import {
   getDocument,
   getProcedure,
@@ -17,10 +17,9 @@ import {
   listVersionItems,
   setCurrentVersion,
 } from "@/lib/repo";
-import type { ClauseStatus, HlDocument, LessonPayload, Procedure, TrainingItem, TrainingPackage } from "@/lib/types";
+import type { ComparisonReport, HlDocument, LessonPayload, Procedure, TrainingItem, TrainingPackage } from "@/lib/types";
 
 const SYSTEM_ACTOR = "ai:pipeline";
-const KEEP: ReadonlySet<ClauseStatus> = new Set(["unchanged", "moved"]);
 
 async function withJob<T>(documentId: string, versionId: string, step: string, work: () => Promise<T>): Promise<T> {
   const [job] = await sql()<{ id: number }[]>`
@@ -102,7 +101,7 @@ async function carryPackage(pkg: TrainingPackage, newProcedure: Procedure): Prom
     await sql()`
       INSERT INTO item_events (item_id, actor, action, from_status, to_status, version_id, note)
       VALUES (${copy.id}, ${SYSTEM_ACTOR}, 'carried_over', ${item.status}, ${item.status}, ${newProcedure.versionId},
-              ${`procedure clauses unchanged since ${item.versionId}: kept, zero AI cost`})`;
+              ${`procedure clauses unchanged or moved since ${item.versionId}: kept, zero AI cost`})`;
     if (item.kind === "lesson") await copyLessonVideo(item.id, copy.id);
   }
 }
@@ -115,16 +114,6 @@ async function markOutdated(items: TrainingItem[], newVersionId: string): Promis
       INSERT INTO item_events (item_id, actor, action, from_status, to_status, version_id, note)
       VALUES (${item.id}, ${SYSTEM_ACTOR}, 'superseded', ${item.status}, 'outdated', ${item.versionId}, ${`superseded by ${newVersionId}`})`;
   }
-}
-
-function changeLines(report: ComparisonReport, stableIds: ReadonlySet<string>, labels: Dict["reasons"]): string[] {
-  return report.clauses
-    .filter((c) => !KEEP.has(c.status) && c.stable_id !== null && stableIds.has(c.stable_id))
-    .map((c) => {
-      const text = (c.new ?? c.old)?.quote ?? "";
-      const reasons = c.change_reasons.filter((r) => r !== "location changed").map((r) => reasonLabel(r, labels));
-      return `• ${text.slice(0, 160)}${reasons.length > 0 ? ` (${reasons.join(labels.join)})` : ""}`;
-    });
 }
 
 /** Procedures of the new version: old procedures keep their key; clauses nobody owns are grouped anew. */
@@ -150,7 +139,7 @@ async function carryProcedures(doc: HlDocument, oldVersionId: string, newVersion
 
 async function applyNewVersion(doc: HlDocument, oldVersionId: string, newVersionId: string, report: ComparisonReport): Promise<void> {
   await carryProcedures(doc, oldVersionId, newVersionId);
-  const status = new Map(report.clauses.filter((c) => c.stable_id !== null).map((c) => [c.stable_id as string, c.status]));
+  const status = clauseStatuses(report);
   const [oldProcedures, newProcedures, oldPackages] = await Promise.all([
     listProcedures(doc.documentId, oldVersionId),
     listProcedures(doc.documentId, newVersionId),
@@ -161,8 +150,7 @@ async function applyNewVersion(doc: HlDocument, oldVersionId: string, newVersion
     const pkg = oldPackages.get(old.id);
     const next = newByKey.get(old.procedureKey);
     if (pkg === undefined || next === undefined) continue;
-    const unchanged = old.stableIds.every((s) => KEEP.has(status.get(s) ?? "removed")) && next.stableIds.length === old.stableIds.length;
-    if (unchanged) {
+    if (carriesOver(old, next, status)) {
       await carryPackage(pkg, next);
       continue;
     }

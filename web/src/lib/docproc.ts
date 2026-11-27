@@ -4,7 +4,7 @@ import { promisify } from "node:util";
 import { sql } from "@/lib/db";
 import { parseDocprocIssues, type DocprocIssue } from "@/lib/docproc-issues";
 import { serverEnv } from "@/lib/env";
-import type { Clause, ClauseStatus } from "@/lib/types";
+import type { Clause, ComparisonReport } from "@/lib/types";
 
 const run = promisify(execFile);
 const PROCESS_TIMEOUT_MS = 20 * 60 * 1000;
@@ -81,22 +81,6 @@ export async function listVersions(documentId: string): Promise<VersionSummary[]
     WHERE document_id = ${documentId} ORDER BY seq`;
   return rows.map((r) => ({ versionId: r.version_id, seq: r.seq, sourceFile: r.source_file, createdAt: r.created_at }));
 }
-
-type ReportSide = { quote: string; heading: string | null };
-type ReportClause = {
-  status: ClauseStatus;
-  stable_id: string | null;
-  old: ReportSide | null;
-  new: ReportSide | null;
-  change_reasons: string[];
-};
-export type ComparisonReport = {
-  old_version_id: string | null;
-  new_version_id: string;
-  complete: boolean;
-  summary: Record<ClauseStatus, number>;
-  clauses: ReportClause[];
-};
 
 export async function getComparison(documentId: string, versionId: string): Promise<ComparisonReport | null> {
   const rows = await sql()<{ report: ComparisonReport }[]>`

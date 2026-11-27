@@ -109,7 +109,7 @@ It also enforces the label conventions above. That covers:
 
 ### Freeze
 
-`FREEZE.sha256` pins the SHA-256 of all 30 data files (manifest, uploads, gold). While it exists, any edit to a pinned file, or an added or removed data file, fails validation. After a reviewed change, regenerate it on purpose with `python qa/freeze.py`.
+`FREEZE.sha256` pins the SHA-256 of all 48 data files (manifest, uploads, gold). While it exists, any edit to a pinned file, or an added or removed data file, fails validation. After a reviewed change, regenerate it on purpose with `python qa/freeze.py`.
 
 ### QA scripts and reports
 

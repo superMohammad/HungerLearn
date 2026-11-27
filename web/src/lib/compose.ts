@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { shuffledSteps } from "@/lib/question-rules";
-import { QUESTION_FORMATS, type LessonPayload, type QuestionPayload } from "@/lib/types";
+import { QUESTION_FORMATS, type LessonPayload, type QuestionFormat, type QuestionPayload } from "@/lib/types";
 
 /** What the client may see: never the answer key. */
 export const ScreenSpecSchema = z.discriminatedUnion("kind", [
@@ -64,21 +64,31 @@ export function levelFor(masteredCount: number, totalForRole: number): Level {
 }
 
 export type AttemptLite = { itemId: string; correct: boolean; at: number };
+export type StepItem = { id: string; format: QuestionFormat };
 
 /**
  * Which item comes next. Practice items each need one attempt; then exam items. A wrong exam answer
- * sends the learner back through practice (other formats) before the failed exam items are retried.
+ * sends the learner back through practice before the failed exam items are retried. Right after a
+ * wrong exam answer ("Not yet") the next item is the first due one (practice, then exam) in a different
+ * format, when a due published item offers one; otherwise, e.g. with a single format, the order above
+ * is kept. Already-passed exam items are not re-asked.
  * Mastered = the latest attempt of every exam item is correct.
  */
-export function nextStep(practiceIds: string[], examIds: string[], attempts: AttemptLite[]):
+export function nextStep(practice: readonly StepItem[], exam: readonly StepItem[], attempts: readonly AttemptLite[]):
   { kind: "practice" | "exam"; itemId: string } | { kind: "mastered" } {
+  const known = new Set([...practice, ...exam].map((i) => i.id));
+  const ordered = attempts.filter((a) => known.has(a.itemId)).sort((x, y) => x.at - y.at);
   const latest = new Map<string, AttemptLite>();
-  for (const a of [...attempts].sort((x, y) => x.at - y.at)) latest.set(a.itemId, a);
-  const failedExam = examIds.filter((id) => latest.get(id)?.correct === false);
-  const lastFailAt = Math.max(-1, ...failedExam.map((id) => (latest.get(id) as AttemptLite).at));
-  const practiceDue = practiceIds.find((id) => (latest.get(id)?.at ?? -2) <= lastFailAt);
-  if (practiceDue !== undefined) return { kind: "practice", itemId: practiceDue };
-  const examDue = examIds.find((id) => latest.get(id)?.correct !== true);
-  if (examDue !== undefined) return { kind: "exam", itemId: examDue };
-  return { kind: "mastered" };
+  for (const a of ordered) latest.set(a.itemId, a);
+  const failedExam = exam.filter((i) => latest.get(i.id)?.correct === false);
+  const lastFailAt = Math.max(-1, ...failedExam.map((i) => (latest.get(i.id) as AttemptLite).at));
+  const due = [
+    ...practice.filter((i) => (latest.get(i.id)?.at ?? -2) <= lastFailAt).map((i) => ({ kind: "practice" as const, item: i })),
+    ...exam.filter((i) => latest.get(i.id)?.correct !== true).map((i) => ({ kind: "exam" as const, item: i })),
+  ];
+  if (due.length === 0) return { kind: "mastered" };
+  const last = ordered.at(-1);
+  const justFailed = last !== undefined && !last.correct ? exam.find((i) => i.id === last.itemId) : undefined;
+  const pick = (justFailed === undefined ? undefined : due.find((d) => d.item.format !== justFailed.format)) ?? due[0];
+  return { kind: pick.kind, itemId: pick.item.id };
 }

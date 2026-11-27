@@ -131,7 +131,7 @@ test.describe("F05 learner flow: role and device layouts", () => {
 
   for (const { lang, dir } of LANGS) {
     for (const c of LAYOUT_CASES) {
-      test(`${c.role} sees the ${c.layout} layout (${lang})`, async ({ page }) => {
+      row(`${c.role} sees the ${c.layout} layout (${lang})`, async (page) => {
         await page.setViewportSize(c.viewport);
         await useLanguage(page, lang);
         await signIn(page, c.email);
@@ -158,6 +158,8 @@ test.describe("F05 learner flow: role and device layouts", () => {
           await expect(screen.locator('input[type="checkbox"]')).toHaveCount(4);
         }
         const dirOut = process.env.VERIFY_DIR;
+        // The named evidence is taken inside the body, so wait for loading states here too (row() checks again).
+        await expect(page.locator('[aria-busy="true"]').filter({ visible: true })).toHaveCount(0);
         await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
         if (dirOut !== undefined) await page.screenshot({ path: path.join(dirOut, `F05-${c.role}-${c.layout}-${lang}.png`), fullPage: true });
       });

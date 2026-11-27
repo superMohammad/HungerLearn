@@ -22,29 +22,45 @@ export const ED02_V2 = "If tracking has not refreshed for 8 minutes after the ca
 export const ED04 = "Before signing out, copy each open Delay case ID into the shift email to the duty lead.";
 
 type Clause = { stable_id: string; status: string; old: string | null; new: string | null; reasons: string[] };
+/** `hops[i]` is the comparison from upload v(i+1) to v(i+2); the last upload is current. */
 type Spec = {
   suffix: string; role: "courier" | "employee"; language: "ar" | "en"; title: string; procedureTitle: string;
-  stableIds: string[]; clauses: Clause[]; right: string; wrong: string; cited: string; cites: string;
+  stableIds: string[]; hops: Clause[][]; right: string; wrong: string; cited: string; cites: string;
 };
 
 export const COURIER: Spec = {
   suffix: "courier", role: "courier", language: "ar", title: "انتظار استلام الطلب من الفرع", procedureTitle: "تأخر تجهيز الطلب في الفرع",
   stableIds: ["CW-01", "CW-02", "CW-04"], cited: CW02_V2, cites: "CW-02", right: "أرسل بلاغ «تأخر الاستلام» بعد 10 دقائق", wrong: "انتظر 15 دقيقة ثم أرسل البلاغ",
-  clauses: [
+  hops: [[
     { stable_id: "CW-01", status: "unchanged", old: CW01, new: CW01, reasons: [] },
     { stable_id: "CW-02", status: "changed", old: CW02_V1, new: CW02_V2, reasons: ["threshold: 15 دقيقة -> 10 دقائق"] },
     { stable_id: "CW-04", status: "moved", old: CW04, new: CW04, reasons: ["location changed"] },
+  ]],
+};
+
+/** Upload 3 changes CW-04's wording; a learner flagged at upload 2 who skipped it sees both changes since upload 1. */
+export const CW04_V3 = "لا تغادر الفرع حتى يوجّهك مسؤول التوزيع بالمغادرة كتابيًا في التطبيق، أو يسلّمك موظف الفرع الطلب.";
+export const COURIER_SKIPPED: Spec = {
+  ...COURIER,
+  suffix: "courier-skip",
+  hops: [
+    COURIER.hops[0],
+    [
+      { stable_id: "CW-01", status: "unchanged", old: CW01, new: CW01, reasons: [] },
+      { stable_id: "CW-02", status: "unchanged", old: CW02_V2, new: CW02_V2, reasons: [] },
+      { stable_id: "CW-04", status: "changed", old: CW04, new: CW04_V3, reasons: ["wording changed"] },
+    ],
   ],
 };
 
 export const EMPLOYEE: Spec = {
   suffix: "employee", role: "employee", language: "en", title: "Delayed order handling", procedureTitle: "Escalating a stalled delay case",
   stableIds: ["ED-01", "ED-02", "ED-04"], cited: ED02_V2, cites: "ED-02", right: "Route the case to the duty lead", wrong: "Page the dispatch desk yourself",
-  clauses: [
+  hops: [[
     { stable_id: "ED-01", status: "unchanged", old: ED01, new: ED01, reasons: [] },
     { stable_id: "ED-02", status: "changed", old: ED02_V1, new: ED02_V2, reasons: ["actor: support agent -> duty lead", "location changed"] },
     { stable_id: "ED-04", status: "removed", old: ED04, new: null, reasons: [] },
-  ],
+  ]],
 };
 
 export type Seeded = { documentId: string; procedureKey: string; path: string };
@@ -81,38 +97,46 @@ export class B7Fixtures {
     this.db = postgres(assertDisposable(), { max: 1, onnotice: () => undefined });
   }
 
-  /** One document with uploads v1 and v2 (current), the procedure on both, and published v2 training. */
+  /**
+   * One document with one upload more than `spec.hops` (the last current), the procedure on every upload, the
+   * stored comparisons, and published training on the current upload. The learners were flagged at upload 2
+   * (needs_refresh, version v2): with more hops they skipped the later uploads.
+   */
   async seed(spec: Spec, learnerIds: string[]): Promise<Seeded> {
     const db = this.db;
     const documentId = `b7-${this.run}-${spec.suffix}`;
     const procedureKey = `b7-${this.run}-${spec.suffix}-proc`;
     this.documents.push(documentId);
+    const versions = Array.from({ length: spec.hops.length + 1 }, (_, i) => `v${i + 1}`);
+    const current = versions.at(-1) as string;
     // docproc owns `comparisons` (-/docproc/src/docproc/storage/schema_postgres.sql); CI's web job has no docproc.
     await db`CREATE TABLE IF NOT EXISTS comparisons (
                document_id TEXT NOT NULL, new_version_id TEXT NOT NULL, old_version_id TEXT, complete BOOLEAN NOT NULL,
                report JSONB NOT NULL, created_at TIMESTAMPTZ DEFAULT now(), PRIMARY KEY (document_id, new_version_id))`;
     await db`INSERT INTO hl_documents (document_id, title, role, language, current_version_id)
-             VALUES (${documentId}, ${spec.title}, ${spec.role}, ${spec.language}, 'v2')`;
+             VALUES (${documentId}, ${spec.title}, ${spec.role}, ${spec.language}, ${current})`;
     let procedureId = "";
-    for (const v of ["v1", "v2"]) {
+    for (const v of versions) {
       const [p] = await db<{ id: string }[]>`
         INSERT INTO procedures (document_id, version_id, procedure_key, ordinal, title, steps, stable_ids)
         VALUES (${documentId}, ${v}, ${procedureKey}, 0, ${spec.procedureTitle}, ${db.json([spec.procedureTitle])}, ${db.json(spec.stableIds)}) RETURNING id`;
       procedureId = p.id;
     }
-    const report = {
-      old_version_id: "v1", new_version_id: "v2", complete: true,
-      summary: { unchanged: 0, moved: 0, changed: 0, added: 0, removed: 0, needs_review: 0 },
-      clauses: spec.clauses.map((c) => ({
-        status: c.status, stable_id: c.stable_id, change_reasons: c.reasons,
-        old: c.old === null ? null : { quote: c.old, heading: null }, new: c.new === null ? null : { quote: c.new, heading: null },
-      })),
-    };
-    await db`INSERT INTO comparisons (document_id, new_version_id, old_version_id, complete, report)
-             VALUES (${documentId}, 'v2', 'v1', true, ${db.json(report)})`;
+    for (const [i, clauses] of spec.hops.entries()) {
+      const report = {
+        old_version_id: versions[i], new_version_id: versions[i + 1], complete: true,
+        summary: { unchanged: 0, moved: 0, changed: 0, added: 0, removed: 0, needs_review: 0 },
+        clauses: clauses.map((c) => ({
+          status: c.status, stable_id: c.stable_id, change_reasons: c.reasons,
+          old: c.old === null ? null : { quote: c.old, heading: null }, new: c.new === null ? null : { quote: c.new, heading: null },
+        })),
+      };
+      await db`INSERT INTO comparisons (document_id, new_version_id, old_version_id, complete, report)
+               VALUES (${documentId}, ${versions[i + 1]}, ${versions[i]}, true, ${db.json(report)})`;
+    }
     const [pkg] = await db<{ id: string }[]>`
       INSERT INTO training_packages (procedure_id, document_id, version_id, procedure_key, role, language, status, flags, resource_requests, ideas)
-      VALUES (${procedureId}, ${documentId}, 'v2', ${procedureKey}, ${spec.role}, ${spec.language}, 'ok', '[]', '[]', '[]') RETURNING id`;
+      VALUES (${procedureId}, ${documentId}, ${current}, ${procedureKey}, ${spec.role}, ${spec.language}, 'ok', '[]', '[]', '[]') RETURNING id`;
     const items: [string, number, unknown][] = [
       ["lesson", 0, { title: spec.procedureTitle, key_points: [{ text: spec.right, stable_id: spec.cites, quote: spec.cited }], video: null }],
       ["practice", 1, mcq(spec.right, spec.wrong, `${spec.procedureTitle} (1)`)],
@@ -120,7 +144,7 @@ export class B7Fixtures {
     ];
     for (const [kind, ordinal, payload] of items) {
       await db`INSERT INTO training_items (package_id, document_id, version_id, procedure_key, role, kind, ordinal, stable_id, quote, payload, status)
-               VALUES (${pkg.id}, ${documentId}, 'v2', ${procedureKey}, ${spec.role}, ${kind}, ${ordinal}, ${spec.cites}, ${spec.cited},
+               VALUES (${pkg.id}, ${documentId}, ${current}, ${procedureKey}, ${spec.role}, ${kind}, ${ordinal}, ${spec.cites}, ${spec.cited},
                        ${db.json(payload as never)}, 'published')`;
     }
     for (const learnerId of learnerIds) {

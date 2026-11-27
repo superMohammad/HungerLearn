@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { B7Fixtures, COURIER, CW01, CW02_V1, CW02_V2, CW04, ED01, ED02_V1, ED02_V2, ED04, EMPLOYEE, type Seeded } from "./b7-fixtures";
+import { B7Fixtures, COURIER, COURIER_SKIPPED, CW01, CW02_V1, CW02_V2, CW04, CW04_V3, ED01, ED02_V1, ED02_V2, ED04, EMPLOYEE, type Seeded } from "./b7-fixtures";
 
 /**
  * One describe block per docs/feature-map.md row that runs without an LLM or video.
@@ -117,8 +117,8 @@ test.describe("F06 readiness page", () => {
  */
 test.describe("F05 what changed before the new exam (B7)", () => {
   const UI = {
-    ar: { whatChanged: "ما الذي تغيّر؟", from: "الرفع رقم 1", to: "الرفع رقم 2", continue: "تابع إلى الدرس", start: "ابدأ التدريب", sure: "متأكد", next: "التالي", refresh: "يحتاج إعادة تدريب", mastered: "اجتاز", back: "العودة لإجراءاتي", review: "راجع ما تغيّر" },
-    en: { whatChanged: "What changed?", from: "Upload 1", to: "Upload 2", continue: "Continue to the lesson", start: "Start training", sure: "I'm sure", next: "Next", refresh: "Needs a refresher", mastered: "Passed", back: "Back to my procedures", review: "Review what changed" },
+    ar: { whatChanged: "ما الذي تغيّر؟", from: "الرفع رقم 1", to: "الرفع رقم 2", toSkipped: "الرفع رقم 3", continue: "تابع إلى الدرس", start: "ابدأ التدريب", sure: "متأكد", next: "التالي", refresh: "يحتاج إعادة تدريب", mastered: "اجتاز", back: "العودة لإجراءاتي", review: "راجع ما تغيّر" },
+    en: { whatChanged: "What changed?", from: "Upload 1", to: "Upload 2", toSkipped: "Upload 3", continue: "Continue to the lesson", start: "Start training", sure: "I'm sure", next: "Next", refresh: "Needs a refresher", mastered: "Passed", back: "Back to my procedures", review: "Review what changed" },
   } as const;
   const CASES = [
     { doc: "Arabic courier document", spec: COURIER, shown: [CW02_V1, CW02_V2], hidden: [CW01, CW04], learners: { ar: "khalid@hungerlearn.test", en: "haya@hungerlearn.test" } },
@@ -136,6 +136,7 @@ test.describe("F05 what changed before the new exam (B7)", () => {
     fixtures = new B7Fixtures();
     seeded.set("courier", await fixtures.seed(COURIER, ["HL-104", "HL-105", "HL-106"]));
     seeded.set("employee", await fixtures.seed(EMPLOYEE, ["HL-202", "HL-203", "HL-204"]));
+    seeded.set("courier-skip", await fixtures.seed(COURIER_SKIPPED, ["HL-107", "HL-102"]));
   });
   test.afterAll(async () => {
     await fixtures?.cleanup();
@@ -182,6 +183,25 @@ test.describe("F05 what changed before the new exam (B7)", () => {
         await expect(page.getByRole("link", { name: ui.continue })).toBeVisible();
       });
     }
+  }
+
+  const SKIPPED = { ar: "rayan@hungerlearn.test", en: "sara@hungerlearn.test" } as const;
+  for (const { lang, dir } of LANGS) {
+    row(`skipped upload: a learner flagged at upload 2 who returns at upload 3 sees every change since upload 1 (${lang} UI)`, async (page) => {
+      const ui = UI[lang];
+      const s = seededFor(COURIER_SKIPPED);
+      await useLanguage(page, lang);
+      await signIn(page, SKIPPED[lang]);
+      await expect(page).toHaveURL(/\/learn$/);
+      await page.locator(`li a[href*="${s.procedureKey}"]`).click();
+      await expect(page.locator("html")).toHaveAttribute("dir", dir);
+      const lesson = page.locator('article[aria-labelledby="what-changed-title"]');
+      await expect(lesson).toContainText(ui.from);
+      await expect(lesson).toContainText(ui.toSkipped);
+      await expect(lesson.locator("blockquote.source-quote")).toHaveText([CW02_V1, CW02_V2, CW04, CW04_V3]);
+      await expect(page.locator("body")).not.toContainText(CW01);
+      await expect(page.getByRole("link", { name: ui.continue })).toBeVisible();
+    });
   }
 
   for (const r of RECHECK) {

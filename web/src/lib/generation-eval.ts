@@ -170,10 +170,23 @@ export type ScoredProcedure = {
 };
 
 const DIGIT_RUN = /[0-9٠-٩۰-۹]+/g;
+const DIGIT = /[0-9٠-٩۰-۹]/;
 
-/** A printed number in the quote that the clause does not print the same way (15 against ١٥). */
+/** Whether the clause prints this number as a whole number (not inside a longer one: 15 is not in 150). */
+function printsNumber(clauseQuote: string, run: string): boolean {
+  for (let at = clauseQuote.indexOf(run); at >= 0; at = clauseQuote.indexOf(run, at + 1)) {
+    if (!DIGIT.test(clauseQuote[at - 1] ?? "") && !DIGIT.test(clauseQuote[at + run.length] ?? "")) return true;
+  }
+  return false;
+}
+
+/**
+ * The quote's printed digits differ from the clause's: the quote matches only once digits are folded
+ * (15 against ١٥), or, when other characters differ too, one of its numbers is not printed as such.
+ */
 function digitsDiffer(quote: string, clauseQuote: string): boolean {
-  return (quote.match(DIGIT_RUN) ?? []).some((run) => !clauseQuote.includes(run));
+  if (exactInClause(foldDigits(quote), foldDigits(clauseQuote))) return true;
+  return (quote.match(DIGIT_RUN) ?? []).some((run) => !printsNumber(clauseQuote, run));
 }
 
 /** Exact: the trimmed quote appears verbatim in the clause, so printed digits must match. */
@@ -235,8 +248,18 @@ export type Summary = {
   citations: { total: number; normalized_pass: number; exact_pass: number };
   items_with_failed_check: number;
   silent_failures: number;
+  /** Silent failures by failed check (quote_digits_differ, quote_not_exact, …); an item can count under several. */
+  silent_failures_by_check: Record<string, number>;
   publishable_with_failed_check: number;
+  /** Items per failed check, over every item with a failed check. */
+  failed_check_counts: Record<string, number>;
 };
+
+function countChecks(items: ScoredItem[]): Record<string, number> {
+  const counts = new Map<string, number>();
+  for (const check of items.flatMap((i) => i.failed_checks)) counts.set(check, (counts.get(check) ?? 0) + 1);
+  return Object.fromEntries([...counts].sort(([a], [b]) => a.localeCompare(b)));
+}
 
 function rate(part: number, whole: number): number | null {
   return whole === 0 ? null : part / whole;
@@ -262,7 +285,9 @@ export function summarize(procedures: ScoredProcedure[]): Summary {
     },
     items_with_failed_check: items.filter((i) => i.failed_checks.length > 0).length,
     silent_failures: items.filter((i) => i.silent_failure).length,
+    silent_failures_by_check: countChecks(items.filter((i) => i.silent_failure)),
     publishable_with_failed_check: items.filter((i) => i.publishable_with_failed_check).length,
+    failed_check_counts: countChecks(items),
   };
 }
 

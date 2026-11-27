@@ -241,6 +241,9 @@ export const ar = {
   },
   screen: {
     lesson: "الشرح",
+    scenario: "الموقف",
+    checklistHint: "حدّد كل ما ينطبق",
+    lessonVideo: "فيديو الشرح",
     startTraining: "ابدأ التدريب",
     phase: { practice: "تمرين", exam: "اختبار" },
     moveUp: (step: string) => `انقل «${step}» للأعلى`,

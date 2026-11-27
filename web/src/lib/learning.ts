@@ -1,6 +1,6 @@
 import "server-only";
 import { netChanges } from "@/lib/carry-over";
-import { composeQuestion, lessonScreen, nextStep, whatChangedScreen, type AttemptLite, type ScreenSpec, type WhatChangedScreen } from "@/lib/compose";
+import { composeScreen, lessonScreen, nextStepForLayout, preferredLayout, skipsLessonInAuto, whatChangedScreen, type AttemptLite, type LayoutVideo, type ScreenSpec, type WhatChangedScreen } from "@/lib/compose";
 import { sql } from "@/lib/db";
 import { getComparison, getComparisonChain } from "@/lib/docproc";
 import { gradeAgainstKey, type Answer } from "@/lib/question-rules";
@@ -100,18 +100,28 @@ export async function nextScreen(learner: Learner, doc: HlDocument, procedureKey
   }
   if (mode === "changes") mode = "auto";
   const video = lesson === undefined ? null : await getLessonVideo(lesson.id);
-  const lessonSpec = lesson === undefined ? null : lessonScreen(lesson.payload, video !== null && video.status === "ready" ? `/api/media/${video.itemId}` : null, doc.role === "courier");
-  if (lessonSpec !== null && (mode === "lesson" || (mode === "auto" && attempts.length === 0))) return { kind: "screen", spec: lessonSpec, title: procedure.title, changesAvailable };
+  const portrait = doc.role === "courier";
+  const ready: LayoutVideo | null = video !== null && video.status === "ready" ? { url: `/api/media/${video.itemId}`, orientation: portrait ? "portrait" : "landscape" } : null;
+  const lessonSpec = lesson === undefined ? null : lessonScreen(lesson.payload, ready?.url ?? null, portrait);
+  // Courier on a phone sees the lesson video on every question screen, so "auto" skips the separate lesson.
+  const layout = preferredLayout(learner.role, learner.device);
+  if (lessonSpec !== null && (mode === "lesson" || (mode === "auto" && attempts.length === 0 && !skipsLessonInAuto(layout, ready, questions.length)))) {
+    return { kind: "screen", spec: lessonSpec, title: procedure.title, changesAvailable };
+  }
 
-  const step = nextStep(
-    questions.filter((q) => q.kind === "practice").map((q) => ({ id: q.id, format: q.payload.format })),
-    questions.filter((q) => q.kind === "exam").map((q) => ({ id: q.id, format: q.payload.format })),
+  // B5's different-format retry wins; the layout only orders the due items (see nextStepForLayout).
+  const asStep = (q: QuestionItem) => ({ id: q.id, format: q.payload.format, scene: q.payload.scene });
+  const step = nextStepForLayout(
+    layout, ready,
+    questions.filter((q) => q.kind === "practice").map(asStep),
+    questions.filter((q) => q.kind === "exam").map(asStep),
     attempts,
   );
   if (step.kind === "mastered") return { kind: "mastered", title: procedure.title };
   const q = questions.find((x) => x.id === step.itemId) as QuestionItem;
   const fallback = lessonSpec ?? { kind: "lesson" as const, title: procedure.title, keyPoints: procedure.steps.length > 0 ? procedure.steps : [procedure.title], videoUrl: null, orientation: "landscape" as const };
-  return { kind: "screen", spec: composeQuestion(q.id, step.kind, q.payload, fallback), title: procedure.title, changesAvailable };
+  const spec = composeScreen({ role: learner.role, device: learner.device, itemId: q.id, phase: step.kind, question: q.payload, video: ready, fallback });
+  return { kind: "screen", spec, title: procedure.title, changesAvailable };
 }
 
 export type AnswerResult = { correct: boolean; feedback: string; quote: string; correctAnswer: string; state: MasteryState };

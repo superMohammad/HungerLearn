@@ -16,3 +16,13 @@ export function useDict(): Dict {
   if (lang === null) throw new Error("useDict() needs a <LangProvider> above it (see app/[lang]/layout.tsx)");
   return DICTIONARIES[lang];
 }
+
+/**
+ * The UI language's direction, for localized labels placed inside training content rendered with dir="auto":
+ * an element with its own dir is skipped when dir="auto" resolves, so the content keeps its own direction.
+ */
+export function useUiDir(): "rtl" | "ltr" {
+  const lang = useContext(LangContext);
+  if (lang === null) throw new Error("useUiDir() needs a <LangProvider> above it (see app/[lang]/layout.tsx)");
+  return lang === "ar" ? "rtl" : "ltr";
+}

@@ -1,5 +1,9 @@
+import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { B7Fixtures, COURIER, COURIER_SKIPPED, CW01, CW02_V1, CW02_V2, CW04, CW04_V3, ED01, ED02_V1, ED02_V2, ED04, EMPLOYEE, type Seeded } from "./b7-fixtures";
+import { DICTIONARIES } from "../src/lib/i18n";
+import type { Role } from "../src/lib/types";
+import { createFixtures, removeFixtures, type Fixtures } from "./f05-fixtures";
 
 /**
  * One describe block per docs/feature-map.md row that runs without an LLM or video.
@@ -231,5 +235,68 @@ test.describe("F05 what changed before the new exam (B7)", () => {
       await expect(page).toHaveURL(/\/learn$/);
       await expect(page.locator(`li a[href*="${s.procedureKey}"]`)).toContainText(ui.mastered);
     });
+  }
+});
+
+/**
+ * F05 role/device layouts on isolated synthetic published training (e2e/f05-fixtures.ts). Each seeded
+ * learner's stored device matches their role (courier phone, employee laptop, partner tablet). The row only
+ * looks at screens; it never submits an answer, so no attempts or mastery are written.
+ */
+const LAYOUT_CASES: { role: Role; email: string; layout: string; viewport: { width: number; height: number }; skipsLesson: boolean }[] = [
+  { role: "courier", email: "fahad@hungerlearn.test", layout: "video_question", viewport: { width: 390, height: 844 }, skipsLesson: true },
+  { role: "employee", email: "noura@hungerlearn.test", layout: "scenario", viewport: { width: 1440, height: 900 }, skipsLesson: false },
+  { role: "partner", email: "laymouna@hungerlearn.test", layout: "checklist", viewport: { width: 820, height: 1180 }, skipsLesson: false },
+];
+
+test.describe("F05 learner flow: role and device layouts", () => {
+  test.describe.configure({ mode: "serial" });
+  let fixtures: Fixtures | undefined;
+  test.beforeAll(async () => { fixtures = await createFixtures(); });
+  test.afterAll(async () => { await removeFixtures(fixtures); });
+
+  for (const { lang, dir } of LANGS) {
+    for (const c of LAYOUT_CASES) {
+      row(`${c.role} sees the ${c.layout} layout (${lang})`, async (page) => {
+        await page.setViewportSize(c.viewport);
+        await useLanguage(page, lang);
+        await signIn(page, c.email);
+        await expect(page).toHaveURL(/\/learn$/);
+        if (fixtures === undefined) throw new Error("F05 fixtures were not created");
+        const { documentId, procedureKey } = fixtures.byRole[c.role];
+        await page.goto(`/learn/${documentId}/${procedureKey}`);
+        await expect(page.locator("html")).toHaveAttribute("dir", dir);
+        if (!c.skipsLesson) {
+          // The first visit shows the lesson; the learner starts the questions from it.
+          await expect(page.locator("article[data-layout]")).toHaveCount(0);
+          await page.locator('a[href$="?start=1"]').click();
+        }
+        const screen = page.locator("article[data-layout]");
+        await expect(screen).toHaveAttribute("data-layout", c.layout);
+        const t = DICTIONARIES[lang];
+        // The training content is Arabic, so it reads right to left in both UI languages.
+        await expect(screen.locator("fieldset")).toHaveCSS("direction", "rtl");
+        if (c.layout === "video_question") {
+          await expect(screen.locator("video")).toHaveAttribute("src", /^\/api\/media\//);
+          await expect(screen.locator("video")).toHaveAttribute("aria-label", t.screen.lessonVideo);
+          await expect(screen.getByRole("link", { name: t.learn.reviewLesson })).toHaveAttribute("href", /\?lesson=1$/);
+          await expect(screen.locator("legend")).toHaveCount(1);
+        }
+        if (c.layout === "scenario") {
+          await expect(screen.getByText(t.screen.scenario, { exact: true })).toBeVisible();
+          await expect(screen.getByText("اتصل عميل غاضب", { exact: false })).toBeVisible();
+          await expect(screen.getByText("اتصل عميل غاضب", { exact: false })).toHaveCSS("direction", "rtl");
+        }
+        if (c.layout === "checklist") {
+          await expect(screen.getByText(t.screen.checklistHint, { exact: true })).toBeVisible();
+          await expect(screen.locator('input[type="checkbox"]')).toHaveCount(4);
+        }
+        const dirOut = process.env.VERIFY_DIR;
+        // The named evidence is taken inside the body, so wait for loading states here too (row() checks again).
+        await expect(page.locator('[aria-busy="true"]').filter({ visible: true })).toHaveCount(0);
+        await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
+        if (dirOut !== undefined) await page.screenshot({ path: path.join(dirOut, `F05-${c.role}-${c.layout}-${lang}.png`), fullPage: true });
+      });
+    }
   }
 });

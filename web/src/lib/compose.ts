@@ -1,7 +1,19 @@
 import { z } from "zod";
 import type { ClauseChange } from "@/lib/carry-over";
 import { shuffledSteps } from "@/lib/question-rules";
-import { QUESTION_FORMATS, type LessonPayload, type QuestionFormat, type QuestionPayload } from "@/lib/types";
+import { QUESTION_FORMATS, type Learner, type LessonPayload, type QuestionFormat, type QuestionPayload, type Role } from "@/lib/types";
+
+/**
+ * Stage 4 role/device layouts. Each one only arranges approved content: courier on a phone sees the
+ * lesson video with one question, employee on a laptop a scenario question, partner on a tablet a
+ * checklist. Every other pair, or a question without the content a layout needs, is "standard".
+ */
+export const LAYOUTS = ["standard", "video_question", "scenario", "checklist"] as const;
+export type Layout = (typeof LAYOUTS)[number];
+export type Device = Learner["device"];
+
+const VideoSchema = z.object({ url: z.string().min(1), orientation: z.enum(["portrait", "landscape"]) });
+export type LayoutVideo = z.infer<typeof VideoSchema>;
 
 /** What the client may see: never the answer key. */
 export const ScreenSpecSchema = z.discriminatedUnion("kind", [
@@ -22,6 +34,8 @@ export const ScreenSpecSchema = z.discriminatedUnion("kind", [
     timeLimitSeconds: z.number().int().min(5).max(60).nullable(),
     options: z.array(z.string().min(1)),
     steps: z.array(z.string().min(1)),
+    layout: z.enum(LAYOUTS),
+    video: VideoSchema.nullable(),
   }),
   z.object({
     kind: z.literal("what_changed"),
@@ -73,6 +87,8 @@ export function composeQuestion(itemId: string, phase: "practice" | "exam", q: Q
     timeLimitSeconds: q.format === "timed_decision" ? q.time_limit_seconds : null,
     options: q.format === "order_steps" ? [] : q.options.map((o) => o.text),
     steps: q.format === "order_steps" ? shuffledSteps(q.correct_order, itemId) : [],
+    layout: "standard",
+    video: null,
   };
   const parsed = ScreenSpecSchema.safeParse(candidate);
   if (!parsed.success) return fallback;
@@ -80,6 +96,59 @@ export function composeQuestion(itemId: string, phase: "practice" | "exam", q: Q
   if (s.kind === "question" && s.format === "order_steps" && s.steps.length < 2) return fallback;
   if (s.kind === "question" && s.format !== "order_steps" && s.options.length < 2) return fallback;
   return s;
+}
+
+const PREFERRED: Partial<Record<`${Role}/${Device}`, Layout>> = {
+  "courier/phone": "video_question",
+  "employee/laptop": "scenario",
+  "partner/tablet": "checklist",
+};
+
+export function preferredLayout(role: Role, device: Device): Layout {
+  return PREFERRED[`${role}/${device}`] ?? "standard";
+}
+
+/** Whether an approved question (and the lesson video, if ready) has what the layout needs. */
+export function fitsLayout(layout: Layout, q: Pick<QuestionPayload, "format" | "scene">, video: LayoutVideo | null): boolean {
+  switch (layout) {
+    case "video_question": return video !== null;
+    case "scenario": return q.scene !== null && q.scene.trim() !== "";
+    case "checklist": return q.format === "checklist";
+    case "standard": return true;
+  }
+}
+
+/**
+ * Stable reorder within one phase: items that fit the learner's layout come first. Only the order of
+ * presentation changes; which items are due and when the learner is mastered stay with nextStep.
+ */
+export function orderForLayout<T>(items: readonly T[], fits: (item: T) => boolean): T[] {
+  return [...items.filter(fits), ...items.filter((i) => !fits(i))];
+}
+
+export type ComposeInput = {
+  role: Role;
+  device: Device;
+  itemId: string;
+  phase: "practice" | "exam";
+  question: QuestionPayload;
+  /** The procedure's ready lesson video, or null. */
+  video: LayoutVideo | null;
+  fallback: ScreenSpec;
+};
+
+/**
+ * The learner's question screen: the layout preferred for their stored role and device when the
+ * approved content supports it, else "standard". The whole spec is validated with Zod; an invalid one
+ * falls back to the safe default (the lesson screen), exactly as composeQuestion does.
+ */
+export function composeScreen(input: ComposeInput): ScreenSpec {
+  const base = composeQuestion(input.itemId, input.phase, input.question, input.fallback);
+  if (base.kind !== "question") return input.fallback;
+  const preferred = preferredLayout(input.role, input.device);
+  const layout = fitsLayout(preferred, input.question, input.video) ? preferred : "standard";
+  const parsed = ScreenSpecSchema.safeParse({ ...base, layout, video: layout === "video_question" ? input.video : null });
+  return parsed.success ? parsed.data : input.fallback;
 }
 
 export type Level = "beginner" | "certified" | "expert";
@@ -118,4 +187,28 @@ export function nextStep(practice: readonly StepItem[], exam: readonly StepItem[
   const justFailed = last !== undefined && !last.correct ? exam.find((i) => i.id === last.itemId) : undefined;
   const pick = (justFailed === undefined ? undefined : due.find((d) => d.item.format !== justFailed.format)) ?? due[0];
   return { kind: pick.kind, itemId: pick.item.id };
+}
+
+export type LayoutStepItem = StepItem & { scene: string | null };
+
+/**
+ * The next item for a learner's layout. Within each phase, items that fit the layout come first; then
+ * nextStep decides. So B5's retry rule takes priority: after "Not yet" the next item is still due and in
+ * a different format, and the layout preference only breaks ties among those. If the picked item does
+ * not fit the layout, composeScreen shows it in the standard layout.
+ */
+export function nextStepForLayout(
+  layout: Layout, video: LayoutVideo | null,
+  practice: readonly LayoutStepItem[], exam: readonly LayoutStepItem[], attempts: readonly AttemptLite[],
+): ReturnType<typeof nextStep> {
+  const fits = (i: LayoutStepItem) => fitsLayout(layout, i, video);
+  return nextStep(orderForLayout(practice, fits), orderForLayout(exam, fits), attempts);
+}
+
+/**
+ * In "auto" mode the separate lesson screen comes first, except for the courier-on-a-phone layout when
+ * the lesson video is ready and there are questions: the video is then on every question screen.
+ */
+export function skipsLessonInAuto(layout: Layout, video: LayoutVideo | null, questionCount: number): boolean {
+  return layout === "video_question" && video !== null && questionCount > 0;
 }

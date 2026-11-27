@@ -12,7 +12,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "tsx --test src/lib/*.test.ts",
     "test:db": "tsx --conditions=react-server --test --test-concurrency=1 db/tests/*.test.ts",
-    "eval:generation": "tsx --env-file=.env.local --conditions=react-server scripts/eval-generation.mts"
+    "eval:generation": "tsx --env-file=.env.local --conditions=react-server scripts/eval-generation.mts",
+    "report:cost-time": "tsx --env-file=.env.local --conditions=react-server scripts/report-cost-time.mts"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^3.0.94",

@@ -6,10 +6,9 @@
  * verifyEditedQuestion and askReadiness code paths run without a model.
  */
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { readFile } from "node:fs/promises";
-import { createServer, type Server } from "node:http";
+import type { Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import path from "node:path";
 import { after, before, test } from "node:test";
@@ -21,18 +20,11 @@ import { buildPackage, groupProcedures, verifyEditedQuestion } from "@/lib/gener
 import { askReadiness } from "@/lib/readiness";
 import type { Clause, HlDocument, Procedure, QuestionPayload } from "@/lib/types";
 import { z } from "zod";
+import { appEnv, FAKE_MODEL, INPUT_TOKENS, OUTPUT_TOKENS, runScript, startFakeLlm, testAdminUrl, WEB, withCredentials, withDatabase } from "./helpers";
 
-const WEB = path.resolve(import.meta.dirname, "..", "..");
-const REPO = path.resolve(WEB, "..");
 const MIGRATIONS = path.join(WEB, "db", "migrations");
-const FAKE_MODEL = "fake-model";
-const INPUT_TOKENS = 120;
-const OUTPUT_TOKENS = 30;
 
-const adminUrl = process.env.TEST_DATABASE_URL;
-if (adminUrl === undefined || adminUrl === "") {
-  throw new Error("Set TEST_DATABASE_URL to a Postgres superuser URL (a fresh database is created and dropped on that server)");
-}
+const adminUrl = testAdminUrl();
 const dbName = `hl_test_${randomBytes(6).toString("hex")}`;
 const testUrl = withDatabase(adminUrl, dbName);
 const readonlyUrl = withCredentials(testUrl, "hl_readonly", "hl_readonly");
@@ -41,19 +33,6 @@ const admin = postgres(adminUrl, { max: 1, onnotice: () => undefined });
 let db: postgres.Sql | undefined;
 let llm: Server | undefined;
 let appEnvSet = false;
-
-function withDatabase(url: string, name: string): string {
-  const u = new URL(url);
-  u.pathname = `/${name}`;
-  return u.toString();
-}
-
-function withCredentials(url: string, user: string, password: string): string {
-  const u = new URL(url);
-  u.username = user;
-  u.password = password;
-  return u.toString();
-}
 
 /** One practice question, no lesson or video: enough for buildPackage to run the package call and the judge. */
 const FAKE_PACKAGE = {
@@ -99,60 +78,16 @@ function fakeAnswer(system: string, user: string): unknown {
   return { ok: true };
 }
 
-async function startFakeLlm(): Promise<Server> {
-  const server = createServer((req, res) => {
-    let body = "";
-    req.on("data", (chunk: Buffer) => (body += chunk.toString("utf8")));
-    req.on("end", () => {
-      const request = JSON.parse(body) as { messages: { role: string; content: string }[] };
-      const system = request.messages.find((m) => m.role === "system")?.content ?? "";
-      const user = request.messages.find((m) => m.role === "user")?.content ?? "";
-      res.setHeader("content-type", "application/json");
-      res.end(
-        JSON.stringify({
-          id: "chatcmpl-test",
-          object: "chat.completion",
-          created: 0,
-          model: FAKE_MODEL,
-          choices: [{ index: 0, message: { role: "assistant", content: JSON.stringify(fakeAnswer(system, user)) }, finish_reason: "stop" }],
-          usage: { prompt_tokens: INPUT_TOKENS, completion_tokens: OUTPUT_TOKENS, total_tokens: INPUT_TOKENS + OUTPUT_TOKENS },
-        }),
-      );
-    });
-  });
-  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
-  return server;
-}
-
 /** The real `pnpm db:migrate` entry point (scripts/migrate.mts), pointed at the test database. */
 function runMigrate(): void {
-  const result = spawnSync(process.execPath, [path.join(WEB, "node_modules", "tsx", "dist", "cli.mjs"), "scripts/migrate.mts"], {
-    cwd: WEB,
-    env: { ...process.env, DATABASE_URL: testUrl },
-    encoding: "utf8",
-  });
-  assert.equal(result.status, 0, `pnpm db:migrate failed:\n${result.stdout}\n${result.stderr}`);
+  const result = runScript("scripts/migrate.mts", [], { DATABASE_URL: testUrl });
+  assert.equal(result.status, 0, `pnpm db:migrate failed:
+${result.stdout}
+${result.stderr}`);
 }
 
 function setAppEnv(llmPort: number): void {
-  Object.assign(process.env, {
-    DATABASE_URL: testUrl,
-    READONLY_DATABASE_URL: readonlyUrl,
-    LLM_BASE_URL: `http://127.0.0.1:${llmPort}/v1`,
-    LLM_MODEL: FAKE_MODEL,
-    LLM_API_KEY: "test",
-    LLM_REASONING_EFFORT: "none",
-    LLM_PRICES_USD_PER_MTOK: JSON.stringify({ [FAKE_MODEL]: { input: 0.1, output: 0.4 } }),
-    DOCPROC_DIR: "unused",
-    DOCPROC_BIN: "unused",
-    MEDIA_DIR: path.join(REPO, "media"),
-    MEDIA_BIN: "unused",
-    MEDIA_OUT_DIR: "unused",
-    UPLOAD_DIR: "unused",
-    TRAINING_PROMPT_PATH: path.join(REPO, "hunger-learn-training-generator-prompt.md"),
-    OLLAMA_URL: "unused",
-    DEMO_PASSWORD: "test-password",
-  });
+  Object.assign(process.env, appEnv(testUrl, readonlyUrl, llmPort));
   appEnvSet = true;
 }
 
@@ -208,7 +143,7 @@ const CLAUSE: Clause = {
 before(async () => {
   await admin.unsafe(`CREATE DATABASE ${dbName}`);
   db = postgres(testUrl, { max: 2, onnotice: () => undefined });
-  llm = await startFakeLlm();
+  llm = await startFakeLlm(fakeAnswer);
   setAppEnv((llm.address() as AddressInfo).port);
 });
 

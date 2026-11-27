@@ -3,6 +3,7 @@ import { sql } from "@/lib/db";
 import { listClauses } from "@/lib/docproc";
 import { verifyEditedQuestion } from "@/lib/generation";
 import { generatePackageFor } from "@/lib/pipeline";
+import { canPublishWithFlags } from "@/lib/publication-rules";
 import { getDocument, getItem, getPackage, listPackageItems } from "@/lib/repo";
 import type { ItemStatus, QuestionPayload, TrainingItem } from "@/lib/types";
 
@@ -24,13 +25,14 @@ function requireStatus(item: TrainingItem, allowed: ItemStatus[], action: string
 export async function approveItem(itemId: string, actor: string): Promise<void> {
   const item = await getItem(itemId);
   requireStatus(item, ["draft", "verified"], "approve");
+  if (!canPublishWithFlags(item.flags)) throw new Error(`Item ${itemId} cannot be approved with flags: ${item.flags.join(",")}`);
   await transition(item, "approved", actor, "approve", item.flags.length > 0 ? `approved despite flags: ${item.flags.join(",")}` : "");
 }
 
 /** Approves every reviewable item of a package (the reviewer has seen the whole package). */
 export async function approvePackage(packageId: string, actor: string): Promise<void> {
   for (const item of await listPackageItems(packageId)) {
-    if (item.status === "draft" || item.status === "verified") {
+    if ((item.status === "draft" || item.status === "verified") && canPublishWithFlags(item.flags)) {
       await transition(item, "approved", actor, "approve_package", item.flags.length > 0 ? `approved despite flags: ${item.flags.join(",")}` : "");
     }
   }

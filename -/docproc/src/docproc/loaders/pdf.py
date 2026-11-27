@@ -7,6 +7,14 @@ from pathlib import Path
 
 import pymupdf as fitz  # PyMuPDF
 
+from docproc.loaders.pdf_bidi import (
+    Glyph,
+    logical_rows,
+    rebuilds_on_ltr_page,
+    rebuilds_on_rtl_page,
+    restore_unmapped,
+    right_to_left_page,
+)
 from docproc.normalize import is_arabic_char, repair_arabic_order
 
 
@@ -35,29 +43,95 @@ def _usable(text: str, min_chars: int, min_letter_ratio: float) -> tuple[bool, s
     return True, ""
 
 
-def _page_text(page: "fitz.Page") -> str:
-    """Extract text block by block in reading order, preserving logical Arabic order.
+def _stream_line(line: dict) -> str:
+    """One PyMuPDF line as the PDF stream gives it (the reading order for left-to-right text)."""
+    t = unicodedata.normalize("NFC", "".join(c["c"] for s in line["spans"] for c in s["chars"])).strip()
+    if t.startswith("\u00ad"):  # bullet dash rendered as a soft-hyphen glyph
+        t = "- " + t.lstrip("\u00ad").lstrip()
+    return t
 
-    PyMuPDF returns characters in content-stream (logical) order for properly encoded
-    PDFs. For right-to-left blocks we sort lines top-to-bottom only, never re-ordering
-    characters within a line.
+
+def _glyphs(block: dict) -> list[list[Glyph]]:
+    """Each line's glyphs in stream order, with their boxes."""
+    return [[Glyph(c["c"], *c["bbox"], s["size"]) for s in line["spans"] for c in s["chars"]] for line in block["lines"]]
+
+
+def _text_blocks(page: "fitz.Page", flags: int) -> list[dict]:
+    return [b for b in page.get_text("rawdict", flags=flags)["blocks"] if b.get("type") == 0]
+
+
+@dataclass(frozen=True)
+class _Entry:
+    top: float
+    across: float  # horizontal sort key within a row
+    text: str
+
+
+Box = tuple[float, float, float, float]
+
+
+def _box(block: dict) -> Box:
+    return (block["bbox"][0], block["bbox"][1], block["bbox"][2], block["bbox"][3])
+
+
+def _overlap(a: Box, b: Box) -> float:
+    w = min(a[2], b[2]) - max(a[0], b[0])
+    h = min(a[3], b[3]) - max(a[1], b[1])
+    return w * h if w > 0 and h > 0 else 0.0
+
+
+def _line_box(line: list[Glyph]) -> Box:
+    return (min(g.x0 for g in line), min(g.y0 for g in line), max(g.x1 for g in line), max(g.y1 for g in line))
+
+
+def _assign(boxes: list[Box], plain: list[list[Glyph]]) -> list[list[list[Glyph]]]:
+    """Each ActualText-off line goes to the one block it overlaps most, so no text is lost or read twice even when
+    the two readings split blocks differently (a letter carrying a mark is wider without ActualText)."""
+    out: list[list[list[Glyph]]] = [[] for _ in boxes]
+    for line in plain:
+        lb = _line_box(line)
+        best = max(range(len(boxes)), key=lambda k: _overlap(boxes[k], lb), default=None)
+        if best is not None and _overlap(boxes[best], lb) > 0:
+            out[best].append(line)
+    return out
+
+
+def _rebuilt(lines: list[list[Glyph]], marks: list[Glyph]) -> str:
+    """A right-to-left block in logical order, from its ActualText-off lines."""
+    if any(g.char == "\ufffd" for line in lines for g in line):
+        lines = restore_unmapped(lines, marks)
+    return " ".join(r for r in logical_rows(lines) if r)
+
+
+def _page_text(page: "fitz.Page") -> str:
+    """Text block by block in reading order.
+
+    Left-to-right blocks keep the PDF stream order, and a page without a right-to-left block reads exactly as the
+    stream gives it. A right-to-left block drawn right to left is rebuilt from glyph positions (pdf_bidi), because
+    browser-made PDFs write right-to-left runs in visual order. Its glyphs come from a reading with ActualText off:
+    Chrome wraps letters carrying a shadda or tanween in ActualText, which yields zero-width glyphs between
+    placeholder spaces; the ActualText reading only supplies marks for glyphs the font cannot map. On such a page,
+    blocks on one row go right to left.
     """
-    lines_out: list[str] = []
-    data = page.get_text("dict", flags=fitz.TEXT_PRESERVE_WHITESPACE | fitz.TEXT_MEDIABOX_CLIP)
-    blocks = [b for b in data["blocks"] if b.get("type") == 0]
-    blocks.sort(key=lambda b: (round(b["bbox"][1], 1), b["bbox"][0]))
-    for b in blocks:
-        block_lines = []
-        for line in b["lines"]:
-            t = "".join(s["text"] for s in line["spans"])
-            t = unicodedata.normalize("NFC", t).strip()
-            if t.startswith("­"):  # bullet dash rendered as a soft-hyphen glyph
-                t = "- " + t.lstrip("­").lstrip()
-            block_lines.append(t)
-        text = " ".join(l for l in block_lines if l)
-        if text:
-            lines_out.append(text)
-    return "\n".join(lines_out)
+    flags = fitz.TEXT_PRESERVE_WHITESPACE | fitz.TEXT_MEDIABOX_CLIP
+    blocks = _text_blocks(page, flags)
+    glyphs = [_glyphs(b) for b in blocks]
+    rebuilds = rebuilds_on_rtl_page if right_to_left_page(glyphs) else rebuilds_on_ltr_page
+    rtl = [rebuilds(g) for g in glyphs]
+    plain = [line for b in _text_blocks(page, flags | fitz.TEXT_IGNORE_ACTUALTEXT) for line in _glyphs(b) if line] if any(rtl) else []
+    assigned = _assign([_box(b) for b in blocks], plain)
+    marks = [g for lines in glyphs for line in lines for g in line if unicodedata.combining(g.char)]
+    entries: list[_Entry] = []
+    for b, is_rtl, lines in zip(blocks, rtl, assigned):
+        box = _box(b)
+        across = -box[2] if any(rtl) else box[0]
+        if is_rtl:
+            text = _rebuilt(lines, marks)
+        else:
+            text = " ".join(s for s in (_stream_line(line) for line in b["lines"]) if s)
+        entries.append(_Entry(round(box[1], 1), across, text))
+    entries.sort(key=lambda e: (e.top, e.across))
+    return "\n".join(e.text for e in entries if e.text)
 
 
 def probe_pdf(path: str | Path, min_chars: int = 40, min_letter_ratio: float = 0.5) -> list[PdfPage]:

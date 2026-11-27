@@ -3,10 +3,11 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { uploadNewDocument } from "@/app/actions";
 import { ensureAdmin } from "@/components/guard";
-import { Card, PageHeader, Pill, Skeleton } from "@/components/ui";
+import { Card, NumText, PageHeader, Pill, Skeleton } from "@/components/ui";
 import { sql } from "@/lib/db";
 import { getDict } from "@/lib/i18n-server";
 import { LANGUAGES, ROLES, type Role } from "@/lib/types";
+import { uploadNumber } from "@/lib/uploads";
 
 type DocRow = { document_id: string; title: string; role: Role; language: string; current_version_id: string | null; clauses: number; published: number; pending: number; running: number };
 
@@ -32,7 +33,7 @@ async function DocumentList() {
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="text-lg font-bold"><span dir="auto">{d.title}</span></h3>
               <Pill tone="neutral">{t.labels.role[d.role]}</Pill>
-              <Pill tone="neutral"><span className="num">{d.current_version_id ?? "…"}</span></Pill>
+              <Pill tone="neutral">{d.current_version_id === null ? "…" : <NumText text={t.common.upload(uploadNumber(d.current_version_id))} />}</Pill>
               {d.running > 0 ? <Pill tone="accent">{t.admin.docs.processing}</Pill> : null}
             </div>
             <dl className="mt-3 flex flex-wrap gap-6 text-sm text-ink-soft">

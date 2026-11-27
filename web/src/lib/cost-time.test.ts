@@ -169,7 +169,13 @@ test("the report pairs each version with the previous version of the same docume
     procedureKeys: ["A"],
     packages: [{ procedureKey: "A", createdAt: at(1010), carried: true }],
   });
-  const other = version({ documentId: "employee-delayed-order", role: "employee", language: "en", jobs: [{ step: "procedures", status: "done", startedAt: at(5), finishedAt: at(45) }] });
+  const other = version({
+    documentId: "employee-delayed-order",
+    role: "employee",
+    language: "en",
+    jobs: [{ step: "procedures", status: "done", startedAt: at(5), finishedAt: at(45) }],
+    procedureKeys: ["X"],
+  });
   const report = buildCostTimeReport([v2, other, v1], PRICES, "hosted");
   assert.deepEqual(report.versions.map((v) => `${v.document_id}@${v.version_id}`), ["courier-pickup-wait@v1", "courier-pickup-wait@v2", "employee-delayed-order@v1"]);
   assert.equal(report.versions[1].carry_over_saving_estimate?.procedures, 1);
@@ -183,4 +189,55 @@ test("the report pairs each version with the previous version of the same docume
   assert.equal(report.hosted_model, "hosted");
   assert.equal(report.coverage.docproc_calls_not_logged, true);
   assert.equal(buildCostTimeReport([], PRICES, null).summary.all.mean_processing_seconds, null);
+});
+
+test("a failed upload between v1 and v2 is incomplete: v2 is paired with v1, and the failure skews no average", () => {
+  const v1 = version({
+    jobs: [{ step: "procedures", status: "done", startedAt: at(0), finishedAt: at(100) }],
+    calls: [call("generate.package", 100_000, 0, "m")],
+    procedureKeys: ["A"],
+    packages: [{ procedureKey: "A", createdAt: at(50), carried: false }],
+  });
+  const failed = version({ versionId: "vX", jobs: [{ step: "understand", status: "failed", startedAt: at(500), finishedAt: at(530) }] });
+  const v2 = version({
+    versionId: "v2",
+    jobs: [{ step: "update", status: "done", startedAt: at(1000), finishedAt: at(1020) }],
+    procedureKeys: ["A"],
+    packages: [{ procedureKey: "A", createdAt: at(1010), carried: true }],
+  });
+  const report = buildCostTimeReport([v2, failed, v1], PAID, null);
+  assert.deepEqual(report.versions.map((v) => `${v.version_id}:${v.kind}`), ["v1:first", "vX:incomplete", "v2:update"]);
+  assert.equal(report.versions[2].carry_over_saving_estimate?.input_tokens, 100_000, "v2 uses v1's average, not the failed upload's");
+  assert.equal(report.summary.update.versions, 1);
+  assert.equal(report.summary.update.mean_processing_seconds, 20);
+  assert.equal(report.summary.incomplete.versions, 1);
+  assert.equal(report.coverage.failed_jobs, 1);
+});
+
+test("unknown savings are reported as unknown, never added up as $0", () => {
+  const noGeneration = version({ procedureKeys: ["A"], packages: [{ procedureKey: "A", createdAt: at(1), carried: false }], jobs: [{ step: "procedures", status: "done", startedAt: at(0), finishedAt: at(1) }] });
+  const v2 = version({ versionId: "v2", procedureKeys: ["A"], packages: [{ procedureKey: "A", createdAt: at(20), carried: true }], jobs: [{ step: "update", status: "done", startedAt: at(10), finishedAt: at(20) }] });
+  const unknown = buildCostTimeReport([noGeneration, v2], PAID, null).summary.update;
+  assert.equal(unknown.carry_over_saving_usd_estimate, null);
+  assert.equal(unknown.carry_over_saving_unknown_versions, 1);
+
+  const other = version({
+    documentId: "other",
+    calls: [call("generate.package", 500_000, 0, "m")],
+    procedureKeys: ["A"],
+    packages: [{ procedureKey: "A", createdAt: at(1), carried: false }],
+    jobs: [{ step: "procedures", status: "done", startedAt: at(0), finishedAt: at(1) }],
+  });
+  const otherV2 = version({ ...v2, documentId: "other" });
+  const mixed = buildCostTimeReport([noGeneration, v2, other, otherV2], PAID, null).summary.update;
+  assertUsd(mixed.carry_over_saving_usd_estimate ?? undefined, 1);
+  assert.equal(mixed.carry_over_saving_unknown_versions, 1, "the known part is summed, the unknown part is counted");
+});
+
+test("an update that carried nothing saved exactly 0, which is known, not unknown", () => {
+  const v1 = version({ procedureKeys: ["A"], packages: [{ procedureKey: "A", createdAt: at(1), carried: false }] });
+  const v2 = version({ versionId: "v2", procedureKeys: ["A"], packages: [{ procedureKey: "A", createdAt: at(5), carried: false }] });
+  assert.deepEqual(computeVersion(v2, PRICES, { hostedModel: null, previous: v1 }).carry_over_saving_estimate, {
+    procedures: 0, input_tokens: 0, output_tokens: 0, usd: 0, estimate: true,
+  });
 });

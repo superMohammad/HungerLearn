@@ -84,17 +84,22 @@ export function computeVersion(v: VersionData, prices: LlmPrices, options: { hos
     const e = packagesAtAverage(v, prices, regenerated);
     return e === null ? null : { packages: regenerated, ...e };
   })();
-  const saving = options.previous === null || carried === 0 ? null : (() => {
-    const e = packagesAtAverage(options.previous, prices, carried);
-    return e === null ? null : { procedures: carried, ...e };
-  })();
+  // No previous version: nothing could be carried (null). Nothing carried: exactly 0 saved, which is known.
+  // Carried but no logged generation to average: unknown (null), never a made-up 0.
+  const saving = options.previous === null ? null : carried === 0
+    ? { procedures: 0, input_tokens: 0, output_tokens: 0, usd: 0, estimate: true as const }
+    : (() => {
+      const e = packagesAtAverage(options.previous, prices, carried);
+      return e === null ? null : { procedures: carried, ...e };
+    })();
 
   return {
     document_id: v.documentId,
     version_id: v.versionId,
     role: v.role,
     language: v.language,
-    kind: options.previous === null ? ("first" as const) : ("update" as const),
+    // No procedures: the upload failed or is still running, so it is neither a first upload nor an update.
+    kind: v.procedureKeys.length === 0 ? ("incomplete" as const) : options.previous === null ? ("first" as const) : ("update" as const),
     cost: { ...total, by_purpose: byPurpose, hosted_estimate: hosted },
     time: {
       processing_seconds: processing,
@@ -122,6 +127,7 @@ function mean(values: number[]): number | null {
 function summarizeVersions(versions: VersionReport[]) {
   const ready = versions.flatMap((v) => (v.time.elapsed_to_ready_seconds === null ? [] : [v.time.elapsed_to_ready_seconds]));
   const hosted = versions.flatMap((v) => (v.cost.hosted_estimate === null ? [] : [v.cost.hosted_estimate.usd]));
+  const known = versions.flatMap((v) => (v.carry_over_saving_estimate === null ? [] : [v.carry_over_saving_estimate.usd]));
   return {
     versions: versions.length,
     /** Headline time (decision 3): machine time, independent of how fast someone clicks "generate". */
@@ -132,7 +138,10 @@ function summarizeVersions(versions: VersionReport[]) {
     mean_output_tokens: mean(versions.map((v) => v.cost.output_tokens)),
     mean_usd: mean(versions.map((v) => v.cost.usd)),
     mean_hosted_usd_estimate: mean(hosted),
-    carry_over_saving_usd_estimate: versions.reduce((n, v) => n + (v.carry_over_saving_estimate?.usd ?? 0), 0),
+    /** Sum of the known savings; null when none is known. Unknown ones are counted, never added as 0. */
+    carry_over_saving_usd_estimate: known.length === 0 ? null : known.reduce((n, usd) => n + usd, 0),
+    /** Updates that carried packages but whose saving is unknown (no logged generation in the previous version). */
+    carry_over_saving_unknown_versions: versions.filter((v) => v.packages.carried > 0 && v.carry_over_saving_estimate === null).length,
   };
 }
 
@@ -141,13 +150,17 @@ function summarizeBy<K extends string>(versions: VersionReport[], keyOf: (v: Ver
   return Object.fromEntries(keys.map((k) => [k, summarizeVersions(versions.filter((v) => keyOf(v) === k))])) as Record<K, ReturnType<typeof summarizeVersions>>;
 }
 
-/** Every version, each paired with the previous version of its document (by first job time). */
+/**
+ * Every version, each paired with the nearest earlier version of its document (by first job time) that
+ * has procedures. Carry-over copies from the last successful version, so a failed upload in between
+ * (no procedures) is never the source.
+ */
 export function buildCostTimeReport(versions: VersionData[], prices: LlmPrices, hostedModel: string | null) {
   const firstJob = (v: VersionData): number => (v.jobs.length === 0 ? Number.POSITIVE_INFINITY : Math.min(...v.jobs.map((j) => j.startedAt.getTime())));
   const ordered = [...versions].sort((a, b) => a.documentId.localeCompare(b.documentId) || firstJob(a) - firstJob(b) || a.versionId.localeCompare(b.versionId));
   const reports = ordered.map((v, i) => {
-    const before = ordered[i - 1];
-    return computeVersion(v, prices, { hostedModel, previous: before !== undefined && before.documentId === v.documentId ? before : null });
+    const previous = ordered.slice(0, i).reverse().find((p) => p.documentId === v.documentId && p.procedureKeys.length > 0) ?? null;
+    return computeVersion(v, prices, { hostedModel, previous });
   });
   return {
     hosted_model: hostedModel,
@@ -161,6 +174,7 @@ export function buildCostTimeReport(versions: VersionData[], prices: LlmPrices, 
       all: summarizeVersions(reports),
       first: summarizeVersions(reports.filter((r) => r.kind === "first")),
       update: summarizeVersions(reports.filter((r) => r.kind === "update")),
+      incomplete: summarizeVersions(reports.filter((r) => r.kind === "incomplete")),
     },
     by_role: summarizeBy(reports, (r) => r.role),
     by_language: summarizeBy(reports, (r) => r.language),

@@ -29,4 +29,4 @@ It needs a real LLM (`.env.local`) and writes `../-/docproc/out/eval_generation_
 - **Packages:** generated, carried over from the previous version, and regenerated after a reject. The **rework** cost and the **v2 carry-over saving** (carried procedures × the previous version's average generation cost per package) are estimates, because `ai_calls` does not record the procedure.
 - **Coverage:** docproc's LLM calls (extraction, change judge) are not logged yet, so this is web-only cost. Zero-token calls, failed jobs and running jobs are counted, so no number looks more complete than it is.
 
-The summary averages first uploads and updates separately.
+The summary averages first uploads, updates and incomplete versions (no procedures: a failed or running upload) separately, and also by role and language. An update is compared with the document's last version that has procedures. A saving that can't be computed (the previous version logged no generation) is `null` and counted in `carry_over_saving_unknown_versions`; it is never added up as $0.

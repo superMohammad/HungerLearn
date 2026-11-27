@@ -8,7 +8,12 @@ const key = (documentId: string, versionId: string): Key => `${documentId}\u0000
 
 function grouped<T>(rows: (T & { document_id: string; version_id: string })[]): Map<Key, T[]> {
   const out = new Map<Key, T[]>();
-  for (const r of rows) out.set(key(r.document_id, r.version_id), [...(out.get(key(r.document_id, r.version_id)) ?? []), r]);
+  for (const r of rows) {
+    const k = key(r.document_id, r.version_id);
+    const list = out.get(k);
+    if (list === undefined) out.set(k, [r]);
+    else list.push(r);
+  }
   return out;
 }
 

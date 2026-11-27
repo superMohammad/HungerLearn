@@ -40,7 +40,8 @@ async function main(): Promise<void> {
     for (const [kind, s] of Object.entries(report.summary)) {
       console.log(`${kind.padEnd(7)} versions ${String(s.versions).padStart(3)}  processing ${fmt(s.mean_processing_seconds, " s")}  `
         + `elapsed to ready ${fmt(s.mean_elapsed_to_ready_seconds, " s")}  tokens in ${fmt(s.mean_input_tokens, "", 0)} out ${fmt(s.mean_output_tokens, "", 0)}  `
-        + `$${fmt(s.mean_usd, "", 4)}  hosted estimate $${fmt(s.mean_hosted_usd_estimate, "", 4)}  v2 saving estimate $${s.carry_over_saving_usd_estimate.toFixed(4)}`);
+        + `$${fmt(s.mean_usd, "", 4)}  hosted estimate $${fmt(s.mean_hosted_usd_estimate, "", 4)}  `
+        + `v2 saving estimate $${fmt(s.carry_over_saving_usd_estimate, "", 4)} (unknown for ${s.carry_over_saving_unknown_versions})`);
     }
     const c = report.coverage;
     console.log(`coverage: docproc calls not logged; ${c.zero_token_calls} zero-token call(s), ${c.failed_jobs} failed job(s), ${c.running_jobs} running job(s)`);

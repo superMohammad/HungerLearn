@@ -10,7 +10,8 @@
     "db:migrate": "tsx --env-file=.env.local scripts/migrate.mts",
     "db:seed": "tsx --env-file=.env.local scripts/seed-learners.mts",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "tsx --test src/lib/*.test.ts"
+    "test": "tsx --test src/lib/*.test.ts",
+    "test:db": "tsx --conditions=react-server --test db/tests/*.test.ts"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^3.0.94",

@@ -76,6 +76,8 @@ export async function askReadiness(question: string): Promise<AskResult> {
   const draft = await generateStructured({
     purpose: "readiness.text_to_sql",
     promptVersion: PROMPT_VERSION,
+    // About learners, not a document: no scope.
+    scope: null,
     schema: SqlSchema,
     system: `You translate a supervisor's question (Arabic or English) into one PostgreSQL SELECT.
 ${VIEW_DOC}

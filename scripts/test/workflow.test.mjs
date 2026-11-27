@@ -8,10 +8,15 @@ import { test } from "node:test";
 import { IS_WINDOWS, packagesOf, quoteForCmd, REPO, WEB } from "../lib/hl.mjs";
 
 const GUARD = path.join(REPO, "scripts", "agent-bash-guard-hook.mjs");
+/**
+ * Git exports GIT_DIR, GIT_INDEX_FILE etc. to hooks (check-fast runs from pre-commit); they would point the
+ * hook command run from web/ at the outer repo's git dir instead of this checkout. Same filter as pr-policy.test.mjs.
+ */
+const ENV = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith("GIT_")));
 
 /** @param {string} input @returns {number | null} */
 function guardExitFor(input) {
-  return spawnSync(process.execPath, [GUARD], { input, encoding: "utf8" }).status;
+  return spawnSync(process.execPath, [GUARD], { input, encoding: "utf8", env: ENV }).status;
 }
 
 /** @param {string} command */
@@ -187,7 +192,7 @@ function codexHooks() {
 
 /** Run a hook command line the way Codex does: `cmd.exe /C "<line>"` on Windows, `sh -c` elsewhere. @param {string} line @param {string} input */
 function runHookLine(line, input) {
-  const options = { cwd: WEB, input, encoding: /** @type {const} */ ("utf8") };
+  const options = { cwd: WEB, input, encoding: /** @type {const} */ ("utf8"), env: ENV };
   return IS_WINDOWS
     ? spawnSync(process.env.ComSpec ?? "cmd.exe", ["/C", `"${line}"`], { ...options, windowsVerbatimArguments: true })
     : spawnSync("sh", ["-c", line], options);

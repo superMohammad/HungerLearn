@@ -2,7 +2,15 @@
 
 **Tier:** Enhanced (a scoreboard metric computed from the pipeline's logs; lane spec) · **Owner:** Yasser (@altayariyasser) · **Branch:** `feat/a2c-cost-time`, stacked on `feat/a2a-generation-eval` (A2a)
 
-**Approved:** _pending @superMohammad_
+**Approved:** @superMohammad 2026-11-27 (issue #21)
+
+**Decisions (Mohammad, 2026-11-27, issue #21, questions 7–12):**
+1. **docproc cost:** report web-only cost now, with the `docproc_calls_not_logged` flag. Logging docproc's calls becomes its own PR after A2c: docproc returns tokens and duration in its JSON, and web writes them into `ai_calls`.
+2. **Failed attempts:** reporting the gap is enough for the hackathon. Failed-attempt logging goes in a later High-risk migration PR, which should also record a missing `usage` as `NULL` instead of 0. Until then, flag 0-token rows in the coverage list.
+3. **Scoreboard time:** **processing** time is the headline, with elapsed time next to it.
+4. **Cost if hosted:** yes. Price the same tokens at the model teammates use on OpenRouter, set in `LLM_PRICES_USD_PER_MTOK`, and label it an estimate.
+5. **v2 saving:** carried procedures × v1's average cost per procedure, labelled an estimate.
+6. **Real run:** when the PR is ready, Mohammad does the full pipeline run on the 3090, then `pnpm report:cost-time`.
 
 ## Problem
 The architecture promises "cost per document" and "time per document" on the scoreboard. A2b (#19) made it possible: every web AI call in `ai_calls` now has its document, version and tokens, and prices come from `LLM_PRICES_USD_PER_MTOK`. Nothing turns those rows into the two numbers yet.
@@ -45,7 +53,7 @@ The architecture promises "cost per document" and "time per document" on the sco
 - `web/scripts/report-cost-time.mts`: new (JSON report).
 - `web/db/tests/cost-time.test.ts`: new (DB test, reusing the helpers file planned in A2a).
 - `web/package.json`: `report:cost-time` script.
-- Command documented where A2a's is (decided in A2a's question 6).
+- `web/README.md`: documents the command, next to A2a's (A2a decision 6), so the PR stays Enhanced.
 
 ## Feature-map rows
 None. No UI changes; the scoreboard page is A2d.
@@ -58,7 +66,7 @@ No pipeline code changes, so `docproc eval --real` is unchanged by construction.
 - **Under-counting** (docproc not logged, failed attempts lost, possible 0-token rows): reported as explicit coverage flags in the JSON and to be shown on the scoreboard, instead of a number that looks complete.
 - **Rollback:** delete the new files and the `package.json` line. There is no migration and no behaviour change.
 
-## Open questions for @superMohammad
+## Open questions for @superMohammad (answered above, under Decisions)
 1. **docproc's cost.** Should A2c report web-only cost with the `docproc_calls_not_logged` flag, or should docproc's logging come first? If first: who does it? I can. My proposal: docproc returns each call's tokens and duration in its JSON result, and web writes them into `ai_calls` with purpose `docproc.extract` / `docproc.change_judge`. That keeps a single writer and needs no new table. It is a separate PR that touches docproc's LLM clients.
 2. **Failed attempts' tokens.** Should `ai.ts` log failed attempts too? That needs a column such as `outcome`, which is a migration and therefore High-risk; it would be a separate PR. Or is reporting the gap enough for the hackathon?
 3. **Which time goes on the scoreboard?** I propose **processing time** as the headline (it doesn't depend on how fast someone clicks), with elapsed time shown next to it. For v2 the two are nearly the same, because everything runs automatically.

@@ -39,6 +39,15 @@ export async function startFakeLlm(answer: (system: string, user: string) => unk
       const request = JSON.parse(body) as { messages: { role: string; content: string }[] };
       const system = request.messages.find((m) => m.role === "system")?.content ?? "";
       const user = request.messages.find((m) => m.role === "user")?.content ?? "";
+      let content: string;
+      try {
+        content = JSON.stringify(answer(system, user));
+      } catch (error) {
+        // An unexpected prompt fails that call (the code under test records it) instead of crashing the test process.
+        res.statusCode = 500;
+        res.end(JSON.stringify({ error: { message: error instanceof Error ? error.message : String(error) } }));
+        return;
+      }
       res.setHeader("content-type", "application/json");
       res.end(
         JSON.stringify({
@@ -46,7 +55,7 @@ export async function startFakeLlm(answer: (system: string, user: string) => unk
           object: "chat.completion",
           created: 0,
           model: FAKE_MODEL,
-          choices: [{ index: 0, message: { role: "assistant", content: JSON.stringify(answer(system, user)) }, finish_reason: "stop" }],
+          choices: [{ index: 0, message: { role: "assistant", content }, finish_reason: "stop" }],
           usage: { prompt_tokens: INPUT_TOKENS, completion_tokens: OUTPUT_TOKENS, total_tokens: INPUT_TOKENS + OUTPUT_TOKENS },
         }),
       );

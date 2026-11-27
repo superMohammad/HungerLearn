@@ -169,6 +169,13 @@ export type ScoredProcedure = {
   items: ScoredItem[];
 };
 
+const DIGIT_RUN = /[0-9٠-٩۰-۹]+/g;
+
+/** A printed number in the quote that the clause does not print the same way (15 against ١٥). */
+function digitsDiffer(quote: string, clauseQuote: string): boolean {
+  return (quote.match(DIGIT_RUN) ?? []).some((run) => !clauseQuote.includes(run));
+}
+
 /** Exact: the trimmed quote appears verbatim in the clause, so printed digits must match. */
 function exactInClause(quote: string, clauseQuote: string): boolean {
   const q = quote.trim();
@@ -198,10 +205,11 @@ export function scoreProcedure(outcome: ProcedureOutcome, canPublish: (flags: re
       const exact = clause !== undefined && exactInClause(quote, clause.quote);
       return { clause_id: clause?.stableId ?? null, quote, normalized, exact, clause_text: exact ? null : (clause?.quote ?? null) };
     });
-    const inexact = citations.filter((c) => c.normalized && !c.exact);
-    const digitsDiffer = inexact.some((c) => c.clause_text !== null && exactInClause(foldDigits(c.quote), foldDigits(c.clause_text)));
-    const otherwise = inexact.some((c) => c.clause_text === null || !exactInClause(foldDigits(c.quote), foldDigits(c.clause_text)));
-    const failed = [...state.flags, ...(digitsDiffer ? ["quote_digits_differ"] : []), ...(otherwise ? ["quote_not_exact"] : [])];
+    // A citation that passes the app's check but not the exact one always has its clause text.
+    const inexact = citations.flatMap((c) => (c.normalized && !c.exact && c.clause_text !== null ? [{ quote: c.quote, clause: c.clause_text }] : []));
+    const digits = inexact.some((c) => digitsDiffer(c.quote, c.clause));
+    const other = inexact.some((c) => !exactInClause(foldDigits(c.quote), foldDigits(c.clause)));
+    const failed = [...state.flags, ...(digits ? ["quote_digits_differ"] : []), ...(other ? ["quote_not_exact"] : [])];
     return {
       kind: item.kind,
       ordinal: item.ordinal,

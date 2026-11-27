@@ -134,6 +134,25 @@ test("a quote differing only in punctuation is quote_not_exact, not a digit diff
   assert.deepEqual(scored.failed_checks, ["quote_not_exact"]);
 });
 
+test("a quote differing in both digits and punctuation keeps both labels", () => {
+  const [scored] = scoreProcedure(outcome([question("بعد 15 دقيقة من تسجيل الوصول. أرسل بلاغ \"تأخر الاستلام\"", [])]), PUBLISH_ALL).items;
+  assert.equal(scored.citations[0].normalized, true);
+  assert.deepEqual(scored.failed_checks, ["quote_digits_differ", "quote_not_exact"]);
+});
+
+test("a lesson whose citations fail in different ways lists every kind once", () => {
+  const item = lesson(
+    [
+      { stable_id: "CW-02", quote: "بعد 15 دقيقة من تسجيل الوصول" },
+      { stable_id: "CW-02", quote: "أرسل بلاغ \"تأخر الاستلام\"" },
+      { stable_id: "CW-03", quote: "انتظر في السيارة" },
+    ],
+    ["quote_not_found"],
+  );
+  const [scored] = scoreProcedure(outcome([item]), PUBLISH_ALL).items;
+  assert.deepEqual(scored.failed_checks, ["quote_not_found", "quote_digits_differ", "quote_not_exact"]);
+});
+
 test("a lesson's video shots are citations too", () => {
   const item = lesson([{ stable_id: "CW-02", quote: "أرسل بلاغ «تأخر الاستلام»" }], []);
   const payload = item.payload as LessonPayload;

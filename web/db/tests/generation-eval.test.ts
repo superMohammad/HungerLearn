@@ -70,7 +70,7 @@ function fakeAnswer(system: string, user: string): unknown {
 }
 
 async function evalDatabases(): Promise<string[]> {
-  const rows = await admin<{ datname: string }[]>`SELECT datname FROM pg_database WHERE datname LIKE 'hl_eval_%' ORDER BY datname`;
+  const rows = await admin<{ datname: string }[]>`SELECT datname FROM pg_database WHERE datname LIKE ${"hl\\_eval\\_%"} ORDER BY datname`;
   return rows.map((r) => r.datname);
 }
 
@@ -96,7 +96,7 @@ after(async () => {
   await admin.end();
 });
 
-test("pnpm eval:generation scores a dev original with the app's pipeline and leaves no database behind", async () => {
+test("pnpm eval:generation scores a dev original with the app's pipeline and leaves no database behind", { timeout: 120_000 }, async () => {
   const before = await evalDatabases();
   const adminBefore = await adminRows();
   const out = path.join(outDir, "eval_generation_dev.json");
@@ -138,7 +138,7 @@ test("pnpm eval:generation scores a dev original with the app's pipeline and lea
   assert.deepEqual(await adminRows(), adminBefore, "nothing was written to the database in DATABASE_URL");
 });
 
-test("a missing READONLY_DATABASE_URL fails before any eval database is created", async () => {
+test("a missing READONLY_DATABASE_URL fails before any eval database is created", { timeout: 120_000 }, async () => {
   const before = await evalDatabases();
   const port = (llm?.address() as AddressInfo).port;
   const env = appEnv(adminUrl, "", port);
@@ -148,7 +148,7 @@ test("a missing READONLY_DATABASE_URL fails before any eval database is created"
   assert.deepEqual(await evalDatabases(), before);
 });
 
-test("pnpm eval:generation rejects a document that is not a dev original before creating a database", async () => {
+test("pnpm eval:generation rejects a document that is not a dev original before creating a database", { timeout: 120_000 }, async () => {
   const before = await evalDatabases();
   const port = (llm?.address() as AddressInfo).port;
   const env = appEnv(adminUrl, withCredentials(adminUrl, "hl_readonly", "hl_readonly"), port);

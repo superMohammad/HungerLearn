@@ -84,8 +84,9 @@ async function main(): Promise<void> {
     const { sql } = await import("../src/lib/db");
     const { serverEnv } = await import("../src/lib/env");
     const { canPublishWithFlags } = await import("../src/lib/publication-rules");
-    closeAppPool = () => sql().end();
     const env = serverEnv();
+    const pool = sql();
+    closeAppPool = () => pool.end();
 
     const results: DocumentResult[] = [];
     for (const d of documents) {
@@ -146,6 +147,12 @@ async function main(): Promise<void> {
     console.log(`\n${line("total", report.totals)}`);
     for (const [k, s] of Object.entries(report.by_generation)) console.log(line(k, s));
     console.log(`-> ${values.out}`);
+    const failures = report.totals.documents_failed + report.totals.procedures_failed;
+    if (failures > 0) {
+      // The JSON is still written, but a run with failed procedures (e.g. the LLM was unreachable) is not a clean result.
+      console.error(`${failures} document(s)/procedure(s) failed; see "error" in the JSON. Exit code 1.`);
+      process.exitCode = 1;
+    }
   } finally {
     try {
       await closeAppPool?.();

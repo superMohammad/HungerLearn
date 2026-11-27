@@ -299,6 +299,30 @@
       {
         "learner_id": "HL-304",
         "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-106",
+        "expected_action": "unaffected_no_assignment"
+      },
+      {
+        "learner_id": "HL-107",
+        "expected_action": "unaffected_no_assignment"
+      },
+      {
+        "learner_id": "HL-204",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-205",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-305",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-306",
+        "expected_action": "unaffected_out_of_scope"
       }
     ],
     "reassessment_clause_ids": [
@@ -594,6 +618,30 @@
       {
         "learner_id": "HL-304",
         "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-106",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-107",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-204",
+        "expected_action": "unaffected_no_assignment"
+      },
+      {
+        "learner_id": "HL-205",
+        "expected_action": "unaffected_no_assignment"
+      },
+      {
+        "learner_id": "HL-305",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-306",
+        "expected_action": "unaffected_out_of_scope"
       }
     ],
     "reassessment_clause_ids": [
@@ -888,11 +936,2744 @@
       {
         "learner_id": "HL-304",
         "expected_action": "unaffected_no_assignment"
+      },
+      {
+        "learner_id": "HL-106",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-107",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-204",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-205",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-305",
+        "expected_action": "unaffected_no_assignment"
+      },
+      {
+        "learner_id": "HL-306",
+        "expected_action": "unaffected_no_assignment"
       }
     ],
     "reassessment_clause_ids": [
       "PP-02",
       "PP-04"
+    ]
+  },
+  {
+    "scope": {
+      "role": "courier",
+      "organization": "MadarFig Dispatch",
+      "branch": "Fig Gate",
+      "document_family": "courier-pickup-wait"
+    },
+    "from_document_id": "courier-pickup-wait-v2",
+    "to_document_id": "courier-pickup-wait-v3",
+    "clauses": [
+      {
+        "clause_id": "CW-01",
+        "change": "unchanged",
+        "before": {
+          "section": "١. عند الوصول",
+          "table_row": 2
+        },
+        "after": {
+          "section": "القسم ٦: عند الوصول"
+        },
+        "moved": true,
+        "match_basis": "identical_text",
+        "reason": "Rule text is unchanged; it moves to Section 6.",
+        "training_item": {
+          "item_id": "training-cw-01",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-02",
+        "change": "changed",
+        "before": {
+          "section": "٢. تأخر التجهيز",
+          "table_row": 3
+        },
+        "after": {
+          "section": "القسم ٨: تأخر التجهيز"
+        },
+        "moved": true,
+        "match_basis": "similar_text",
+        "changed_facts": {
+          "threshold": {
+            "before": {
+              "value": 10,
+              "printed_value": "10",
+              "unit": "minute",
+              "operator": ">="
+            },
+            "after": {
+              "value": 8,
+              "printed_value": "8",
+              "unit": "minute",
+              "operator": ">="
+            }
+          }
+        },
+        "reason": "Pickup escalation timer changes from 10 to 8 minutes.",
+        "training_item": {
+          "item_id": "training-cw-02",
+          "decision": "reapprove",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-03",
+        "change": "changed",
+        "before": {
+          "section": "٣. إغلاق نقطة الاستلام",
+          "table_row": 4
+        },
+        "after": {
+          "section": "القسم ٩: إغلاق نقطة الاستلام"
+        },
+        "moved": true,
+        "match_basis": "similar_text",
+        "changed_facts": {
+          "trigger": {
+            "before": "pickup counter closed",
+            "after": "pickup counter closed during branch opening hours"
+          }
+        },
+        "reason": "The closed-counter rule now applies only during branch opening hours.",
+        "training_item": {
+          "item_id": "training-cw-03",
+          "decision": "reapprove",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-04",
+        "change": "changed",
+        "before": {
+          "section": "٤. إنهاء الانتظار"
+        },
+        "after": {
+          "section": "القسم ١٦: إنهاء الانتظار"
+        },
+        "moved": true,
+        "match_basis": "similar_text",
+        "changed_facts": {
+          "exceptions": {
+            "before": [
+              "dispatch instructs departure",
+              "branch staff hand over the order"
+            ],
+            "after": [
+              "dispatch instructs departure",
+              "branch staff hand over the order",
+              "order shows cancelled in the app"
+            ]
+          }
+        },
+        "reason": "A cancelled order in the app is added as a reason the courier may leave.",
+        "training_item": {
+          "item_id": "training-cw-04",
+          "decision": "reapprove",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-10",
+        "change": "unchanged",
+        "before": {
+          "section": "٥. تعذّر تسجيل الوصول"
+        },
+        "after": {
+          "section": "القسم ٧: تعذّر تسجيل الوصول"
+        },
+        "moved": true,
+        "match_basis": "identical_text",
+        "reason": "Rule text is unchanged; it moves to Section 7.",
+        "training_item": {
+          "item_id": "training-cw-10",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-11",
+        "change": "unchanged",
+        "before": {
+          "section": "٦. استلام أكثر من طلب"
+        },
+        "after": {
+          "section": "القسم ١٢: استلام أكثر من طلب"
+        },
+        "moved": true,
+        "match_basis": "identical_text",
+        "reason": "Rule text is unchanged; it moves to Section 12.",
+        "training_item": {
+          "item_id": "training-cw-11",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-12",
+        "change": "removed",
+        "before": {
+          "section": "٧. الدخول من الباب الصحيح"
+        },
+        "after": null,
+        "moved": false,
+        "match_basis": "none",
+        "reason": "The branch now has a single entrance, so the service-entrance rule is withdrawn.",
+        "training_item": {
+          "item_id": "training-cw-12",
+          "decision": "retire",
+          "update_citation": false,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-13",
+        "change": "changed",
+        "before": {
+          "section": "٨. طلب معلّم بأنه جاهز"
+        },
+        "after": {
+          "section": "القسم ١٠: طلب معلّم بأنه جاهز"
+        },
+        "moved": true,
+        "match_basis": "similar_text",
+        "changed_facts": {
+          "action": {
+            "before": "have branch staff locate it by order number before its status is updated",
+            "after": "have the branch supervisor locate it by order number before its status is updated"
+          },
+          "actor": {
+            "before": null,
+            "after": "branch supervisor"
+          }
+        },
+        "reason": "The branch supervisor, not any staff member, now locates a missing ready order.",
+        "training_item": {
+          "item_id": "training-cw-13",
+          "decision": "reapprove",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-14",
+        "change": "unchanged",
+        "before": {
+          "section": "٩. اختلاف ملصق الاستلام"
+        },
+        "after": {
+          "section": "القسم ١١: اختلاف ملصق الاستلام"
+        },
+        "moved": true,
+        "match_basis": "identical_text",
+        "reason": "Rule text is unchanged; it moves to Section 11.",
+        "training_item": {
+          "item_id": "training-cw-14",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-15",
+        "change": "unchanged",
+        "before": {
+          "section": "١٠. طلب الإلغاء من الفرع"
+        },
+        "after": {
+          "section": "القسم ١٥: طلب الإلغاء من الفرع"
+        },
+        "moved": true,
+        "match_basis": "identical_text",
+        "reason": "Rule text is unchanged; it moves to Section 15.",
+        "training_item": {
+          "item_id": "training-cw-15",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-16",
+        "change": "unchanged",
+        "before": {
+          "section": "١١. إغلاق بلاغ الانتظار"
+        },
+        "after": {
+          "section": "القسم ١٧: إغلاق بلاغ الانتظار"
+        },
+        "moved": true,
+        "match_basis": "identical_text",
+        "reason": "Rule text is unchanged; it moves to Section 17.",
+        "training_item": {
+          "item_id": "training-cw-16",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-20",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٦: عند الوصول"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: park in the courier bay before checking in.",
+        "training_item": {
+          "item_id": "training-cw-20",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-21",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٦: عند الوصول"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: identify the order by order number only.",
+        "training_item": {
+          "item_id": "training-cw-21",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-22",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٧: تعذّر تسجيل الوصول"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: check in through the app.",
+        "training_item": {
+          "item_id": "training-cw-22",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-23",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٧: تعذّر تسجيل الوصول"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: use the arrival time dispatch logged.",
+        "training_item": {
+          "item_id": "training-cw-23",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-24",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٨: تأخر التجهيز"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: phone dispatch.",
+        "training_item": {
+          "item_id": "training-cw-24",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-25",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٨: تأخر التجهيز"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not hurry kitchen staff directly.",
+        "training_item": {
+          "item_id": "training-cw-25",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-26",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٩: إغلاق نقطة الاستلام"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: ask dispatch to cancel the assignment.",
+        "training_item": {
+          "item_id": "training-cw-26",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-27",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٩: إغلاق نقطة الاستلام"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not use back doors or enter the kitchen.",
+        "training_item": {
+          "item_id": "training-cw-27",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-28",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٠: طلب معلّم بأنه جاهز"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not take bags without a staff handover.",
+        "training_item": {
+          "item_id": "training-cw-28",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-29",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٠: طلب معلّم بأنه جاهز"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: tell dispatch to decide on remaking or cancelling.",
+        "training_item": {
+          "item_id": "training-cw-29",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-30",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١١: اختلاف ملصق الاستلام"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: match the label order number with the app.",
+        "training_item": {
+          "item_id": "training-cw-30",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-31",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١١: اختلاف ملصق الاستلام"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: ask staff to reprint the label before pickup.",
+        "training_item": {
+          "item_id": "training-cw-31",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-32",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٢: استلام أكثر من طلب"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not leave with only the ready order.",
+        "training_item": {
+          "item_id": "training-cw-32",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-33",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٢: استلام أكثر من طلب"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: load bags in the app's delivery order.",
+        "training_item": {
+          "item_id": "training-cw-33",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-34",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٣: فحص الطلب قبل الاستلام"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: confirm the bag has a seal sticker.",
+        "training_item": {
+          "item_id": "training-cw-34",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-35",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٣: فحص الطلب قبل الاستلام"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: count the bags against the app.",
+        "training_item": {
+          "item_id": "training-cw-35",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-36",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٣: فحص الطلب قبل الاستلام"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: ask staff to reseal the bag.",
+        "training_item": {
+          "item_id": "training-cw-36",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-37",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٣: فحص الطلب قبل الاستلام"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not open sealed bags.",
+        "training_item": {
+          "item_id": "training-cw-37",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-38",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٤: الطلبات الحساسة للحرارة"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: use separate thermal bag compartments.",
+        "training_item": {
+          "item_id": "training-cw-38",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-39",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٤: الطلبات الحساسة للحرارة"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: ask staff whether the order needs remaking.",
+        "training_item": {
+          "item_id": "training-cw-39",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-40",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٤: الطلبات الحساسة للحرارة"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not put the thermal bag on the floor.",
+        "training_item": {
+          "item_id": "training-cw-40",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-41",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٥: طلب الإلغاء من الفرع"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: return collected bags and get the return confirmed.",
+        "training_item": {
+          "item_id": "training-cw-41",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-42",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٥: طلب الإلغاء من الفرع"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not keep or hand over a cancelled order.",
+        "training_item": {
+          "item_id": "training-cw-42",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-43",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٦: إنهاء الانتظار"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: select leave without order in the app before departing.",
+        "training_item": {
+          "item_id": "training-cw-43",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-44",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٦: إنهاء الانتظار"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not accept orders from another branch.",
+        "training_item": {
+          "item_id": "training-cw-44",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-45",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٧: إغلاق بلاغ الانتظار"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: message dispatch the pickup time.",
+        "training_item": {
+          "item_id": "training-cw-45",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-46",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٧: إغلاق بلاغ الانتظار"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not open a duplicate delay report.",
+        "training_item": {
+          "item_id": "training-cw-46",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-47",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٨: السلوك داخل الفرع"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: wait in the courier area.",
+        "training_item": {
+          "item_id": "training-cw-47",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-48",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٨: السلوك داخل الفرع"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: wear uniform and ID badge.",
+        "training_item": {
+          "item_id": "training-cw-48",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-49",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٨: السلوك داخل الفرع"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not eat or smoke.",
+        "training_item": {
+          "item_id": "training-cw-49",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-50",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٩: السلامة في موقف الفرع"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: switch off the vehicle engine.",
+        "training_item": {
+          "item_id": "training-cw-50",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-51",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٩: السلامة في موقف الفرع"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not block the footpath or emergency exit.",
+        "training_item": {
+          "item_id": "training-cw-51",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-52",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٩: السلامة في موقف الفرع"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: stop work and tell dispatch immediately.",
+        "training_item": {
+          "item_id": "training-cw-52",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-53",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٢٠: خلاف مع موظف الفرع"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: end the discussion calmly and inform dispatch.",
+        "training_item": {
+          "item_id": "training-cw-53",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-54",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٢٠: خلاف مع موظف الفرع"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not shout or film staff or the kitchen.",
+        "training_item": {
+          "item_id": "training-cw-54",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-55",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٢٠: خلاف مع موظف الفرع"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: wait at the entrance for dispatch instructions.",
+        "training_item": {
+          "item_id": "training-cw-55",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-56",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٢١: انقطاع التطبيق أو الشبكة"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: note the outage time and order number.",
+        "training_item": {
+          "item_id": "training-cw-56",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-57",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٢١: انقطاع التطبيق أو الشبكة"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: phone dispatch.",
+        "training_item": {
+          "item_id": "training-cw-57",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-58",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٢١: انقطاع التطبيق أو الشبكة"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not hand the order to the customer.",
+        "training_item": {
+          "item_id": "training-cw-58",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-59",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٢٢: الطلبات الكبيرة"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: tell dispatch before collecting.",
+        "training_item": {
+          "item_id": "training-cw-59",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-60",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٢٢: الطلبات الكبيرة"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: ask staff to help carry the order.",
+        "training_item": {
+          "item_id": "training-cw-60",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "CW-61",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٢٢: الطلبات الكبيرة"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not leave bags unattended.",
+        "training_item": {
+          "item_id": "training-cw-61",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      }
+    ],
+    "learner_impacts": [
+      {
+        "learner_id": "HL-101",
+        "expected_action": "unaffected_no_assignment"
+      },
+      {
+        "learner_id": "HL-102",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-103",
+        "expected_action": "unaffected_no_assignment"
+      },
+      {
+        "learner_id": "HL-104",
+        "expected_action": "unaffected_no_assignment"
+      },
+      {
+        "learner_id": "HL-105",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-201",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-202",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-203",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-301",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-302",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-303",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-304",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-106",
+        "expected_action": "reassess"
+      },
+      {
+        "learner_id": "HL-107",
+        "expected_action": "update_in_progress_assignment"
+      },
+      {
+        "learner_id": "HL-204",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-205",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-305",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-306",
+        "expected_action": "unaffected_out_of_scope"
+      }
+    ],
+    "reassessment_clause_ids": [
+      "CW-02",
+      "CW-03",
+      "CW-04",
+      "CW-13",
+      "CW-20",
+      "CW-21",
+      "CW-22",
+      "CW-23",
+      "CW-24",
+      "CW-25",
+      "CW-26",
+      "CW-27",
+      "CW-28",
+      "CW-29",
+      "CW-30",
+      "CW-31",
+      "CW-32",
+      "CW-33",
+      "CW-34",
+      "CW-35",
+      "CW-36",
+      "CW-37",
+      "CW-38",
+      "CW-39",
+      "CW-40",
+      "CW-41",
+      "CW-42",
+      "CW-43",
+      "CW-44",
+      "CW-45",
+      "CW-46",
+      "CW-47",
+      "CW-48",
+      "CW-49",
+      "CW-50",
+      "CW-51",
+      "CW-52",
+      "CW-53",
+      "CW-54",
+      "CW-55",
+      "CW-56",
+      "CW-57",
+      "CW-58",
+      "CW-59",
+      "CW-60",
+      "CW-61"
+    ]
+  },
+  {
+    "scope": {
+      "role": "employee",
+      "organization": "SidrDesk Operations",
+      "branch": "Sidr Square",
+      "document_family": "employee-delayed-order"
+    },
+    "from_document_id": "employee-delayed-order-v2",
+    "to_document_id": "employee-delayed-order-v3",
+    "clauses": [
+      {
+        "clause_id": "ED-01",
+        "change": "changed",
+        "before": {
+          "section": "1. Open the delay case"
+        },
+        "after": {
+          "section": "Section 6: Opening the delay case"
+        },
+        "moved": true,
+        "match_basis": "similar_text",
+        "changed_facts": {
+          "threshold": {
+            "before": {
+              "value": 12,
+              "printed_value": "12",
+              "unit": "minute",
+              "operator": ">="
+            },
+            "after": {
+              "value": 10,
+              "printed_value": "10",
+              "unit": "minute",
+              "operator": ">="
+            }
+          }
+        },
+        "reason": "Delay-case trigger changes from 12 to 10 minutes past the estimate.",
+        "training_item": {
+          "item_id": "training-ed-01",
+          "decision": "reapprove",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-02",
+        "change": "changed",
+        "before": {
+          "section": "2. Escalate a stalled status"
+        },
+        "after": {
+          "section": "Section 9: Escalating stalled tracking"
+        },
+        "moved": true,
+        "match_basis": "similar_text",
+        "changed_facts": {
+          "action": {
+            "before": "support routes case to duty lead, who pages dispatch",
+            "after": "support routes case to the shift supervisor, who pages dispatch"
+          },
+          "actor": {
+            "before": "support agent and duty lead",
+            "after": "support agent and shift supervisor"
+          }
+        },
+        "reason": "Stalled tracking now goes to the shift supervisor instead of the duty lead.",
+        "training_item": {
+          "item_id": "training-ed-02",
+          "decision": "reapprove",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-03",
+        "change": "changed",
+        "before": {
+          "section": "3. Message the customer"
+        },
+        "after": {
+          "section": "Section 10: Messaging the customer"
+        },
+        "moved": true,
+        "match_basis": "similar_text",
+        "changed_facts": {
+          "exceptions": {
+            "before": [
+              "Dispatch confirms a new time"
+            ],
+            "after": [
+              "Dispatch confirms the new time in the case"
+            ]
+          }
+        },
+        "reason": "Dispatch must now confirm the new delivery time in the case.",
+        "training_item": {
+          "item_id": "training-ed-03",
+          "decision": "reapprove",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-10",
+        "change": "unchanged",
+        "before": {
+          "section": "4. Reuse an open case"
+        },
+        "after": {
+          "section": "Section 7: Reusing an open case"
+        },
+        "moved": true,
+        "match_basis": "identical_text",
+        "reason": "Rule text is unchanged; it moves to Section 7.",
+        "training_item": {
+          "item_id": "training-ed-10",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-11",
+        "change": "unchanged",
+        "before": {
+          "section": "5. Handle a missing estimate"
+        },
+        "after": {
+          "section": "Section 8: Missing delivery estimate"
+        },
+        "moved": true,
+        "match_basis": "identical_text",
+        "reason": "Rule text is unchanged; it moves to Section 8.",
+        "training_item": {
+          "item_id": "training-ed-11",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-12",
+        "change": "unchanged",
+        "before": {
+          "section": "6. Transfer a misrouted case"
+        },
+        "after": {
+          "section": "Section 12: Transferring a misrouted case"
+        },
+        "moved": true,
+        "match_basis": "identical_text",
+        "reason": "Rule text is unchanged; it moves to Section 12.",
+        "training_item": {
+          "item_id": "training-ed-12",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-13",
+        "change": "changed",
+        "before": {
+          "section": "7. Route a cancellation request"
+        },
+        "after": {
+          "section": "Section 13: Cancellation requests"
+        },
+        "moved": true,
+        "match_basis": "similar_text",
+        "changed_facts": {
+          "trigger": {
+            "before": "customer asks to cancel a late order",
+            "after": "customer asks to cancel a late order before courier pickup"
+          }
+        },
+        "reason": "Cancellation requests are routed only before the courier collects the order.",
+        "training_item": {
+          "item_id": "training-ed-13",
+          "decision": "reapprove",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-14",
+        "change": "removed",
+        "before": {
+          "section": "8. Track related delays"
+        },
+        "after": null,
+        "moved": false,
+        "match_basis": "none",
+        "reason": "Incidents that delay several orders now follow the Dispatch Incident procedure SD-OPS-030.",
+        "training_item": {
+          "item_id": "training-ed-14",
+          "decision": "retire",
+          "update_citation": false,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-15",
+        "change": "unchanged",
+        "before": {
+          "section": "9. Handle restored tracking"
+        },
+        "after": {
+          "section": "Section 14: Restored tracking"
+        },
+        "moved": true,
+        "match_basis": "identical_text",
+        "reason": "Rule text is unchanged; it moves to Section 14.",
+        "training_item": {
+          "item_id": "training-ed-15",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-16",
+        "change": "unchanged",
+        "before": {
+          "section": "10. Close a recovered delivery"
+        },
+        "after": {
+          "section": "Section 19: Closing a recovered delivery"
+        },
+        "moved": true,
+        "match_basis": "identical_text",
+        "reason": "Rule text is unchanged; it moves to Section 19.",
+        "training_item": {
+          "item_id": "training-ed-16",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-20",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 6: Opening the delay case"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: review the order timeline and courier location.",
+        "training_item": {
+          "item_id": "training-ed-20",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-21",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 6: Opening the delay case"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not open a Delay case early.",
+        "training_item": {
+          "item_id": "training-ed-21",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-22",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 7: Reusing an open case"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not merge cases across orders.",
+        "training_item": {
+          "item_id": "training-ed-22",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-23",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 8: Missing delivery estimate"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: route the case to the shift supervisor.",
+        "training_item": {
+          "item_id": "training-ed-23",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-24",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 9: Escalating stalled tracking"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: phone the dispatch desk directly.",
+        "training_item": {
+          "item_id": "training-ed-24",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-25",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 10: Messaging the customer"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: reply in the customer's own language.",
+        "training_item": {
+          "item_id": "training-ed-25",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-26",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 10: Messaging the customer"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not share courier personal details.",
+        "training_item": {
+          "item_id": "training-ed-26",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-27",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 11: Repeated customer contact"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: answer in the existing case.",
+        "training_item": {
+          "item_id": "training-ed-27",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-28",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 11: Repeated customer contact"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not close the case.",
+        "training_item": {
+          "item_id": "training-ed-28",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-29",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 12: Transferring a misrouted case"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: tell the customer another team owns the case.",
+        "training_item": {
+          "item_id": "training-ed-29",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-30",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 13: Cancellation requests"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: route the case to the shift supervisor.",
+        "training_item": {
+          "item_id": "training-ed-30",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-31",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 13: Cancellation requests"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: record the customer's cancellation reason.",
+        "training_item": {
+          "item_id": "training-ed-31",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-32",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 14: Restored tracking"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: keep the case open until delivery.",
+        "training_item": {
+          "item_id": "training-ed-32",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-33",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 15: Compensation requests"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: log the request and route it to the refunds team.",
+        "training_item": {
+          "item_id": "training-ed-33",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-34",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 15: Compensation requests"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not promise refunds or vouchers.",
+        "training_item": {
+          "item_id": "training-ed-34",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-35",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 15: Compensation requests"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: tag the case for refunds review.",
+        "training_item": {
+          "item_id": "training-ed-35",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-36",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 16: Customer cannot be reached"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: call the customer twice and log each attempt.",
+        "training_item": {
+          "item_id": "training-ed-36",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-37",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 16: Customer cannot be reached"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: route the case to dispatch for a decision.",
+        "training_item": {
+          "item_id": "training-ed-37",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-38",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 17: Courier safety reports"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: route the case to the shift supervisor immediately.",
+        "training_item": {
+          "item_id": "training-ed-38",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-39",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 17: Courier safety reports"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not ask the courier to keep delivering.",
+        "training_item": {
+          "item_id": "training-ed-39",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-40",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 18: Food quality complaints"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: log the description and affected items.",
+        "training_item": {
+          "item_id": "training-ed-40",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-41",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 18: Food quality complaints"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: route it to partner restaurant support.",
+        "training_item": {
+          "item_id": "training-ed-41",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-42",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 19: Closing a recovered delivery"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not close the case.",
+        "training_item": {
+          "item_id": "training-ed-42",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-43",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 20: Shift handover"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: add a handover note to each owned open case.",
+        "training_item": {
+          "item_id": "training-ed-43",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-44",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 20: Shift handover"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: assign open cases to next-shift agents before signing out.",
+        "training_item": {
+          "item_id": "training-ed-44",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-45",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 21: Peak-time queue"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: alert the shift supervisor to add agents.",
+        "training_item": {
+          "item_id": "training-ed-45",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-46",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 21: Peak-time queue"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: work the oldest case first.",
+        "training_item": {
+          "item_id": "training-ed-46",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-47",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 22: Protecting customer data"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not copy customer data outside the case system.",
+        "training_item": {
+          "item_id": "training-ed-47",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "ED-48",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "Section 22: Protecting customer data"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not discuss orders in public channels or chat groups.",
+        "training_item": {
+          "item_id": "training-ed-48",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      }
+    ],
+    "learner_impacts": [
+      {
+        "learner_id": "HL-101",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-102",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-103",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-104",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-105",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-201",
+        "expected_action": "unaffected_no_assignment"
+      },
+      {
+        "learner_id": "HL-202",
+        "expected_action": "unaffected_no_assignment"
+      },
+      {
+        "learner_id": "HL-203",
+        "expected_action": "unaffected_no_assignment"
+      },
+      {
+        "learner_id": "HL-301",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-302",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-303",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-304",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-106",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-107",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-204",
+        "expected_action": "reassess"
+      },
+      {
+        "learner_id": "HL-205",
+        "expected_action": "update_in_progress_assignment"
+      },
+      {
+        "learner_id": "HL-305",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-306",
+        "expected_action": "unaffected_out_of_scope"
+      }
+    ],
+    "reassessment_clause_ids": [
+      "ED-01",
+      "ED-02",
+      "ED-03",
+      "ED-13",
+      "ED-20",
+      "ED-21",
+      "ED-22",
+      "ED-23",
+      "ED-24",
+      "ED-25",
+      "ED-26",
+      "ED-27",
+      "ED-28",
+      "ED-29",
+      "ED-30",
+      "ED-31",
+      "ED-32",
+      "ED-33",
+      "ED-34",
+      "ED-35",
+      "ED-36",
+      "ED-37",
+      "ED-38",
+      "ED-39",
+      "ED-40",
+      "ED-41",
+      "ED-42",
+      "ED-43",
+      "ED-44",
+      "ED-45",
+      "ED-46",
+      "ED-47",
+      "ED-48"
+    ]
+  },
+  {
+    "scope": {
+      "role": "partner",
+      "organization": "Copper Olive Kitchen",
+      "branch": "Olive Lane",
+      "document_family": "partner-packing-sealing"
+    },
+    "from_document_id": "partner-packing-sealing-v2",
+    "to_document_id": "partner-packing-sealing-v3",
+    "clauses": [
+      {
+        "clause_id": "PP-01",
+        "change": "unchanged",
+        "before": {
+          "section": "١. مطابقة الملصق"
+        },
+        "after": {
+          "section": "القسم ٦: مطابقة الملصق"
+        },
+        "moved": true,
+        "match_basis": "identical_text",
+        "reason": "Rule text is unchanged; it moves to Section 6.",
+        "training_item": {
+          "item_id": "training-pp-01",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-02",
+        "change": "unchanged",
+        "before": {
+          "section": "٢. إغلاق الأكياس"
+        },
+        "after": {
+          "section": "القسم ١١: إغلاق الأكياس"
+        },
+        "moved": true,
+        "match_basis": "identical_text",
+        "reason": "Rule text is unchanged; it moves to Section 11.",
+        "training_item": {
+          "item_id": "training-pp-02",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-03",
+        "change": "unchanged",
+        "before": {
+          "section": "٣. فحص الختم"
+        },
+        "after": {
+          "section": "القسم ١٢: فحص الختم"
+        },
+        "moved": true,
+        "match_basis": "identical_text",
+        "reason": "Rule text is unchanged; it moves to Section 12.",
+        "training_item": {
+          "item_id": "training-pp-03",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-10",
+        "change": "unchanged",
+        "before": {
+          "section": "٤. مطابقة محتوى الطلب"
+        },
+        "after": {
+          "section": "القسم ٧: مطابقة محتوى الطلب"
+        },
+        "moved": true,
+        "match_basis": "identical_text",
+        "reason": "Rule text is unchanged; it moves to Section 7.",
+        "training_item": {
+          "item_id": "training-pp-10",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-11",
+        "change": "unchanged",
+        "before": {
+          "section": "٥. فصل البارد عن الساخن"
+        },
+        "after": {
+          "section": "القسم ٨: فصل البارد عن الساخن"
+        },
+        "moved": true,
+        "match_basis": "identical_text",
+        "reason": "Rule text is unchanged; it moves to Section 8.",
+        "training_item": {
+          "item_id": "training-pp-11",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-12",
+        "change": "unchanged",
+        "before": {
+          "section": "٦. تثبيت المشروبات"
+        },
+        "after": {
+          "section": "القسم ٩: تثبيت المشروبات"
+        },
+        "moved": true,
+        "match_basis": "identical_text",
+        "reason": "Rule text is unchanged; it moves to Section 9.",
+        "training_item": {
+          "item_id": "training-pp-12",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-13",
+        "change": "changed",
+        "before": {
+          "section": "٧. التعامل مع ملاحظة الحساسية"
+        },
+        "after": {
+          "section": "القسم ١٠: التعامل مع ملاحظة الحساسية"
+        },
+        "moved": true,
+        "match_basis": "similar_text",
+        "changed_facts": {
+          "action": {
+            "before": "show the note to the prep supervisor before closing and wait for their confirmation",
+            "after": "show the note to the shift supervisor before closing and wait for their confirmation"
+          },
+          "actor": {
+            "before": "prep supervisor confirms the contents",
+            "after": "shift supervisor confirms the contents"
+          }
+        },
+        "reason": "Allergy orders are now confirmed by the shift supervisor instead of the prep supervisor.",
+        "training_item": {
+          "item_id": "training-pp-13",
+          "decision": "reapprove",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-14",
+        "change": "unchanged",
+        "before": {
+          "section": "٨. استبدال كيس مبتل"
+        },
+        "after": {
+          "section": "القسم ١٣: استبدال كيس مبتل"
+        },
+        "moved": true,
+        "match_basis": "identical_text",
+        "reason": "Rule text is unchanged; it moves to Section 13.",
+        "training_item": {
+          "item_id": "training-pp-14",
+          "decision": "remains_valid",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-15",
+        "change": "removed",
+        "before": {
+          "section": "٩. وسم العبوات الهشة"
+        },
+        "after": null,
+        "moved": false,
+        "match_basis": "none",
+        "reason": "The kitchen no longer uses fragile containers, so the handling-label rule is withdrawn.",
+        "training_item": {
+          "item_id": "training-pp-15",
+          "decision": "retire",
+          "update_citation": false,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-16",
+        "change": "changed",
+        "before": {
+          "section": "١٠. اختيار رف التجهيز"
+        },
+        "after": {
+          "section": "القسم ١٥: اختيار رف التجهيز"
+        },
+        "moved": true,
+        "match_basis": "similar_text",
+        "changed_facts": {
+          "trigger": {
+            "before": "bags are sealed",
+            "after": "bags are sealed and counted"
+          }
+        },
+        "reason": "The order goes to the shelf only after its bags are sealed and counted.",
+        "training_item": {
+          "item_id": "training-pp-16",
+          "decision": "reapprove",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-04",
+        "change": "changed",
+        "before": {
+          "section": "١١. تسجيل العبوات"
+        },
+        "after": {
+          "section": "القسم ١٤: تسجيل العبوات"
+        },
+        "moved": true,
+        "match_basis": "similar_text",
+        "changed_facts": {
+          "threshold": {
+            "before": {
+              "value": 2,
+              "unit": "bag",
+              "operator": ">=",
+              "source_value": "كيسين"
+            },
+            "after": {
+              "value": 3,
+              "printed_value": "3",
+              "unit": "bag",
+              "operator": ">="
+            }
+          }
+        },
+        "reason": "Bag counts are recorded from 3 bags instead of 2.",
+        "training_item": {
+          "item_id": "training-pp-04",
+          "decision": "reapprove",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-20",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٦: مطابقة الملصق"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: print the label from the prep screen.",
+        "training_item": {
+          "item_id": "training-pp-20",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-21",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٧: مطابقة محتوى الطلب"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: tell the shift supervisor before closing.",
+        "training_item": {
+          "item_id": "training-pp-21",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-22",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٨: فصل البارد عن الساخن"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: pack them with the cold items.",
+        "training_item": {
+          "item_id": "training-pp-22",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-23",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٩: تثبيت المشروبات"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not overload a cup holder.",
+        "training_item": {
+          "item_id": "training-pp-23",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-24",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٠: التعامل مع ملاحظة الحساسية"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: use clean separate packing tools.",
+        "training_item": {
+          "item_id": "training-pp-24",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-25",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٠: التعامل مع ملاحظة الحساسية"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not close before supervisor confirmation.",
+        "training_item": {
+          "item_id": "training-pp-25",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-26",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١١: إغلاق الأكياس"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: apply one seal per opening.",
+        "training_item": {
+          "item_id": "training-pp-26",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-27",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٢: فحص الختم"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: ask the shift supervisor to check the seal batch.",
+        "training_item": {
+          "item_id": "training-pp-27",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-28",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٣: استبدال كيس مبتل"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not dry and reuse a wet bag.",
+        "training_item": {
+          "item_id": "training-pp-28",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-29",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٤: تسجيل العبوات"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: write each bag's position on its label.",
+        "training_item": {
+          "item_id": "training-pp-29",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-30",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٥: اختيار رف التجهيز"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: tell the shift supervisor.",
+        "training_item": {
+          "item_id": "training-pp-30",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-31",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٦: الطلبات المنتظرة على الرف"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: tell the shift supervisor.",
+        "training_item": {
+          "item_id": "training-pp-31",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-32",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٦: الطلبات المنتظرة على الرف"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not open sealed bags to reheat food.",
+        "training_item": {
+          "item_id": "training-pp-32",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-33",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٧: التسليم للمندوب"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: match the app order number with the label before handover.",
+        "training_item": {
+          "item_id": "training-pp-33",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-34",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٧: التسليم للمندوب"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not hand over without the order number in the delivery app.",
+        "training_item": {
+          "item_id": "training-pp-34",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-35",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٧: التسليم للمندوب"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: return it to the shelf and find the matching bag.",
+        "training_item": {
+          "item_id": "training-pp-35",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-36",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٨: النظافة في منطقة التعبئة"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: wash hands and put on new gloves.",
+        "training_item": {
+          "item_id": "training-pp-36",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-37",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٨: النظافة في منطقة التعبئة"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not put bags on the floor.",
+        "training_item": {
+          "item_id": "training-pp-37",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-38",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٩: المستلزمات"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: tell the shift supervisor to reorder.",
+        "training_item": {
+          "item_id": "training-pp-38",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-39",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ١٩: المستلزمات"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not use unapproved suppliers' bags.",
+        "training_item": {
+          "item_id": "training-pp-39",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-40",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٢٠: الإلغاء أثناء التعبئة"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: stop packing and move the bags to the cancelled-orders shelf.",
+        "training_item": {
+          "item_id": "training-pp-40",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-41",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٢٠: الإلغاء أثناء التعبئة"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: do not hand a cancelled order to a courier.",
+        "training_item": {
+          "item_id": "training-pp-41",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-42",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٢١: تسليم الوردية"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: hand open orders to the next shift by order number.",
+        "training_item": {
+          "item_id": "training-pp-42",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      },
+      {
+        "clause_id": "PP-43",
+        "change": "added",
+        "before": null,
+        "after": {
+          "section": "القسم ٢١: تسليم الوردية"
+        },
+        "moved": false,
+        "match_basis": "none",
+        "reason": "New v3 rule: log supply shortages in the shift log.",
+        "training_item": {
+          "item_id": "training-pp-43",
+          "decision": "approve_new",
+          "update_citation": true,
+          "assessment_case_ids": []
+        }
+      }
+    ],
+    "learner_impacts": [
+      {
+        "learner_id": "HL-101",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-102",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-103",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-104",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-105",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-201",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-202",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-203",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-301",
+        "expected_action": "unaffected_no_assignment"
+      },
+      {
+        "learner_id": "HL-302",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-303",
+        "expected_action": "unaffected_no_assignment"
+      },
+      {
+        "learner_id": "HL-304",
+        "expected_action": "unaffected_no_assignment"
+      },
+      {
+        "learner_id": "HL-106",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-107",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-204",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-205",
+        "expected_action": "unaffected_out_of_scope"
+      },
+      {
+        "learner_id": "HL-305",
+        "expected_action": "reassess"
+      },
+      {
+        "learner_id": "HL-306",
+        "expected_action": "update_in_progress_assignment"
+      }
+    ],
+    "reassessment_clause_ids": [
+      "PP-13",
+      "PP-16",
+      "PP-04",
+      "PP-20",
+      "PP-21",
+      "PP-22",
+      "PP-23",
+      "PP-24",
+      "PP-25",
+      "PP-26",
+      "PP-27",
+      "PP-28",
+      "PP-29",
+      "PP-30",
+      "PP-31",
+      "PP-32",
+      "PP-33",
+      "PP-34",
+      "PP-35",
+      "PP-36",
+      "PP-37",
+      "PP-38",
+      "PP-39",
+      "PP-40",
+      "PP-41",
+      "PP-42",
+      "PP-43"
     ]
   }
 ]

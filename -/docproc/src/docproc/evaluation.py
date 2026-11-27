@@ -1,4 +1,4 @@
-"""Score stage 1 (clause extraction) and stage 6 (v1 -> v2 comparison) on the synthetic dev split.
+"""Score stage 1 (clause extraction) and stage 6 (v1 -> v2 -> v3 comparison) on the synthetic dev split.
 
 Reads `data/synthetic_sops/manifest.json` and `dev/gold/{extraction,version_diffs}.json`, runs the
 configured pipeline on a fresh SQLite database, and matches the output against the gold labels by
@@ -45,7 +45,7 @@ class ManifestDocument(BaseModel):
     document_family: str
     version: int
     split: Literal["dev", "held_out"]
-    variant: Literal["original", "scan"]
+    variant: Literal["original", "scan", "format_copy", "translation"]
 
 
 class Manifest(BaseModel):
@@ -444,8 +444,13 @@ def skip_reason(doc: ManifestDocument, dataset_dir: Path, ocr_engine: OcrEngine)
 
 
 def ingest_key(doc: ManifestDocument) -> str:
-    """docproc document ID for an upload: a scan shares family and version with its original, so it gets its own."""
-    return f"{doc.document_family}-scan" if doc.variant == "scan" else doc.document_family
+    """docproc document ID for an upload. Only originals share the family's ID, so v1 -> v2 -> v3 compare in it.
+    A scan, a v3 format copy or a v3 translation shares family and version with an original, so each gets its own."""
+    if doc.variant == "scan":
+        return f"{doc.document_family}-scan"
+    if doc.variant in ("format_copy", "translation"):
+        return doc.document_id
+    return doc.document_family
 
 
 def _load_json(path: Path) -> object:
@@ -453,8 +458,9 @@ def _load_json(path: Path) -> object:
 
 
 def run_eval(app: App, dataset_dir: Path, work_dir: Path, gate_decisions: Path | None = None) -> EvalReport:
-    """Ingest every scorable dev upload as `<family>/v<version>` (scans as `<family>-scan`), compare v2 with v1, and
-    score extraction and the diffs; then score docproc's matcher on the change pairs and a gate's decisions.
+    """Ingest every scorable dev upload as `<family>/v<version>` (scans and v3 copies under their own ID, see
+    `ingest_key`), compare each new version with the one before, and score extraction and the diffs; then score
+    docproc's matcher on the change pairs and a gate's decisions.
 
     The gold and the gate decisions file are read and checked first, so a bad file fails before a long run.
     """

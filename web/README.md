@@ -14,7 +14,7 @@ Next.js 16 app for the six stages in `../hunger-learn-mvp-architecture.md`. Setu
 
 `pnpm eval:generation [--documents id1,id2] [--out file.json] [--keep-db]` runs the app's real procedure naming and package generation (`src/lib/generation.ts`) on the gold clauses of the dev originals in `../data/synthetic_sops/` (`split: dev`, `variant: original`; `held_out/` is never read) and scores what it wrote (`src/lib/generation-eval.ts`):
 
-- **Citation accuracy:** the share of items whose every citation quotes its clause, with the app's check (`quoteInClause`) and with an exact check in which printed digits must match (`١٥` ≠ `15`).
+- **Citation accuracy:** the share of items whose every citation quotes its clause, with the app's check (`quoteInClause`) and with an exact check in which printed digits must match (`١٥` ≠ `15`). A quote that only matches after normalization is marked `quote_digits_differ` (digits) or `quote_not_exact` (punctuation, spacing, diacritics).
 - **Silent failures** (scoreboard headline, target 0): items marked `verified`, so the trainer sees no warning, that still fail a check.
 - **Publishable with a failed check** (target 0): items failing a check that `canPublishWithFlags` (`src/lib/publication-rules.ts`) still lets a trainer approve and publish.
 

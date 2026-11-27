@@ -79,7 +79,8 @@ test("a quote printing 15 cited from a clause printing ١٥ passes the app's che
   const [item] = scored.items;
   assert.equal(item.citations[0].normalized, true);
   assert.equal(item.citations[0].exact, false);
-  assert.deepEqual(item.failed_checks, ["quote_not_exact"]);
+  assert.deepEqual(item.failed_checks, ["quote_digits_differ"]);
+  assert.equal(item.citations[0].clause_text, CW02.quote);
   const s = summarize([scored]);
   assert.equal(s.citation_accuracy.normalized, 1);
   assert.equal(s.citation_accuracy.exact, 0);
@@ -119,7 +120,32 @@ test("a needs_human package marks its items as drafts flagged needs_human", () =
 test("an unknown clause ref fails both checks", () => {
   const item = lesson([{ stable_id: "unknown", quote: "أرسل بلاغ" }], ["unknown_clause_ref"]);
   const [scored] = scoreProcedure(outcome([item]), PUBLISH_ALL).items;
-  assert.deepEqual(scored.citations[0], { clause_id: null, quote: "أرسل بلاغ", normalized: false, exact: false });
+  assert.deepEqual(scored.citations[0], { clause_id: null, quote: "أرسل بلاغ", normalized: false, exact: false, clause_text: null });
+});
+
+test("a question flagged unknown_clause_ref cites nothing, even though buildPackage points it at the first clause", () => {
+  const [scored] = scoreProcedure(outcome([question("أرسل بلاغ «تأخر الاستلام»", ["unknown_clause_ref"])]), PUBLISH_ALL).items;
+  assert.deepEqual(scored.citations[0], { clause_id: null, quote: "أرسل بلاغ «تأخر الاستلام»", normalized: false, exact: false, clause_text: null });
+});
+
+test("a quote differing only in punctuation is quote_not_exact, not a digit difference", () => {
+  const [scored] = scoreProcedure(outcome([question("أرسل بلاغ \"تأخر الاستلام\"", [])]), PUBLISH_ALL).items;
+  assert.equal(scored.citations[0].normalized, true);
+  assert.deepEqual(scored.failed_checks, ["quote_not_exact"]);
+});
+
+test("a lesson's video shots are citations too", () => {
+  const item = lesson([{ stable_id: "CW-02", quote: "أرسل بلاغ «تأخر الاستلام»" }], []);
+  const payload = item.payload as LessonPayload;
+  const shot = { seconds: 4, visual: "v", on_screen_text: "t", narration: null, source: "slide", clip_id: null, must_show: [], must_not_show: [] };
+  payload.video = {
+    total_seconds: 8,
+    structure: "steps",
+    shots: [{ ...shot, stable_id: "CW-03", quote: "لا تغادر الفرع" }, { ...shot, stable_id: "CW-03", quote: "اخرج فورا" }],
+  };
+  const s = summarize([scoreProcedure(outcome([item]), PUBLISH_ALL)]);
+  assert.deepEqual(s.citations, { total: 3, normalized_pass: 2, exact_pass: 2 });
+  assert.equal(s.citation_accuracy.normalized, 0);
 });
 
 test("a skipped package and a failed procedure are counted, and empty rates are null, not 0 or NaN", () => {
@@ -166,7 +192,8 @@ test("the loader rejects a --documents id that is not a dev original", async () 
 });
 
 test("gold clauses carry only source text; v3's several clauses per section group like the gold procedures", async () => {
-  const docs = await loadDevOriginals(DATASET, { only: ["courier-pickup-wait-v3", "employee-delayed-order-v1"] });
+  const docs = await loadDevOriginals(DATASET);
+  assert.equal(docs.length, 12);
   for (const d of docs) {
     const groups = groupBySection(d.clauses).map((g) => g.map((c) => c.stableId).sort());
     const gold = d.goldProcedures.map((p) => [...p.clause_ids].sort());

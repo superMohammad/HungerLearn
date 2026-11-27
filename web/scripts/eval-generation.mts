@@ -66,13 +66,16 @@ async function main(): Promise<void> {
 
   const adminUrl = requiredEnv("DATABASE_URL");
   const dbName = `hl_eval_${randomBytes(6).toString("hex")}`;
+  // Everything that can fail on configuration is computed before CREATE DATABASE, so a config mistake
+  // never leaves an hl_eval_* database behind.
   const evalUrl = withDatabase(adminUrl, dbName);
+  const evalReadonlyUrl = withDatabase(requiredEnv("READONLY_DATABASE_URL"), dbName);
   const admin = postgres(adminUrl, { max: 1, onnotice: () => undefined });
   console.log(`eval database ${dbName} (${values["keep-db"] ? "kept" : "dropped"} at the end)`);
   await admin.unsafe(`CREATE DATABASE ${dbName}`);
   // The app code reads its pools from these; set before the first query so nothing touches the app database.
   process.env.DATABASE_URL = evalUrl;
-  process.env.READONLY_DATABASE_URL = withDatabase(requiredEnv("READONLY_DATABASE_URL"), dbName);
+  process.env.READONLY_DATABASE_URL = evalReadonlyUrl;
 
   let closeAppPool: (() => Promise<void>) | null = null;
   try {
@@ -144,11 +147,14 @@ async function main(): Promise<void> {
     for (const [k, s] of Object.entries(report.by_generation)) console.log(line(k, s));
     console.log(`-> ${values.out}`);
   } finally {
-    await closeAppPool?.();
     try {
-      if (!values["keep-db"]) await admin.unsafe(`DROP DATABASE IF EXISTS ${dbName} WITH (FORCE)`);
+      await closeAppPool?.();
     } finally {
-      await admin.end();
+      try {
+        if (!values["keep-db"]) await admin.unsafe(`DROP DATABASE IF EXISTS ${dbName} WITH (FORCE)`);
+      } finally {
+        await admin.end();
+      }
     }
   }
 }

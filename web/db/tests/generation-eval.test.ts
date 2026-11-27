@@ -70,8 +70,17 @@ function fakeAnswer(system: string, user: string): unknown {
 }
 
 async function evalDatabases(): Promise<string[]> {
-  const rows = await admin<{ datname: string }[]>`SELECT datname FROM pg_database WHERE datname LIKE 'hl_eval_%'`;
+  const rows = await admin<{ datname: string }[]>`SELECT datname FROM pg_database WHERE datname LIKE 'hl_eval_%' ORDER BY datname`;
   return rows.map((r) => r.datname);
+}
+
+/** Rows in the server's own database (TEST_DATABASE_URL), which the eval must never write; null if it has no app tables. */
+async function adminRows(): Promise<{ documents: number; calls: number } | null> {
+  const [{ exists }] = await admin<{ exists: boolean }[]>`SELECT to_regclass('public.ai_calls') IS NOT NULL AS exists`;
+  if (!exists) return null;
+  const [r] = await admin<{ documents: number; calls: number }[]>`
+    SELECT (SELECT count(*)::int FROM hl_documents) AS documents, (SELECT count(*)::int FROM ai_calls) AS calls`;
+  return { ...r };
 }
 
 before(async () => {
@@ -89,6 +98,7 @@ after(async () => {
 
 test("pnpm eval:generation scores a dev original with the app's pipeline and leaves no database behind", async () => {
   const before = await evalDatabases();
+  const adminBefore = await adminRows();
   const out = path.join(outDir, "eval_generation_dev.json");
   const port = (llm?.address() as AddressInfo).port;
   const env = appEnv(adminUrl, withCredentials(adminUrl, "hl_readonly", "hl_readonly"), port);
@@ -125,6 +135,17 @@ test("pnpm eval:generation scores a dev original with the app's pipeline and lea
   assert.ok(items.filter((i) => i.status === "draft").every((i) => i.failed_checks.includes("quote_not_found")));
 
   assert.deepEqual(await evalDatabases(), before, "the hl_eval_* database was dropped");
+  assert.deepEqual(await adminRows(), adminBefore, "nothing was written to the database in DATABASE_URL");
+});
+
+test("a missing READONLY_DATABASE_URL fails before any eval database is created", async () => {
+  const before = await evalDatabases();
+  const port = (llm?.address() as AddressInfo).port;
+  const env = appEnv(adminUrl, "", port);
+  const result = await runScriptAsync("scripts/eval-generation.mts", ["--documents", DOCUMENT, "--out", path.join(outDir, "y.json")], env);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /READONLY_DATABASE_URL is not set/);
+  assert.deepEqual(await evalDatabases(), before);
 });
 
 test("pnpm eval:generation rejects a document that is not a dev original before creating a database", async () => {

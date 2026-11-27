@@ -16,6 +16,7 @@ from docproc.evaluation import (
     ManifestDocument,
     best_coverage,
     coverage,
+    ingest_key,
     run_eval,
     score_extraction,
     skip_reason,
@@ -73,7 +74,8 @@ def test_run_eval_offline_scores_dev_and_never_reads_held_out(make_app, tmp_path
     scored = {e.document_id for e in report.extraction} | {s.document_id for s in report.skipped}
     assert scored and all("held_out" not in d and not d.startswith(("courier-damaged", "employee-complaint",
                                                                       "partner-counter")) for d in scored)
-    assert report.llm == "fixture" and len(report.diffs) == 3
+    gold_diffs = json.loads((DATASET_DIR / "dev" / "gold" / "version_diffs.json").read_text(encoding="utf-8"))
+    assert report.llm == "fixture" and len(report.diffs) == len(gold_diffs)
     assert {"employee-delayed-order-v2", "partner-item-substitution-v1", "partner-packing-sealing-v2"} <= {
         e.document_id for e in report.extraction}  # .txt uploads
     assert all(s.document_id.endswith("-scan") for s in report.skipped)
@@ -118,3 +120,25 @@ def test_run_eval_with_live_ocr_scores_scans_apart_from_their_originals(make_app
     originals = [e for e in with_ocr.extraction if e.document_id not in scan_ids]
     assert originals == without_ocr.extraction
     assert with_ocr.diffs == without_ocr.diffs
+
+
+def _manifest() -> Manifest:
+    return Manifest.model_validate(json.loads((DATASET_DIR / "manifest.json").read_text(encoding="utf-8")))
+
+
+def test_ingest_key_gives_every_v3_copy_its_own_document():
+    v3 = [d for d in _manifest().documents if d.version == 3]
+    assert v3, "the dev set has v3 uploads"
+    originals = [d for d in v3 if d.variant == "original"]
+    copies = [d for d in v3 if d.variant != "original"]
+    assert all(ingest_key(d) == d.document_family for d in originals)
+    # A copy or translation shares family and version with its original; scoring it must not replace that version.
+    keys = [ingest_key(d) for d in copies]
+    assert len(set(keys)) == len(copies) and not set(keys) & {d.document_family for d in originals}
+
+
+def test_run_eval_scores_every_v3_upload_and_compares_v3_with_v2(make_app, tmp_path):
+    report = run_eval(make_app(), DATASET_DIR, tmp_path / "pages")
+    v3_ids = {d.document_id for d in _manifest().documents if d.version == 3}
+    assert v3_ids <= {e.document_id for e in report.extraction}
+    assert any(d.from_document_id.endswith("-v2") and d.to_document_id.endswith("-v3") for d in report.diffs)

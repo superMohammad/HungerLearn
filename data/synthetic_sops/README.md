@@ -13,7 +13,34 @@ This corpus exercises SOP ingestion, role-specific rule extraction with citation
 
 The uploads include three selectable-text PDFs, five DOCX files, four UTF-8 TXT files, two image-only PDFs, and one PNG. Each role has two independently authored dev v1 SOPs, one in Arabic and one in English. One of those families also has a v2 and a scan of its v1. Each role has one additional document family reserved for held-out evaluation.
 
-Each upload contains 10 or 11 named procedures. Each procedure addresses a distinct operational situation and has its own source citation. All 15 files contain 156 procedure occurrences, including the matching occurrences in the scans and revisions.
+Each upload contains 10 or 11 named procedures. Each procedure addresses a distinct operational situation and has its own source citation. All 15 files contain 156 procedure occurrences, including the matching occurrences in the scans and revisions. These counts cover the v1/v2 corpus; the v3 uploads below add six files per family that has a v2.
+
+## v3 uploads (long SOPs)
+
+Each family with a v2 also has a v3: a full 20–40 page SOP with a cover, document control, definitions, a responsibility matrix, 17–20 procedures (rules, an example, common mistakes, tables), performance indicators, records and appendices. It carries the Hunger Learn logo, plus charts and photos as images. It comes as six uploads: PDF, DOCX and TXT, each in Arabic and English.
+
+| Variant | Meaning |
+| --- | --- |
+| `original` | The family's language and v2's format. The v2 → v3 diff targets this upload. |
+| `format_copy` | The same text in another format. |
+| `translation` | The other language. It has the same clauses, procedures and facts, and the quotes are in its own language. |
+
+Copies and translations point at the original through `source_document_id`, and eval scores each under its own document ID.
+
+**Gold quotes.** Only the numbered rules ("6.1", «٦.١») are gold clauses. A quote is the rule text without its number. Context, examples, mistakes, tables and appendices are realistic but unlabelled, so they test extraction precision.
+
+**PDF locators.** Locators give the section heading line, plus the page for PDFs. Headings read «القسم N: …» / "Section N: …".
+
+**Arabic PDFs.** Chrome writes Arabic text in visual run order, so the validator checks those quotes by words on the cited page.
+
+**Rebuilding.** Everything is generated from one authoring record per family in `qa/v3_authoring/`:
+
+```sh
+uv run --no-project --with python-docx==1.2.0 --with Pillow==13.0.0 --with pypdf==6.21.4 python -m qa.v3_render
+uv run --no-project --with python-docx==1.2.0 --with Pillow==13.0.0 --with pypdf==6.21.4 python -m qa.v3_gold
+```
+
+Rendering needs Google Chrome or Chromium. The gold step also adds learners who hold v2, retrieval distractors for the v3 copy of each answer, and re-points the publication gates from v2 (now superseded) to v3.
 
 ## Files and labels
 
@@ -93,11 +120,11 @@ Report these separately:
 | Kind | Command (from this directory) | Status at freeze |
 | --- | --- | --- |
 | Fixture validation | `python validate.py` | PASS |
-| Seeded-error tests | `python qa/mutation_tests.py` | 29/29 caught |
+| Seeded-error tests | `python qa/mutation_tests.py` | 36/36 caught |
 | Change pairs (rebuild from authoring record) | `python qa/change_pairs_authoring.py`, then `python qa/freeze.py` | 106 pairs, each accepted only under its own label |
-| Independent re-parse | `python qa/independent_audit.py` | 156 quotes, 109 references, 0 problems |
+| Independent re-parse | `python qa/independent_audit.py` | 776 quotes, 126 references, 0 problems (124 quotes in Arabic v3 PDFs are checked only by `validate.py`) |
 | Scan checks (no OCR model) | `python qa/scan_qa.py` | 3 scans pass |
-| Diff recomputation | `python qa/diff_check.py` | 3 diffs reproduced |
+| Diff recomputation | `python qa/diff_check.py` | 6 diffs reproduced (v1 → v2 and v2 → v3) |
 | Dense retrieval (model run) | `python qa/retrieval_baseline.py --model intfloat/multilingual-e5-small` | dev, proxy model only |
 | BGE-M3 retrieval | `python qa/retrieval_baseline.py --model BAAI/bge-m3` | not run (model not installed) |
 | OvisOCR | — | not run (no OCR engine installed) |

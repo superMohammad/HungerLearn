@@ -25,6 +25,11 @@
         "document_id": "courier-pickup-wait-v2",
         "clause_id": "CW-03",
         "reason": "closed-counter exception skips the wait; it does not set the preparation-delay threshold"
+      },
+      {
+        "document_id": "courier-pickup-wait-v3",
+        "clause_id": "CW-02",
+        "reason": "v3 changes this rule; it is outside the requested version"
       }
     ],
     "cross_language": true
@@ -50,6 +55,11 @@
         "document_id": "courier-pickup-wait-v2",
         "clause_id": "CW-02",
         "reason": "newer threshold is outside requested version"
+      },
+      {
+        "document_id": "courier-pickup-wait-v3",
+        "clause_id": "CW-02",
+        "reason": "v3 changes this rule; it is outside the requested version"
       }
     ],
     "cross_language": false
@@ -80,6 +90,11 @@
         "document_id": "courier-pickup-wait-v1",
         "clause_id": "CW-03",
         "reason": "identical rule in superseded v1; only the version filter excludes it"
+      },
+      {
+        "document_id": "courier-pickup-wait-v3",
+        "clause_id": "CW-03",
+        "reason": "v3 changes this rule; it is outside the requested version"
       }
     ],
     "cross_language": true
@@ -110,6 +125,11 @@
         "document_id": "courier-pickup-wait-v1",
         "clause_id": "CW-01",
         "reason": "identical rule in superseded v1; only the version filter excludes it"
+      },
+      {
+        "document_id": "courier-pickup-wait-v3",
+        "clause_id": "CW-01",
+        "reason": "identical rule in v3; only the version filter excludes it"
       }
     ],
     "cross_language": false
@@ -225,6 +245,11 @@
         "document_id": "courier-pickup-wait-v2",
         "clause_id": "CW-16",
         "reason": "mentions the delay report but covers recording pickup time in it, not leaving the branch"
+      },
+      {
+        "document_id": "courier-pickup-wait-v3",
+        "clause_id": "CW-04",
+        "reason": "v3 changes this rule; it is outside the requested version"
       }
     ],
     "cross_language": false
@@ -250,6 +275,11 @@
         "document_id": "employee-delayed-order-v1",
         "clause_id": "ED-02",
         "reason": "v1 assigned direct paging to the support agent"
+      },
+      {
+        "document_id": "employee-delayed-order-v3",
+        "clause_id": "ED-02",
+        "reason": "v3 changes this rule; it is outside the requested version"
       }
     ],
     "cross_language": true
@@ -305,6 +335,11 @@
         "document_id": "employee-delayed-order-v1",
         "clause_id": "ED-01",
         "reason": "identical rule in superseded v1; only the version filter excludes it"
+      },
+      {
+        "document_id": "employee-delayed-order-v3",
+        "clause_id": "ED-01",
+        "reason": "v3 changes this rule; it is outside the requested version"
       }
     ],
     "cross_language": true
@@ -335,6 +370,11 @@
         "document_id": "employee-delayed-order-v1",
         "clause_id": "ED-03",
         "reason": "identical rule in superseded v1; only the version filter excludes it"
+      },
+      {
+        "document_id": "employee-delayed-order-v3",
+        "clause_id": "ED-03",
+        "reason": "v3 changes this rule; it is outside the requested version"
       }
     ],
     "cross_language": false
@@ -435,6 +475,11 @@
         "document_id": "employee-delayed-order-v2",
         "clause_id": "ED-02",
         "reason": "v2 transfers paging responsibility to the duty lead"
+      },
+      {
+        "document_id": "employee-delayed-order-v3",
+        "clause_id": "ED-02",
+        "reason": "v3 changes this rule; it is outside the requested version"
       }
     ],
     "cross_language": false
@@ -460,6 +505,11 @@
         "document_id": "partner-packing-sealing-v1",
         "clause_id": "PP-02",
         "reason": "tape is the obsolete exception"
+      },
+      {
+        "document_id": "partner-packing-sealing-v3",
+        "clause_id": "PP-02",
+        "reason": "identical rule in v3; only the version filter excludes it"
       }
     ],
     "cross_language": true
@@ -490,6 +540,11 @@
         "document_id": "partner-packing-sealing-v1",
         "clause_id": "PP-03",
         "reason": "identical rule in superseded v1; only the version filter excludes it"
+      },
+      {
+        "document_id": "partner-packing-sealing-v3",
+        "clause_id": "PP-03",
+        "reason": "identical rule in v3; only the version filter excludes it"
       }
     ],
     "cross_language": true
@@ -515,6 +570,11 @@
         "document_id": "partner-packing-sealing-v2",
         "clause_id": "PP-01",
         "reason": "label check does not require recording bag count"
+      },
+      {
+        "document_id": "partner-packing-sealing-v3",
+        "clause_id": "PP-04",
+        "reason": "v3 changes this rule; it is outside the requested version"
       }
     ],
     "cross_language": false
@@ -540,6 +600,11 @@
         "document_id": "partner-packing-sealing-v2",
         "clause_id": "PP-02",
         "reason": "outer bag exception is from v2"
+      },
+      {
+        "document_id": "partner-packing-sealing-v3",
+        "clause_id": "PP-02",
+        "reason": "v3 changes this rule; it is outside the requested version"
       }
     ],
     "cross_language": false
@@ -645,6 +710,11 @@
         "document_id": "partner-packing-sealing-v1",
         "clause_id": "PP-01",
         "reason": "identical rule in superseded v1; only the version filter excludes it"
+      },
+      {
+        "document_id": "partner-packing-sealing-v3",
+        "clause_id": "PP-01",
+        "reason": "identical rule in v3; only the version filter excludes it"
       }
     ],
     "cross_language": false
@@ -675,6 +745,11 @@
         "document_id": "courier-pickup-wait-v1",
         "clause_id": "CW-10",
         "reason": "identical rule in superseded v1, cited by table row instead of the v2 section"
+      },
+      {
+        "document_id": "courier-pickup-wait-v3",
+        "clause_id": "CW-10",
+        "reason": "identical rule in v3; only the version filter excludes it"
       }
     ],
     "cross_language": true
@@ -730,6 +805,11 @@
         "document_id": "employee-delayed-order-v1",
         "clause_id": "ED-10",
         "reason": "identical rule in superseded v1, cited with a page locator"
+      },
+      {
+        "document_id": "employee-delayed-order-v3",
+        "clause_id": "ED-10",
+        "reason": "identical rule in v3; only the version filter excludes it"
       }
     ],
     "cross_language": true
@@ -785,6 +865,11 @@
         "document_id": "partner-packing-sealing-v1",
         "clause_id": "PP-11",
         "reason": "identical rule in superseded v1; only the version filter excludes it"
+      },
+      {
+        "document_id": "partner-packing-sealing-v3",
+        "clause_id": "PP-11",
+        "reason": "identical rule in v3; only the version filter excludes it"
       }
     ],
     "cross_language": true

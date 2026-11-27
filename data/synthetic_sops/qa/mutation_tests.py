@@ -239,6 +239,55 @@ def before_text_drift(r):
     jedit(r / "dev/gold/change_pairs.json", lambda rows: pair(rows, "CP-DEV-A01").update(
         before=pair(rows, "CP-DEV-A01")["before"].replace("late order", "delayed order")))
 
+# Loop 12 — v3 uploads (long SOPs rendered to PDF, DOCX and TXT in both languages)
+def v3_row(rows, doc_id):
+    return next(r for r in rows if r["document_id"] == doc_id)
+
+@mutation(12, "a v3 rule quote in the gold that is not a numbered rule line in the upload")
+def v3_quote_drift(r):
+    # Every Arabic v3 label drifts together, so only the comparison with the upload text can catch it.
+    def go(rows):
+        for doc_id in ("courier-pickup-wait-v3", "courier-pickup-wait-v3-ar-pdf", "courier-pickup-wait-v3-ar-txt"):
+            c = clause(rows, doc_id, "CW-24"); c["quote"] = c["quote"].replace("20 دقيقة", "25 دقيقة")
+    jedit(r / "dev/gold/extraction.json", go)
+
+@mutation(12, "a v3 Arabic PDF rule cited on the wrong page")
+def v3_pdf_wrong_page(r):
+    def go(rows):
+        clause(rows, "courier-pickup-wait-v3-ar-pdf", "CW-02")["locator"].update(page=2)
+        row = v3_row(rows, "courier-pickup-wait-v3-ar-pdf")
+        next(p for p in row["procedures"] if p["clause_ids"][0] == "CW-02")["locator"].update(page=2)
+    jedit(r / "dev/gold/extraction.json", go)
+
+@mutation(12, "a v3 translation whose facts drift from the original")
+def v3_translation_facts(r):
+    jedit(r / "dev/gold/extraction.json", lambda rows: clause(rows, "courier-pickup-wait-v3-en-txt", "CW-02")["facts"]
+          ["threshold"].update(value=10, printed_value="10"))
+
+@mutation(12, "a v3 copy that no longer points at its original")
+def v3_copy_without_source(r):
+    jedit(r / "manifest.json", lambda m: doc(m, "courier-pickup-wait-v3-ar-pdf").pop("source_document_id"))
+
+@mutation(12, "a changed v3 rule labelled unchanged in the v2 -> v3 diff")
+def v3_wrong_diff_label(r):
+    def go(rows):
+        update = next(u for u in rows if u["to_document_id"] == "courier-pickup-wait-v3")
+        entry = next(e for e in update["clauses"] if e["clause_id"] == "CW-02")
+        entry["change"] = "unchanged"
+    jedit(r / "dev/gold/version_diffs.json", go)
+
+@mutation(12, "a retrieval query that drops the v3 copy of its answer from the distractors")
+def v3_missing_distractor(r):
+    def go(rows):
+        q = next(q for q in rows if q["query_id"] == "dev-courier-04")
+        q["wrong_matches"] = [w for w in q["wrong_matches"] if w["document_id"] != "courier-pickup-wait-v3"]
+    jedit(r / "dev/gold/retrieval.json", go)
+
+@mutation(12, "a gate still citing v2 as current after v3 superseded it")
+def v3_stale_gate(r):
+    jedit(r / "dev/gold/publication_gates.json", lambda rows: next(g for g in rows if g["gate_id"] == "G-01")["citation"]
+          .update(document_id="courier-pickup-wait-v2", locator={"section": "٢. تأخر التجهيز", "table_row": 3}))
+
 KEEPS_FREEZE = {"freeze_tamper"}  # every other mutation runs on an unfrozen copy so its own check is what fires
 
 # Mutations for later loops are appended below this line.

@@ -1,0 +1,495 @@
+Waiting to collect an order from the branch
+Synthetic training data
+MadarFig Dispatch | Fig Gate branch | Version 3
+To: Courier
+Standard operating procedure for couriers
+Document number: MF-OPS-017 | Effective date: 2026-12-01
+
+
+Section 1: Document control
+
+Document details
+| Item | Value |
+| Document number | MF-OPS-017 |
+| Owner | Delivery Operations |
+| Effective date | 2026-12-01 |
+| Next review | 2027-06-01 |
+| Classification | Internal |
+
+Revision history
+| Version | Date | Summary of change |
+| 1 | 2026-03-01 | First issue. |
+| 2 | 2026-08-15 | Updated the escalation timer and added check-in failure and multiple-order cases. |
+| 3 | 2026-12-01 | Full rewrite: new cases for checks, safety and conduct, and a review of escalation timers. |
+
+Approval
+| Name | Role | Date |
+| Noura Al-Subaie | Delivery Operations Manager | 2026-11-20 |
+| Majed Al-Otaibi | Quality and Training Lead | 2026-11-22 |
+
+
+
+Section 2: Purpose and scope
+
+These instructions apply when you collect orders from the pickup point at the Fig Gate branch.
+
+This document explains what a courier does from the moment they reach the branch until they leave with the order, and how to handle delays, mistakes and unexpected situations. The aim is that the order reaches the customer intact and on time, and that dispatch always knows what is happening at the branch.
+
+Out of scope
+- Delivery to the customer after leaving the branch, which has its own procedure.
+- Preparing orders in the kitchen, which branch staff are responsible for.
+- Refunds and compensation, which customer service handles.
+
+[Figure 1: A courier at the pickup point.]
+
+
+
+Section 3: Definitions
+
+The terms below have the meaning shown wherever they appear in this document.
+
+Terms
+| Term | Meaning |
+| Pickup point | The counter or shelf in the branch where orders are handed to couriers. |
+| Check-in | Selecting "Arrived at branch" in the courier app. |
+| Wait time | The time from check-in until the order is collected or dispatch releases the courier. |
+| Pickup Delay report | A report sent from the app to dispatch when an order is late. |
+| Dispatcher | The person who assigns orders to couriers and follows them from the dispatch room. |
+| Branch supervisor | The person in charge of the branch shift and the pickup staff. |
+| Seal sticker | A sticker that closes the bag and shows it has not been opened since packing. |
+| Thermal bag | The courier's insulated bag that keeps food at temperature. |
+
+
+
+Section 4: Roles and responsibilities
+
+The table shows who does each activity, who is accountable, who is consulted and who is informed.
+
+Responsibility matrix (R: responsible, A: accountable, C: consulted, I: informed)
+| Activity | Courier | Pickup staff | Branch supervisor | Dispatcher |
+| Check-in | R | I | - | A |
+| Preparing and packing | - | R | A | I |
+| Pickup Delay report | R | I | C | A |
+| Finding a missing order | C | R | A | I |
+| Release or cancellation | I | C | C | A |
+
+
+
+Section 5: Overview of the pickup journey
+
+Every pickup goes through five stages: arrival, waiting, checking, collection and departure. Most problems happen while waiting, so Sections 6 to 12 cover that stage in detail.
+
+[Figure 2: Pickup stages from arrival to departure.]
+
+How to use this document
+Each procedure section starts with the situation, then the numbered rules, then an example from the field and common mistakes. The numbered rules are what your work is measured against; the examples are only there to explain them.
+
+
+
+Section 6: On arrival
+
+When this applies
+This starts when you reach the Fig Gate branch to collect an order assigned to you in the app.
+
+Rules
+6.1 Start the wait timer when you select "Arrived at branch" in the app. Record the order number, such as TF-418, and your arrival time.
+6.2 Park in the courier bay before you check in.
+6.3 Give the pickup staff the order number only. Do not tell them the customer's name or phone number.
+
+Example from the field
+Fahad reached the branch at 7:40 pm, parked in the courier bay and selected "Arrived at branch". He gave the staff the order number only, and they found it on screen within seconds.
+
+Common mistakes
+- Checking in from the road before actually reaching the branch.
+- Reading the customer's name aloud at the counter.
+
+
+
+Section 7: Check-in fails
+
+When this applies
+This happens when you reach the branch and the app will not record your check-in because of a fault or weak signal.
+
+Rules
+7.1 If the app will not check you in, tell dispatch your actual arrival time and ask them to log it in the report.
+7.2 If the app starts working again, check in there even if dispatch has already logged your time in the report.
+7.3 Do not count the wait from an estimated time. Use the time that dispatch logged.
+
+Example from the field
+Sarah tried to check in three times and the app failed each time. She called dispatch, said she had arrived at 1:15 pm, and they logged the time in the report. Five minutes later the app worked again and she checked in.
+
+Common mistakes
+- Waiting for the app to come back without telling anyone the arrival time.
+- Estimating the arrival time later from memory.
+
+
+
+Section 8: Preparation delay
+
+When this applies
+This happens when you have checked in and the order is still being prepared in the kitchen.
+
+Rules
+8.1 If the order is still being prepared 8 minutes after check-in, send a Pickup Delay report to dispatch.
+8.2 If the order is still being prepared 20 minutes after check-in, phone dispatch. Do not rely on the report alone.
+8.3 Do not ask kitchen staff to hurry the order yourself while you wait.
+
+[Figure 3: Escalation times counted from check-in.]
+
+Escalation summary
+| Time since check-in | What you do |
+| 8 minutes | Pickup Delay report from the app |
+| 20 minutes | Phone call to dispatch |
+
+Example from the field
+Khalid checked in at 9:02 pm. At 9:10 the order was still being prepared, so he sent a Pickup Delay report. At 9:22 it still was not ready, so he phoned dispatch, who decided to reassign the order later.
+
+Common mistakes
+- Waiting 20 minutes without sending any report.
+- Going into the kitchen to ask about the order.
+
+
+
+Section 9: Pickup point closed
+
+When this applies
+This happens when you arrive and the pickup counter, or the whole branch, is closed.
+
+Rules
+9.1 If the pickup point is closed during the branch's opening hours, call dispatch straight away. Do not wait for the timer to run out.
+9.2 If the branch is closed after its opening hours, tell dispatch and ask them to cancel the assignment.
+9.3 Do not knock on back doors or go into the kitchen to look for the order.
+
+Example from the field
+Reem arrived at 4:30 pm and found the counter closed, although the branch is open until midnight. She called dispatch straight away; they contacted the branch supervisor and the counter reopened within minutes.
+
+Common mistakes
+- Waiting at a closed counter until the escalation time passes.
+- Using the staff door to look for someone.
+
+
+
+Section 10: Order shows ready but is missing
+
+When this applies
+This happens when the app shows the order as ready but it is not on the pickup shelf.
+
+Rules
+10.1 If the order shows as ready but is not on the pickup shelf, ask the branch supervisor to find it by order number before its status is updated.
+10.2 Do not take any bag from the shelf unless branch staff hand it to you.
+10.3 If the order is not found 5 minutes after you ask for a search, tell dispatch so they can decide whether to remake or cancel it.
+
+Example from the field
+Order TF-512 showed as ready but the shelf was empty. Abdullah asked the branch supervisor to look, and the supervisor found it on the self-delivery shelf three minutes later.
+
+Common mistakes
+- Taking a bag that looks like the order from the shelf without checking.
+- Marking the order as collected before it has been found.
+
+
+
+Section 11: Label does not match
+
+When this applies
+This happens when the bag you are offered has a different order number from the one assigned to you.
+
+Rules
+11.1 If staff offer you a bag with a different order number, leave it at the pickup point and ask for the matching bag.
+11.2 Match the order number on the label with the number in the app before you accept any bag.
+11.3 If the label is torn or unreadable, ask branch staff to print a new one before you collect the bag.
+
+Example from the field
+Staff handed Mohammed a bag labelled TF-377 while his order was TF-373. He left the bag on the counter and asked for the right one; the two orders were for neighbouring addresses on the same street.
+
+Common mistakes
+- Accepting a bag because the name looks close to the customer's.
+- Handwriting the order number on a torn label.
+
+
+
+Section 12: Collecting several orders
+
+When this applies
+This happens when dispatch assigns you more than one order from the same branch on one trip.
+
+Rules
+12.1 If you are assigned several orders from the same branch, track the wait for each order separately and check in for every open order.
+12.2 Do not leave with one ready order while another order from the same branch is still open, unless dispatch tells you to.
+12.3 Load the bags into your thermal bag in the delivery order shown in the app.
+
+Example from the field
+Nayef was assigned two orders from the branch. The first was ready after four minutes and the second was late, so he kept waiting, sent a delay report for the second order only, then loaded both bags in delivery order.
+
+Common mistakes
+- Checking in for one order and leaving the other unregistered.
+- Putting the second order on top so it is delivered first by mistake.
+
+
+
+Section 13: Checking the order before pickup
+
+When this applies
+This applies to every order you collect, before it goes into your thermal bag.
+
+Rules
+13.1 Make sure every bag is closed with a seal sticker before you accept it.
+13.2 Count the bags and compare the number with the app.
+13.3 If a seal sticker is open or torn, do not accept the bag. Ask branch staff to reseal it.
+13.4 Do not open a sealed bag to check what is inside.
+
+What to check before pickup
+| Check | Where to find it |
+| Order number | Label and app |
+| Number of bags | Order details screen |
+| Seal sticker | The opening of each bag |
+
+Example from the field
+The app showed three bags but Lama found only two on the shelf. She told the staff member, who brought the drinks bag from the fridge, and Lama checked all three were sealed before taking them.
+
+Common mistakes
+- Taking the bags without counting because the order looks complete.
+- Opening a bag to check the sauces are there.
+
+
+
+Section 14: Temperature-sensitive orders
+
+When this applies
+This applies to orders that combine hot dishes with cold drinks or desserts.
+
+Rules
+14.1 Put cold drinks and hot dishes in separate compartments of your thermal bag.
+14.2 If a ready order is still on the shelf 15 minutes after the ready alert, ask branch staff whether it needs to be remade.
+14.3 Do not put your thermal bag on the floor inside or outside the branch.
+
+Example from the field
+Turki arrived late because of traffic and found the order had been ready for 17 minutes. He asked the staff member, the branch supervisor decided to remake only the fries, and Turki waited four more minutes.
+
+Common mistakes
+- Putting drinks on top of hot dishes in the same compartment.
+- Leaving the bag on the floor while waiting.
+
+
+
+Section 15: Branch asks to cancel
+
+When this applies
+This happens when branch staff ask you to cancel the order, for example because an item has run out or kitchen equipment has failed.
+
+Rules
+15.1 If branch staff ask you to cancel the order while you wait, pass the reason to dispatch. Do not cancel the order from your account.
+15.2 If dispatch cancels the order, return any bag you collected to the pickup point and ask staff to confirm the return in the system.
+15.3 Do not keep a cancelled order or hand it to anyone outside the branch.
+
+Example from the field
+A staff member told Omar the fryer was broken and asked him to cancel the order. Omar passed the reason to dispatch, who cancelled it, and Omar returned the drinks bag he had already collected.
+
+Common mistakes
+- Cancelling the order from the courier app to save time.
+- Keeping the drinks after cancellation because the branch does not need them.
+
+
+
+Section 16: Ending the wait
+
+When this applies
+This sets out when you may leave the branch, whether or not you have the order.
+
+Rules
+16.1 Do not leave the branch until dispatch tells you to, branch staff hand you the order, or the order shows as cancelled in the app.
+16.2 If dispatch tells you to leave without the order, select "Leave without order" in the app before you move off.
+16.3 Do not accept a new order from another branch while you are still waiting for an open one.
+
+Example from the field
+After 25 minutes of waiting, dispatch released Yasser. He selected "Leave without order" and only then accepted a new order from a nearby branch.
+
+Common mistakes
+- Leaving because the wait was long, without being released by dispatch.
+- Accepting a new order before closing the current one.
+
+
+
+Section 17: Closing the delay report
+
+When this applies
+This applies when you collect an order you have already reported as delayed.
+
+Rules
+17.1 When you collect an order you have already reported as delayed, record the pickup time in that same report so dispatch can close it.
+17.2 If you collect the order and cannot find the report in the app, send the pickup time to dispatch in a message.
+17.3 Do not open a new delay report for an order that already has an open one.
+
+Example from the field
+Bandar collected an order he had reported as late ten minutes earlier. He opened the same report and recorded the pickup time; dispatch closed it and the order showed as on its way to the customer.
+
+Common mistakes
+- Opening a new report instead of updating the existing one.
+- Forgetting to record the pickup time, so the report stays open.
+
+
+
+Section 18: Conduct in the branch
+
+When this applies
+These rules apply the whole time you are inside the branch or at its entrance.
+
+Rules
+18.1 Wait in the courier waiting area. Do not stand at the customer counter.
+18.2 Wear your uniform and ID badge the whole time you are in the branch.
+18.3 Do not eat or smoke inside the branch or at its entrance.
+
+Example from the field
+The customer area was crowded at lunchtime, so Sultan waited in the courier corner, and the staff member called him by order number when it was ready.
+
+Common mistakes
+- Joining the customer queue to collect faster.
+- Taking off the ID badge during a long wait.
+
+
+
+Section 19: Safety in the branch car park
+
+When this applies
+These rules apply from the moment you enter the branch car park until you leave it.
+
+Rules
+19.1 Switch off your motorbike or car engine before you go into the branch.
+19.2 Do not park on the footpath or in front of the emergency exit.
+19.3 If you have an accident or are injured in the branch car park, stop work and tell dispatch immediately.
+
+Example from the field
+Ahmed's motorbike slipped on a wet patch at the car park entrance. He stopped work and called dispatch, who reassigned the order to another courier.
+
+Common mistakes
+- Leaving the engine running because the wait will be short.
+- Finishing the order after a minor injury without telling anyone.
+
+
+
+Section 20: Disagreement with branch staff
+
+When this applies
+This happens when you and a staff member disagree about an order, its preparation time or who collects first.
+
+Rules
+20.1 If you disagree with branch staff about an order, end the conversation calmly and tell dispatch what happened.
+20.2 Do not raise your voice or film the staff or the kitchen.
+20.3 If staff ask you to leave the branch, step outside and wait at the entrance for dispatch's instructions.
+
+Example from the field
+A staff member insisted another courier had collected the order. Mishal did not argue; he told dispatch, and the app log showed the order was still in the branch.
+
+Common mistakes
+- Filming the staff member to prove the mistake.
+- Refusing to step outside until the dispute is settled.
+
+
+
+Section 21: App or network outage
+
+When this applies
+This happens when the app stops working or the network drops while you are in the branch.
+
+Rules
+21.1 If the app stops working while you wait, write down the time and the order number on paper or in your phone notes.
+21.2 If the app is still down 10 minutes after the outage started, phone dispatch.
+21.3 Do not hand the order to the customer before the app shows it as collected from the branch.
+
+Example from the field
+The network dropped in the branch at 8:05 pm. Haya wrote down the time and order number, and at 8:15 she phoned dispatch, who recorded the pickup manually.
+
+Common mistakes
+- Relying on memory for the times after the network comes back.
+- Driving off to the customer while the order is not recorded as collected.
+
+
+
+Section 22: Large orders
+
+When this applies
+This applies to orders that do not fit in your thermal bag or come in many bags.
+
+Rules
+22.1 If the order does not fit in your thermal bag, tell dispatch before you collect it.
+22.2 If the order has 5 bags or more, ask branch staff to help you carry it to your vehicle.
+22.3 Do not leave any bag unattended while you carry the order to your vehicle.
+
+Example from the field
+An office order came in seven bags. Faisal told dispatch before collecting, and a staff member helped him carry all the bags to the car in one go.
+
+Common mistakes
+- Carrying the bags in several trips and leaving some on the pavement.
+- Squeezing bags into the thermal bag so containers get crushed.
+
+
+
+Section 23: Performance indicators
+
+Operations review the indicators below every month for each branch. The figures in the chart are illustrative.
+
+Indicators
+| Indicator | Target | How it is measured |
+| Average wait time | Under 7 minutes | From check-in to collection |
+| Delay reports sent on time | 95% | Reports sent within a minute of the timer |
+| Pickup errors | Under 1% | Orders collected with the wrong label |
+
+[Figure 4: Monthly average wait at the Fig Gate branch (illustrative data).]
+
+
+
+Section 24: Records
+
+Records and retention
+| Record | Where it is kept | Retention |
+| Check-in and pickup times | Dispatch system | One year |
+| Pickup Delay reports | Dispatch system | One year |
+| Accident and injury reports | Safety team | Five years |
+
+
+
+Section 25: Related documents
+
+Linked documents
+| Number | Title |
+| MF-OPS-018 | Delivering to the customer |
+| MF-SAF-004 | Road safety |
+| MF-HR-011 | Code of conduct |
+
+
+
+Appendix A: Pickup Delay report form (example)
+
+This example shows the fields of the report in the app.
+
+Report fields
+| Field | Example |
+| Order number | TF-418 |
+| Branch | Fig Gate |
+| Check-in time | 9:02 pm |
+| Report sent at | 9:10 pm |
+| Notes | Order still being prepared |
+
+
+
+Appendix B: Pre-departure checklist (example)
+
+Checklist
+| Item | Done |
+| Label number matches the app | ☐ |
+| Bag count matches | ☐ |
+| Every bag has a seal sticker | ☐ |
+| Drinks separate from hot dishes | ☐ |
+| Order recorded as collected in the app | ☐ |
+
+
+
+Appendix C: Frequently asked questions
+
+Does the wait count if I arrive long before the order is ready?
+Yes, it counts from check-in. Section 6 explains when the count starts.
+
+What if branch staff and dispatch tell me different things?
+Dispatch decides on leaving and cancelling, as Sections 15 and 16 explain.
+
+Do the rules change at peak times?
+No. The same timers apply at all times, although dispatch may reassign orders sooner at peak times.

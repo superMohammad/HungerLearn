@@ -11,7 +11,9 @@ Requires pdfplumber and python-docx. Run from the dataset directory: python qa/i
 import json
 import re
 import sys
+import unicodedata
 import zipfile
+from collections import Counter
 from pathlib import Path
 
 import docx
@@ -28,6 +30,13 @@ def load(rel):
 
 def compact(text):
     return " ".join(text.split())
+
+
+def word_bag(text):
+    # v3 PDFs: a right-to-left text layer comes out in visual run order, so compare words, not strings. Written here
+    # rather than imported, so this audit stays independent of validate.py.
+    folded = re.sub(r"[ً-ْـ]", "", unicodedata.normalize("NFKC", text)).translate(str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789")).lower()
+    return Counter("".join(sorted(w)) if w.isdigit() else w for w in re.findall(r"[^\W\d_]+|\d+", folded))
 
 
 def independent_text(doc):
@@ -56,17 +65,28 @@ def independent_text(doc):
 def main():
     docs = {d["document_id"]: d for d in load("manifest.json")["documents"]}
     extraction = {r["document_id"]: r for s in ("dev", "held_out") for r in load(f"{s}/gold/extraction.json")}
-    problems, quotes = [], 0
+    problems, quotes, skipped_quotes = [], 0, 0
     for doc_id, doc in docs.items():
         body, meta = independent_text(doc)
         flat = compact(body).replace("[ ] ", "")
         for hit in set(LABEL.findall(body + " " + meta)):
             problems.append(f"{doc_id}: gold label '{hit}' appears in the upload")
+        if doc["version"] == 3 and doc["format"] == "pdf" and doc["language"] == "ar":
+            # pdfplumber returns this Chrome-printed Arabic text in visual order with letters reversed and words split
+            # at diacritics; pypdfium2 and PyMuPDF break it too. validate.py's pypdf word check is the only reader
+            # that recovers it, so this audit rechecks only for leaked labels here and reports the skip.
+            skipped_quotes += len(extraction[doc_id]["clauses"])
+            continue
+        if doc["version"] == 3 and doc["format"] == "pdf":
+            bag = word_bag(body)
+            found = lambda text, bag=bag: word_bag(text) <= bag
+        else:
+            found = lambda text, flat=flat: compact(text) in flat
         for clause in extraction[doc_id]["clauses"]:
             quotes += 1
-            if compact(clause["quote"]) not in flat:
+            if not found(clause["quote"]):
                 problems.append(f"{doc_id}/{clause['clause_id']}: quote not found by independent parser")
-            if clause["locator"]["section"] not in flat:
+            if not found(clause["locator"]["section"]):
                 problems.append(f"{doc_id}/{clause['clause_id']}: section heading not found")
     ids = {(d, c["clause_id"]) for d, r in extraction.items() for c in r["clauses"]}
     refs = []
@@ -92,6 +112,8 @@ def main():
         if {i["learner_id"] for i in d["learner_impacts"]} != learners:
             problems.append(f"diff {d['to_document_id']}: learner impacts do not match learners.json")
     print(f"{len(docs)} uploads, {quotes} quotes rechecked with independent parsers, {len(refs)} references resolved")
+    if skipped_quotes:
+        print(f"{skipped_quotes} quotes in Arabic v3 PDFs not rechecked: no independent parser reads their text layer")
     print("\n".join(problems) or "no problems found")
     return 1 if problems else 0
 

@@ -3,6 +3,7 @@
 import json
 import re
 import sys
+import unicodedata
 from collections import Counter, defaultdict
 from hashlib import sha256
 from pathlib import Path
@@ -52,6 +53,29 @@ def restates_quote(field, quote):
 
 # Tatweel (ـ) is deleted, not turned into a space: «التوزيـــع» is the same word as «التوزيع».
 MATCH_FOLD = str.maketrans("٠١٢٣٤٥٦٧٨٩أإآى", "0123456789اااي", "ـ")
+
+
+# v3 uploads: a word bag compares text regardless of line order, which a PDF text layer scrambles for right-to-left
+# lines (runs come out in visual order and Arabic glyphs as presentation forms). NFKC folds those forms back.
+WORD = re.compile(r"[^\W\d_]+|\d+")
+# Marks are dropped. NFKC turns a presentation-form mark (ﱠ shadda with fatha) into a space plus the marks, so the
+# space goes too, and pypdf returns NUL for a mark glyph with no Unicode mapping.
+HARAKAT = re.compile(r"\s?[ً-ْـ\x00]")
+# Section and appendix headings of a v3 upload, and the rule number printed before each v3 rule ("6.1", "٦.١").
+V3_HEADING = re.compile(r"^(?:القسم [٠-٩]+|الملحق [أ-ي]|Section \d+|Appendix [A-Z]): ")
+V3_RULE_NO = r"[0-9٠-٩]+\.[0-9٠-٩]+ "
+V3_VARIANTS = ("original", "format_copy", "translation")
+
+
+def word_bag(text):
+    # A digit run inside right-to-left text can come out reversed (١٠ as ٠١), so numbers compare by their digits.
+    folded = HARAKAT.sub("", unicodedata.normalize("NFKC", text)).translate(FOLD_DIGITS).lower()
+    return Counter("".join(sorted(w)) if w.isdigit() else w for w in WORD.findall(folded))
+
+
+def section_title(section):
+    # "٢. تأخر التجهيز" (v1, v2) or "القسم ٨: تأخر التجهيز" / "Section 8: Preparation delay" (v3).
+    return V3_HEADING.sub("", re.sub(r"^\d+\. ", "", section))
 
 
 def match_key(text):
@@ -123,7 +147,8 @@ def validate_manifest():
     docs = indexed(manifest["documents"], "document_id")
     paths = indexed(manifest["documents"], "path")
     check(manifest["schema_version"] == 2, "Unsupported manifest schema")
-    check(len(docs) == 15, f"Found {len(docs)} manifest documents, expected 15")
+    corpus = {k: d for k, d in docs.items() if d["version"] < 3}
+    check(len(corpus) == 15, f"Found {len(corpus)} v1/v2 manifest documents, expected 15")
     check(set(paths) == set.union(*(files_in(f"{split}/uploads") for split in SPLITS)),
           "Manifest paths differ from upload files on disk")
     check({d["format"] for d in docs.values()} == set(EXTENSIONS), "All five formats must be present")
@@ -131,7 +156,8 @@ def validate_manifest():
     for doc_id, doc in docs.items():
         fmt, split, family = doc["format"], doc["split"], doc["document_family"]
         check(split in SPLITS and doc["role"] in ROLES and doc["language"] in MARKERS, f"Invalid scope: {doc_id}")
-        check(doc["version"] in (1, 2) and doc["variant"] in ("original", "scan"), f"Invalid version/variant: {doc_id}")
+        check((doc["version"] in (1, 2) and doc["variant"] in ("original", "scan"))
+              or (doc["version"] == 3 and doc["variant"] in V3_VARIANTS), f"Invalid version/variant: {doc_id}")
         check(all(doc.get(k) for k in ("organization", "organization_local", "branch", "branch_local", "document_family")),
               f"Missing organization, branch, or family: {doc_id}")
         check(doc["language"] == "ar" or doc["branch_local"] == doc["branch"],
@@ -143,23 +169,29 @@ def validate_manifest():
         check(10 <= doc["procedure_count"] <= 20, f"Expected 10 to 20 procedures: {doc_id}")
         family_groups[family].append(doc)
     for family, group in family_groups.items():
-        fingerprint = {(g["split"], g["role"], g["organization"], g["branch"], g["language"]) for g in group}
+        # A v3 translation is the one upload allowed to change language inside a family.
+        fingerprint = {(g["split"], g["role"], g["organization"], g["branch"], g["language"])
+                       for g in group if g["variant"] != "translation"}
         check(len(fingerprint) == 1, f"Document family crosses splits or scopes: {family}")
-        versions = sorted((d["version"], d["variant"]) for d in group)
+        versions = sorted((d["version"], d["variant"]) for d in group if d["version"] < 3)
         check(versions in ([(1, "original")], [(1, "original"), (1, "scan"), (2, "original")]),
               f"Invalid version or scan set: {family}")
+        v3 = [d for d in group if d["version"] == 3]
+        if v3:
+            validate_v3_family(family, group, v3, docs)
         for scan in (d for d in group if d["variant"] == "scan"):
             source = docs[scan["source_document_id"]]
             check(source in group and source["version"] == 1 and source["variant"] == "original",
                   f"Scan does not point to its original v1: {scan['document_id']}")
     for role in ROLES:
-        rows = [doc for doc in docs.values() if doc["role"] == role]
+        rows = [doc for doc in corpus.values() if doc["role"] == role]
         v1 = [d for d in rows if (d["split"], d["version"], d["variant"]) == ("dev", 1, "original")]
         check(len(rows) == 5 and Counter(d["language"] for d in v1) == {"ar": 1, "en": 1},
               f"Expected five files and two bilingual dev originals for {role}")
         check(sum(d["variant"] == "scan" for d in rows) == 1
               and sum(d["split"] == "held_out" for d in rows) == 1, f"Wrong scan or held-out count for {role}")
     held_out = [d for d in docs.values() if d["split"] == "held_out"]
+    check(all(d["version"] < 3 for d in held_out), "v3 uploads belong to dev only")
     check({d["language"] for d in held_out} == set(MARKERS), "Held-out set must have both languages")
     scans = [d for d in docs.values() if d["variant"] == "scan"]
     check(Counter(d["language"] for d in scans) == {"ar": 2, "en": 1}, "Expected two Arabic scans and one English scan")
@@ -168,6 +200,37 @@ def validate_manifest():
     demo = docs[manifest["live_demo_document_id"]]
     check(demo["split"] == "held_out" and demo["format"] == "pdf", "Demo must be a held-out text PDF")
     return docs, demo
+
+
+def validate_v3_family(family, group, v3, docs):
+    # Six v3 uploads: both languages in PDF, DOCX and TXT. The original is in the family language and v2's format;
+    # every other upload is a copy of it (same language) or a translation (the other language).
+    originals = [d for d in v3 if d["variant"] == "original"]
+    v2 = [d for d in group if (d["version"], d["variant"]) == (2, "original")]
+    check(len(originals) == 1 and len(v2) == 1, f"v3 needs one original and a v2 to update: {family}")
+    original = originals[0]
+    check((original["language"], original["format"]) == (v2[0]["language"], v2[0]["format"]),
+          f"The v3 original must keep v2's language and format: {family}")
+    check(sorted((d["language"], d["format"]) for d in v3) == sorted((l, f) for l in MARKERS for f in ("docx", "pdf", "txt")),
+          f"v3 needs PDF, DOCX and TXT in Arabic and English: {family}")
+    for doc in v3:
+        if doc is original:
+            check("source_document_id" not in doc, f"The v3 original has no source document: {doc['document_id']}")
+            continue
+        expected = "format_copy" if doc["language"] == original["language"] else "translation"
+        check(doc["variant"] == expected and doc.get("source_document_id") == original["document_id"]
+              and doc["procedure_count"] == original["procedure_count"], f"Wrong v3 copy metadata: {doc['document_id']}")
+    for doc in v3:
+        # Each upload prints the names in its own language: v2's names in the family language, the manifest's
+        # English names in English, and Arabic-script names in Arabic.
+        names = (doc["organization_local"], doc["branch_local"])
+        if doc["language"] == v2[0]["language"]:
+            expected = names == (v2[0]["organization_local"], v2[0]["branch_local"])
+        elif doc["language"] == "en":
+            expected = names == (doc["organization"], doc["branch"])
+        else:
+            expected = all(ARABIC.search(name) for name in names)
+        check(expected, f"A v3 upload prints the organization and branch in its own language: {doc['document_id']}")
 
 
 def word_text(path, language):
@@ -262,9 +325,54 @@ def validate_scan(doc, origin_pages, extraction, count):
     return [p["lines"] for p in pages]
 
 
-def validate_procedures(doc, label, clauses, whole):
+def validate_v1_quote(pages, section_names, section, quote, locator, table_rows, context):
+    # v1/v2: the rule is the whole text between its section line and the next section line.
+    page = pages[locator.get("page", 1) - 1]
+    lines = [line.strip().removeprefix("[ ] ") for line in page if line.strip()]
+    check(lines.count(section) == 1, f"Unmatched or ambiguous section: {context}")
+    start = lines.index(section) + 1
+    end = next((index for index in range(start, len(lines)) if lines[index] in section_names), len(lines))
+    check(compact(" ".join(lines[start:end])) == quote, f"Exact quote mismatch at locator: {context}")
+    if "table_row" in locator:
+        row = locator["table_row"]
+        check(2 <= row <= len(table_rows) and table_rows[row - 1] == [section, quote], f"Wrong table row: {context}")
+
+
+def validate_v3_quote(fmt, pages, section, quote, locator, context):
+    # v3: a section holds context, rules, tables and examples, so a rule is one numbered line inside its section.
+    if fmt == "pdf":
+        page = locator["page"]
+        check(word_bag(quote) <= word_bag(" ".join(pages[page - 1])), f"Quote not on its locator page: {context}")
+        heading_pages = [n for n, lines in enumerate(pages, start=1) if word_bag(section) <= word_bag(" ".join(lines))]
+        check(heading_pages and heading_pages[0] <= page, f"Section heading missing before its rule: {context}")
+        return
+    lines = [line.strip() for line in pages[0] if line.strip()]
+    check(lines.count(section) == 1, f"Unmatched or ambiguous section: {context}")
+    start = lines.index(section) + 1
+    end = next((i for i in range(start, len(lines)) if V3_HEADING.match(lines[i])), len(lines))
+    check(any(re.fullmatch(V3_RULE_NO + re.escape(quote), line) for line in lines[start:end]),
+          f"Quote is not a numbered rule line in its section: {context}")
+
+
+def validate_v3_copy(doc, label, origin):
+    # Copies and translations carry the original's clauses and facts in the same order; translations change the
+    # quote's language, copies keep it word for word.
+    doc_id = doc["document_id"]
+    check([c["clause_id"] for c in label["clauses"]] == [c["clause_id"] for c in origin["clauses"]]
+          and [p["procedure_id"] for p in label["procedures"]] == [p["procedure_id"] for p in origin["procedures"]]
+          and [p["clause_ids"] for p in label["procedures"]] == [p["clause_ids"] for p in origin["procedures"]],
+          f"v3 copy clauses or procedures differ from the original: {doc_id}")
+    check(all(a["facts"] == b["facts"] for a, b in zip(label["clauses"], origin["clauses"])),
+          f"v3 copy facts differ from the original: {doc_id}")
+    if doc["variant"] == "format_copy":
+        check(all(a["quote"] == b["quote"] and a["locator"]["section"] == b["locator"]["section"]
+                  for a, b in zip(label["clauses"], origin["clauses"])) and label["title"] == origin["title"],
+              f"A format copy must quote the original word for word: {doc_id}")
+
+
+def validate_procedures(doc, label, clauses, visible):
     doc_id, family = doc["document_id"], doc["document_family"]
-    check(label["title"] in whole and label["scope_quote"] in whole, f"Document scope differs from source: {doc_id}")
+    check(visible(label["title"]) and visible(label["scope_quote"]), f"Document scope differs from source: {doc_id}")
     procedures = indexed(label["procedures"], "procedure_id")
     check(len(procedures) == doc["procedure_count"], f"Procedure count differs from manifest: {doc_id}")
     sections, covered = set(), []
@@ -274,7 +382,7 @@ def validate_procedures(doc, label, clauses, whole):
         section = locator["section"]
         check(supporting and all(cid in clauses for cid in supporting), f"Missing procedure clauses: {doc_id}/{key}")
         check(key == f"{family}:{supporting[0]}", f"Invalid stable procedure ID: {doc_id}/{key}")
-        check(section not in sections and re.sub(r"^\d+\. ", "", section) == procedure["title"],
+        check(section not in sections and section_title(section) == procedure["title"],
               f"Duplicate or mismatched procedure title: {doc_id}/{key}")
         check(locator == clauses[supporting[0]]["locator"], f"Procedure citation differs from its rule: {doc_id}/{key}")
         sections.add(section)
@@ -307,23 +415,29 @@ def validate_extraction(docs):
         source_pages[doc_id] = pages
         source_tables[doc_id] = table_rows
         whole = compact(" ".join(line for page in pages for line in page))
-        check(MARKERS[doc["language"]] in whole and doc["organization_local"] in whole,
+        if doc["version"] == 3 and fmt == "pdf":
+            bag = word_bag(whole)
+            visible = lambda text, bag=bag: word_bag(text) <= bag
+        else:
+            visible = lambda text, whole=whole: compact(text) in whole
+        check(visible(MARKERS[doc["language"]]) and visible(doc["organization_local"]),
               f"Missing visible data marker or organization: {doc_id}")
         leaked = GOLD_LABEL.findall(whole + " " + upload_metadata(path, fmt))
         check(not leaked, f"Gold label {sorted(set(leaked))} leaked into upload text or metadata: {doc_id}")
-        check(compact(header_line(doc)) in whole,
-              f"Visible header disagrees with manifest organization, branch, or version: {doc_id}")
-        check(AUDIENCE[doc["language"]][doc["role"]] in whole, f"Visible audience line disagrees with manifest role: {doc_id}")
+        check(visible(header_line(doc)), f"Visible header disagrees with manifest organization, branch, or version: {doc_id}")
+        check(visible(AUDIENCE[doc["language"]][doc["role"]]), f"Visible audience line disagrees with manifest role: {doc_id}")
         label = extraction[doc_id]
         clauses = indexed(label["clauses"], "clause_id")
         clause_index[doc_id] = clauses
-        validate_procedures(doc, label, clauses, whole)
+        validate_procedures(doc, label, clauses, visible)
         signature = tuple(c["quote"] for c in clauses.values())
         prior_split = body_signatures.setdefault(signature, doc["split"])
         check(prior_split == doc["split"], f"Identical rule text appears across splits: {doc_id}")
         if doc["variant"] == "scan":
             origin_clauses = clause_index[doc["source_document_id"]]
             check(list(clauses) == list(origin_clauses), f"Scan and origin clause coverage differs: {doc_id}")
+        if doc["variant"] in ("format_copy", "translation"):
+            validate_v3_copy(doc, label, extraction[doc["source_document_id"]])
         section_names = {clause["locator"]["section"] for clause in clauses.values()}
         for cid, clause in clauses.items():
             context = f"{doc_id}/{cid}"
@@ -340,15 +454,10 @@ def validate_extraction(docs):
             check(facts.get("exception_to", next(iter(clauses))) in clauses, f"exception_to names a missing clause: {context}")
             if fmt in {"pdf", "image_pdf", "png"}:
                 check(1 <= locator["page"] <= len(pages), f"Bad page locator: {context}")
-            page = pages[locator.get("page", 1) - 1]
-            lines = [line.strip().removeprefix("[ ] ") for line in page if line.strip()]
-            check(lines.count(section) == 1, f"Unmatched or ambiguous section: {context}")
-            start = lines.index(section) + 1
-            end = next((index for index in range(start, len(lines)) if lines[index] in section_names), len(lines))
-            check(compact(" ".join(lines[start:end])) == quote, f"Exact quote mismatch at locator: {context}")
-            if "table_row" in locator:
-                row = locator["table_row"]
-                check(2 <= row <= len(table_rows) and table_rows[row - 1] == [section, quote], f"Wrong table row: {context}")
+            if doc["version"] == 3:
+                validate_v3_quote(fmt, pages, section, quote, locator, context)
+            else:
+                validate_v1_quote(pages, section_names, section, quote, locator, table_rows, context)
             if doc["variant"] == "scan":
                 old = origin_clauses[cid]
                 check(old["quote"] == quote and old["facts"] == facts and
@@ -550,7 +659,8 @@ def validate_updates(docs, clauses, cases):
             check(mastery["state"] in {"mastered", "in_progress", "needs_practice"} and 0 <= mastery["score"] <= 1,
                   f"Invalid mastery state or score: {lid}")
     updates = indexed(load("dev/gold/version_diffs.json"), "to_document_id")
-    check(set(updates) == {doc_id for doc_id, d in docs.items() if d["version"] == 2}, "Incomplete v2 diff coverage")
+    check(set(updates) == {doc_id for doc_id, d in docs.items() if d["version"] == 2
+                           or (d["version"] == 3 and d["variant"] == "original")}, "Incomplete v2/v3 diff coverage")
     types, actions, changed_facts = set(), set(), set()
     moved = False
     for new_id, update in updates.items():
@@ -558,7 +668,7 @@ def validate_updates(docs, clauses, cases):
         old, new = docs[old_id], docs[new_id]
         scope_fields = (*SCOPE_FIELDS, "branch")
         scope = update["scope"]
-        check(old["version"] == 1 and old["variant"] == new["variant"] == "original"
+        check(new["version"] == old["version"] + 1 and old["variant"] == new["variant"] == "original"
               and old["split"] == new["split"] == "dev"
               and scope == fields(old, scope_fields) == fields(new, scope_fields), f"Wrong revision pairing: {new_id}")
         before, after = clauses[old_id], clauses[new_id]

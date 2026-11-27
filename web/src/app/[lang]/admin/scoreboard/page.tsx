@@ -24,9 +24,14 @@ function duration(s: Text, seconds: number): string {
   return s.duration(Math.floor(whole / 60), whole % 60);
 }
 
-/** A detail line: a label in the page's language and its number in monospace. */
-function Line({ label, value }: { label: string; value: string }) {
-  return <p>{label} <bdi dir="ltr" className="num">{value}</bdi></p>;
+/**
+ * A detail line: a label in the page's language and its number in monospace, isolated left to right.
+ * A value that mixes words and numbers (an Arabic duration such as «5 د 12 ث») keeps the page's direction
+ * (`mixed`), and a missing value is plain "not available" text.
+ */
+function Line({ label, value, s, mixed = false }: { label: string; value: string | null; s: Text; mixed?: boolean }) {
+  if (value === null) return <p>{label} <span className="text-ink-soft">{s.notAvailable}</span></p>;
+  return <p>{label} {mixed ? <bdi className="num">{value}</bdi> : <bdi dir="ltr" className="num">{value}</bdi>}</p>;
 }
 
 function Warn({ children }: { children: ReactNode }) {
@@ -73,14 +78,13 @@ function PartialRun({ gen, s }: { gen: Extract<Scoreboard["generation"], { statu
   return (
     <>
       <Warn>{s.partialRun}</Warn>
-      <Line label={s.failedDocuments} value={`${count(gen.documentsFailed)} / ${count(gen.documents)}`} />
-      <Line label={s.failedProcedures} value={count(gen.proceduresFailed)} />
+      <Line s={s} label={s.failedDocuments} value={`${count(gen.documentsFailed)} / ${count(gen.documents)}`} />
+      <Line s={s} label={s.failedProcedures} value={count(gen.proceduresFailed)} />
     </>
   );
 }
 
 function metrics(board: Scoreboard, s: Text): MetricView[] {
-  const na = s.notAvailable;
   const { extraction: ex, generation: gen, cost } = board;
   const genSource = gen.status === "ok" ? `${SCOREBOARD_FILES.generation.file} · ${day(gen.date)} · ${gen.model}` : "";
   const costSource = cost.status === "ok" ? `${SCOREBOARD_FILES.cost.file} · ${day(cost.date)} · ${cost.model}` : "";
@@ -91,8 +95,8 @@ function metrics(board: Scoreboard, s: Text): MetricView[] {
         value: pct(ex.recall),
         details: (
           <>
-            <Line label={s.precision} value={pct(ex.precision)} />
-            <Line label={s.scored} value={`${count(ex.scored)} / ${count(ex.scored + ex.skipped)}`} />
+            <Line s={s} label={s.precision} value={pct(ex.precision)} />
+            <Line s={s} label={s.scored} value={`${count(ex.scored)} / ${count(ex.scored + ex.skipped)}`} />
             {ex.skipped > 0 ? <Warn>{s.skipped} <bdi dir="ltr" className="num">{count(ex.skipped)}</bdi></Warn> : null}
           </>
         ),
@@ -105,8 +109,9 @@ function metrics(board: Scoreboard, s: Text): MetricView[] {
         value: gen.citationAccuracy === null ? null : pct(gen.citationAccuracy),
         details: (
           <>
-            <Line label={s.items} value={count(gen.items)} />
-            <Line label={s.exact} value={gen.citationAccuracyExact === null ? na : pct(gen.citationAccuracyExact)} />
+            <Line s={s} label={s.documents} value={count(gen.documents)} />
+            <Line s={s} label={s.items} value={count(gen.items)} />
+            <Line s={s} label={s.exact} value={gen.citationAccuracyExact === null ? null : pct(gen.citationAccuracyExact)} />
             <PartialRun gen={gen} s={s} />
           </>
         ),
@@ -119,10 +124,11 @@ function metrics(board: Scoreboard, s: Text): MetricView[] {
         value: count(gen.silentFailures),
         details: (
           <>
-            <Line label={s.items} value={count(gen.items)} />
+            <Line s={s} label={s.documents} value={count(gen.documents)} />
+            <Line s={s} label={s.items} value={count(gen.items)} />
             {gen.publishableWithFailedCheck > 0
               ? <Warn>{s.publishable} <bdi dir="ltr" className="num">{count(gen.publishableWithFailedCheck)}</bdi></Warn>
-              : <Line label={s.publishable} value={count(0)} />}
+              : <Line s={s} label={s.publishable} value={count(0)} />}
             <PartialRun gen={gen} s={s} />
           </>
         ),
@@ -139,11 +145,11 @@ function metrics(board: Scoreboard, s: Text): MetricView[] {
               ? <p><Pill tone="neutral">{s.estimate}</Pill> {s.hosted(ltr(cost.hostedModel))} <bdi dir="ltr" className="num">{usd(cost.meanHostedUsd)}</bdi></p>
               : <p>{s.noHosted}</p>}
             {cost.meanInputTokens !== null && cost.meanOutputTokens !== null
-              ? <Line label={s.tokens} value={`${count(cost.meanInputTokens)} · ${count(cost.meanOutputTokens)}`} />
+              ? <Line s={s} label={s.tokens} value={`${count(cost.meanInputTokens)} · ${count(cost.meanOutputTokens)}`} />
               : null}
-            <Line label={s.versions} value={count(cost.versions)} />
+            <Line s={s} label={s.versions} value={count(cost.versions)} />
             {cost.coverage.docprocCallsNotLogged ? <p className="text-ink-soft">{s.docprocNotLogged}</p> : null}
-            <div className="text-ink-soft"><Line label={s.coverage} value={[cost.coverage.zeroTokenCalls, cost.coverage.failedJobs, cost.coverage.runningJobs].map(count).join(" · ")} /></div>
+            <div className="text-ink-soft"><Line s={s} label={s.coverage} value={[cost.coverage.zeroTokenCalls, cost.coverage.failedJobs, cost.coverage.runningJobs].map(count).join(" · ")} /></div>
           </>
         ),
         source: costSource,
@@ -155,8 +161,8 @@ function metrics(board: Scoreboard, s: Text): MetricView[] {
         value: cost.meanProcessingSeconds === null ? null : duration(s, cost.meanProcessingSeconds),
         details: (
           <>
-            <Line label={s.elapsed} value={cost.meanElapsedSeconds === null ? na : duration(s, cost.meanElapsedSeconds)} />
-            <Line label={s.versions} value={count(cost.versions)} />
+            <Line s={s} mixed label={s.elapsed} value={cost.meanElapsedSeconds === null ? null : duration(s, cost.meanElapsedSeconds)} />
+            <Line s={s} label={s.versions} value={count(cost.versions)} />
           </>
         ),
         source: costSource,

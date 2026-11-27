@@ -1,10 +1,12 @@
 import { randomUUID } from "node:crypto";
+import path from "node:path";
 import postgres from "postgres";
 import type { LessonPayload, QuestionPayload, Role } from "../src/lib/types";
 
 /**
  * Isolated synthetic training for the F05 row: one published procedure per role. Seeding is allowed only
- * in a disposable database: on GitHub Actions (CI=true and GITHUB_ACTIONS=true, a fresh service container per job), or locally when
+ * in a disposable database: on GitHub-hosted Actions runners (CI=true, GITHUB_ACTIONS=true, RUNNER_ENVIRONMENT=github-hosted; a fresh
+ * service container per job), or locally when
  * HL_DISPOSABLE_DB names the database the test is connected to (create it, migrate, seed, start the app
  * against it, see docs/feature-map.md F05). Every run uses its own ids and deletes only the rows it inserted;
  * rows of an interrupted run stay until the throwaway database is dropped (there is deliberately no sweep).
@@ -71,11 +73,19 @@ function connect(): postgres.Sql {
   return postgres(url, { max: 1, onnotice: () => {} });
 }
 
+function mediaOutDir(): string {
+  const dir = process.env.MEDIA_OUT_DIR;
+  if (dir === undefined || dir === "") throw new Error("MEDIA_OUT_DIR is not set (web/.env.local or the environment).");
+  return dir;
+}
+
 /** Throws unless the connected database is disposable (see the module comment). */
 async function assertDisposable(sql: postgres.Sql): Promise<void> {
   const [{ db }] = await sql<{ db: string }[]>`SELECT current_database() AS db`;
-  // GitHub Actions' web-e2e job runs a fresh Postgres service container; CI=true alone is set by many local tools.
-  if (process.env.CI === "true" && process.env.GITHUB_ACTIONS === "true") return;
+  // GitHub-hosted runners: the web-e2e job gets a fresh Postgres service container. CI=true alone is set by many
+  // local tools, and a self-hosted runner could point at a shared database, so all three must hold.
+  const env = process.env;
+  if (env.CI === "true" && env.GITHUB_ACTIONS === "true" && env.RUNNER_ENVIRONMENT === "github-hosted") return;
   const named = process.env.HL_DISPOSABLE_DB;
   if (named !== undefined && named !== "" && named === db) return;
   throw new Error(
@@ -139,9 +149,10 @@ export async function createFixtures(): Promise<Fixtures> {
             RETURNING id`;
           created.itemIds.push(row.id);
           // The courier lesson has a "ready" video so the phone layout can show it. No MP4 is rendered
-          // on CI or teammate machines (GPU owner only), so the file itself is not served here.
+          // on CI or teammate machines (GPU owner only): the path is inside MEDIA_OUT_DIR but the file does not
+          // exist, so /api/media answers with a missing-file error and playback is not verified here.
           if (item.kind === "lesson" && role === "courier") {
-            await tx`INSERT INTO lesson_videos (item_id, status, video_path) VALUES (${row.id}, 'ready', ${`/nonexistent/${documentId}.mp4`})`;
+            await tx`INSERT INTO lesson_videos (item_id, status, video_path) VALUES (${row.id}, 'ready', ${path.join(mediaOutDir(), `${documentId}.mp4`)})`;
           }
         }
         created.byRole[role] = { role, documentId, procedureKey: PROC };

@@ -1,5 +1,6 @@
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
+import { DICTIONARIES } from "../src/lib/i18n";
 import type { Role } from "../src/lib/types";
 import { createFixtures, removeFixtures, type Fixtures } from "./f05-fixtures";
 
@@ -147,14 +148,22 @@ test.describe("F05 learner flow: role and device layouts", () => {
         }
         const screen = page.locator("article[data-layout]");
         await expect(screen).toHaveAttribute("data-layout", c.layout);
+        const t = DICTIONARIES[lang];
+        // The training content is Arabic, so it reads right to left in both UI languages.
+        await expect(screen.locator("fieldset")).toHaveCSS("direction", "rtl");
         if (c.layout === "video_question") {
           await expect(screen.locator("video")).toHaveAttribute("src", /^\/api\/media\//);
+          await expect(screen.locator("video")).toHaveAttribute("aria-label", t.screen.lessonVideo);
+          await expect(screen.getByRole("link", { name: t.learn.reviewLesson })).toHaveAttribute("href", /\?lesson=1$/);
           await expect(screen.locator("legend")).toHaveCount(1);
         }
         if (c.layout === "scenario") {
+          await expect(screen.getByText(t.screen.scenario, { exact: true })).toBeVisible();
           await expect(screen.getByText("اتصل عميل غاضب", { exact: false })).toBeVisible();
+          await expect(screen.getByText("اتصل عميل غاضب", { exact: false })).toHaveCSS("direction", "rtl");
         }
         if (c.layout === "checklist") {
+          await expect(screen.getByText(t.screen.checklistHint, { exact: true })).toBeVisible();
           await expect(screen.locator('input[type="checkbox"]')).toHaveCount(4);
         }
         const dirOut = process.env.VERIFY_DIR;

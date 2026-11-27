@@ -161,6 +161,19 @@ test("a digit mismatch is caught even when the clause also prints a longer numbe
   assert.deepEqual(item.failed_checks, ["quote_digits_differ"]);
 });
 
+test("a quote differing in digits and punctuation is caught as a digit mismatch even when the clause prints 150", () => {
+  const clause: Clause = { ...CW02, quote: "بعد ١٥ دقيقة أرسل بلاغ، وإذا تجاوز المبلغ 150 ريالا فبلّغ المشرف." };
+  const scored = scoreProcedure({ ...outcome([question("بعد 15 دقيقة أرسل بلاغ وإذا", [])]), clauses: [clause, CW03] }, PUBLISH_ALL);
+  assert.equal(scored.items[0].citations[0].normalized, true);
+  assert.deepEqual(scored.items[0].failed_checks, ["quote_digits_differ", "quote_not_exact"]);
+});
+
+test("a quote with correctly printed digits that differs only in punctuation is not a digit mismatch", () => {
+  const [item] = scoreProcedure(outcome([question("بعد ١٥ دقيقة من تسجيل الوصول أرسل", [])]), PUBLISH_ALL).items;
+  assert.equal(item.citations[0].normalized, true);
+  assert.deepEqual(item.failed_checks, ["quote_not_exact"]);
+});
+
 test("silent failures and failed checks are counted per check, so digit leaks show on their own", () => {
   const digits = question("بعد 15 دقيقة من تسجيل الوصول", []);
   const punctuation = question("أرسل بلاغ \"تأخر الاستلام\"", []);

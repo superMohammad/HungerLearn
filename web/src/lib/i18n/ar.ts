@@ -3,6 +3,8 @@
  * dictionary in `en.ts` has the same shape and is written natively in English, not translated word by word.
  * Training content (lessons, questions, clause quotes) is not here: it stays in its document's language.
  */
+import { uploadNumber } from "@/lib/uploads";
+
 export const ar = {
   meta: {
     description: "منصة تدريب تحوّل أدلة إجراءات العمل إلى تدريب معتمد لكل فئة: المناديب والموظفين والشركاء.",
@@ -79,7 +81,7 @@ export const ar = {
     arrow: "←",
     join: "؛ ",
     /** Learner notification after a v2 changes a procedure they trained on. */
-    update: (title: string, versionId: string) => `تحديث على «${title}» (${versionId}):`,
+    update: (title: string, versionId: string) => `تحديث على «${title}» (الرفع رقم ${uploadNumber(versionId)}):`,
   },
   landing: {
     nav: { paths: "المسارات", journey: "رحلتك", levels: "المستويات", faq: "الأسئلة الشائعة" },

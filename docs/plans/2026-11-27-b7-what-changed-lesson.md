@@ -1,7 +1,7 @@
 # B7 — "What changed" lesson and badge recheck after a new SOP version
 
 **Risk tier:** Enhanced. This is a stage 6 pipeline change plus a learner-flow change in `web/`, with browser tests for F05 and F07. The recommended option touches no High-risk path: no migration, and no change to `readiness.ts`, `readiness_v`, `hl_readonly`, `session.ts` or `db.ts`. If Mohammad picks storage option B (decision D1), its migration ships first as its own High-risk PR.
-**Approval status:** Pending Mohammad's review.
+**Approved:** @superMohammad, 2026-11-27
 
 ## Goal
 

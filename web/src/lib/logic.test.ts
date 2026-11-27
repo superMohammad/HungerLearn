@@ -106,6 +106,14 @@ test("reasonLabel translates docproc change reasons in each UI language", () => 
   assert.equal(reasonLabel("wording changed", DICTIONARIES.ar.reasons), "تغيّرت الصياغة");
   assert.equal(reasonLabel("numbers: 15 -> 10", DICTIONARIES.en.reasons), "Numbers: 15 → 10");
   assert.equal(reasonLabel("audience changed somehow", DICTIONARIES.en.reasons), "audience changed somehow");
+  // Change-judge kinds ("<kind>: <old words> -> <new words>")
+  assert.equal(reasonLabel("actor: courier -> dispatcher", DICTIONARIES.en.reasons), "Who does it: courier → dispatcher");
+  assert.equal(reasonLabel("actor: المندوب -> مسؤول التوزيع", DICTIONARIES.ar.reasons), "المسؤول عن التنفيذ: المندوب ← مسؤول التوزيع");
+  for (const kind of ["threshold", "negation", "modality", "actor", "condition", "order", "audience", "wording"]) {
+    for (const lang of ["ar", "en"] as const) {
+      assert.notEqual(reasonLabel(`${kind}: a -> b`, DICTIONARIES[lang].reasons), `${kind}: a -> b`, `${lang} label for ${kind}`);
+    }
+  }
 });
 
 test("both UI dictionaries have the same keys", () => {

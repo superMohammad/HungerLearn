@@ -8,7 +8,7 @@ from docproc.config import Settings
 from docproc.embeddings import Embedder, make_embedder
 from docproc.graphs.compare import CompareDeps, build_compare_graph
 from docproc.graphs.understand import UnderstandDeps, build_understand_graph
-from docproc.llm import ClauseExtractor, make_extractor
+from docproc.llm import ChangeJudge, ClauseExtractor, make_change_judge, make_extractor
 from docproc.models import ComparisonReport
 from docproc.ocr import OCRAdapter, make_ocr
 from docproc.storage import SqlRepository, make_repository
@@ -22,16 +22,24 @@ class App:
         extractor: ClauseExtractor | None = None,
         ocr: OCRAdapter | None = None,
         embedder: Embedder | None = None,
+        change_judge: ChangeJudge | None = None,
     ) -> None:
         self.settings = settings
         self.repo = repo or make_repository(settings)
         self._extractor, self._ocr, self._embedder = extractor, ocr, embedder
+        self._change_judge = change_judge
 
     @property
     def extractor(self) -> ClauseExtractor:
         if self._extractor is None:
             self._extractor = make_extractor(self.settings)
         return self._extractor
+
+    @property
+    def change_judge(self) -> ChangeJudge:
+        if self._change_judge is None:
+            self._change_judge = make_change_judge(self.settings)
+        return self._change_judge
 
     @property
     def embedder(self) -> Embedder:
@@ -52,7 +60,8 @@ class App:
         if isinstance(links, (str, Path)):
             links = json.loads(Path(links).read_text(encoding="utf-8"))
         links = self.resolve_links(document_id, links or {})
-        graph = build_compare_graph(CompareDeps(repo=self.repo, embedder=self.embedder, settings=self.settings, links=links))
+        graph = build_compare_graph(CompareDeps(repo=self.repo, embedder=self.embedder, settings=self.settings,
+                                                     judge=self.change_judge, links=links))
         return graph.invoke({"document_id": document_id, "version_id": version_id})["report"]
 
     def resolve_links(self, document_id: str, links: dict) -> dict:

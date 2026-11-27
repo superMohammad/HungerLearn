@@ -21,8 +21,8 @@ async function ProcedureScreen({ params, searchParams }: { params: PageProps<"/[
       <PageHeader eyebrow={t.learn.flow} title={screen.title}>
         <Link href="/learn" className="text-sm underline underline-offset-4">{t.learn.backToProcedures}</Link>
       </PageHeader>
-      {screen.kind === "screen" && screen.refreshing && screen.spec.kind !== "what_changed" ? (
-        <p className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-ember bg-ember-bg p-4 text-sm text-ink">
+      {screen.kind === "screen" && screen.changesAvailable && screen.spec.kind !== "what_changed" ? (
+        <p className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-brand bg-surface p-4 text-sm text-ink">
           <span>{t.learn.changes.recheck}</span>
           <Link href={`/learn/${documentId}/${proc}?changes=1`} className="font-bold underline underline-offset-4">{t.learn.changes.review}</Link>
         </p>

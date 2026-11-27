@@ -110,10 +110,9 @@ type Fixture = { documentId: string; practice: string; exams: string[] };
  * A courier document with `versions` uploads (the last one current), the procedure on every version,
  * and on the current version one published practice item and two published exam items.
  */
-async function fixture(name: string, versions: string[], reports: ComparisonReport[]): Promise<Fixture> {
+async function fixture(name: string, versions: string[], reports: ComparisonReport[], current = versions.at(-1) as string): Promise<Fixture> {
   const t = testDb();
   const documentId = `b7-${name}`;
-  const current = versions.at(-1) as string;
   await t`INSERT INTO hl_documents (document_id, title, role, language, current_version_id)
           VALUES (${documentId}, 'انتظار الاستلام', 'courier', 'ar', ${current})`;
   let procId = "";
@@ -170,7 +169,7 @@ test("needs_refresh: what_changed comes first, shows only the changed clause, an
   assert.equal(first.spec.fromVersionId, "v1");
   assert.equal(first.spec.toVersionId, "v2");
   assert.deepEqual(first.spec.changes.map((c) => [c.stableId, c.change, c.before, c.after]), [["CW-02", "changed", CW02_V1, CW02_V2]]);
-  assert.equal(first.refreshing, true);
+  assert.equal(first.changesAvailable, true);
 
   // "Continue to the lesson" opens lesson mode, which is not gated.
   assert.notEqual(await screenKind("b7-first", f.documentId, "lesson"), "what_changed");
@@ -247,4 +246,40 @@ test("flagAffectedLearners: started and mastered learners are flagged; waiting l
   assert.deepEqual([waiting.spec.fromVersionId, waiting.spec.changes.map((c) => c.stableId)], ["v1", ["CW-02", "CW-04"]]);
   assert.notEqual(await screenKind("b7-new", f.documentId, "auto"), "what_changed");
   assert.notEqual(await screenKind("b7-new", f.documentId, "changes"), "what_changed");
+});
+
+test("during the update window (new upload stored, old training still current) old answers cannot clear the refresh", async () => {
+  // applyNewVersion flags learners before the slow regeneration; the document's current version moves at the end.
+  const f = await fixture("window", ["v1", "v2"], [V1_TO_V2], "v1");
+  await learner("b7-window", f.documentId, { state: "needs_refresh", versionId: "v2" });
+  const l = await getLearner("b7-window");
+  const s = await nextScreen(l, await getDocument(f.documentId), KEY, "auto");
+  assert.ok(s.kind !== "screen" || s.spec.kind !== "what_changed", "no What changed before the revised training is current");
+  for (const id of [f.practice, ...f.exams]) await gradeAnswer(l, id, RIGHT, "sure");
+  assert.deepEqual(await mastery("b7-window", f.documentId), { state: "needs_refresh", version_id: "v2" });
+});
+
+test("?changes=1 with nothing left to re-learn behaves like the normal flow, and offers no review link", async () => {
+  const revert = report("v2", "v3", [
+    { stable_id: "CW-01", status: "unchanged", old: CW01, new: CW01 },
+    { stable_id: "CW-02", status: "changed", old: CW02_V2, new: CW02_V1, reasons: ["numbers: 10 -> 15"] },
+    { stable_id: "CW-04", status: "unchanged", old: CW04, new: CW04 },
+  ]);
+  const f = await fixture("undone", ["v1", "v2", "v3"], [V1_TO_V2, revert]);
+  await learner("b7-undone", f.documentId, { state: "needs_refresh", versionId: "v2" });
+  for (const mode of ["auto", "changes"] as const) {
+    const s = await nextScreen(await getLearner("b7-undone"), await getDocument(f.documentId), KEY, mode);
+    assert.ok(s.kind === "screen" && s.spec.kind === "question", mode);
+    assert.equal(s.changesAvailable, false);
+  }
+});
+
+test("flagAffectedLearners is idempotent: re-running the update for the same upload adds no notification", async () => {
+  const f = await fixture("rerun", ["v1", "v2"], [V1_TO_V2]);
+  await learner("b7-rerun", f.documentId, { state: "mastered", versionId: "v1" });
+  assert.deepEqual(await flagAffectedLearners(f.documentId, KEY, "v2", "تحديث"), ["b7-rerun"]);
+  await flagAffectedLearners(f.documentId, KEY, "v2", "تحديث");
+  const [{ n }] = await testDb()<{ n: number }[]>`SELECT COUNT(*)::int AS n FROM notifications WHERE learner_id = 'b7-rerun'`;
+  assert.equal(n, 1);
+  assert.deepEqual(await mastery("b7-rerun", f.documentId), { state: "needs_refresh", version_id: "v2" });
 });

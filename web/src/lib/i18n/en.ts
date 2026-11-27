@@ -221,15 +221,16 @@ export const en: Dict = {
     empty: "Nothing has been published here yet.",
     loadingScreen: "Getting your screen ready…",
     changes: {
-      intro: "This procedure has been updated. Go through what changed before you take the new exam; your badge comes back when you pass it.",
+      intro: "This procedure has been updated. Go through what changed, then pass the new exam to complete it again.",
       range: (from: string, to: string) => `From ${from} to ${to}`,
       before: "Before",
       after: "After",
       added: "New rule",
       removed: "No longer applies",
+      possibleChange: "May have changed; check it with your supervisor",
       continueToLesson: "Continue to the lesson",
       review: "Review what changed",
-      recheck: "Your badge is on hold until you pass the new exam.",
+      recheck: "Pass the new exam to complete this procedure again.",
     },
   },
   screen: {

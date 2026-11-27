@@ -18,8 +18,8 @@ export function WhatChanged({ spec }: { spec: WhatChangedScreen }) {
   const c = t.learn.changes;
   return (
     <article className="panel-enter grid gap-5" aria-labelledby="what-changed-title">
-      <header className="rounded-3xl border border-ember bg-ember-bg p-5 text-ink">
-        <h2 id="what-changed-title" className="text-xl font-bold text-ember">{t.learn.whatChanged}</h2>
+      <header className="rounded-3xl border border-brand bg-surface p-5 text-ink">
+        <h2 id="what-changed-title" className="text-xl font-bold">{t.learn.whatChanged}</h2>
         <p className="mt-1 text-sm text-ink-soft">
           <NumText text={c.range(t.common.upload(uploadNumber(spec.fromVersionId)), t.common.upload(uploadNumber(spec.toVersionId)))} />
         </p>
@@ -28,7 +28,12 @@ export function WhatChanged({ spec }: { spec: WhatChangedScreen }) {
       <ol className="grid gap-3">
         {spec.changes.map((change) => (
           <li key={change.stableId} className="rounded-3xl border border-line bg-surface p-5" data-change={change.change}>
-            {change.change === "changed" ? (
+            {change.change === "review" ? (
+              <div className="grid gap-3">
+                <Side label={change.after !== null && change.after !== change.before ? `${c.possibleChange} · ${c.before}` : c.possibleChange} quote={change.before} muted />
+                {change.after !== null && change.after !== change.before ? <Side label={`${c.possibleChange} · ${c.after}`} quote={change.after} /> : null}
+              </div>
+            ) : change.change === "changed" ? (
               <div className="grid gap-3">
                 <Side label={c.before} quote={change.before} muted />
                 <Side label={c.after} quote={change.after} />
@@ -53,9 +58,9 @@ export function WhatChanged({ spec }: { spec: WhatChangedScreen }) {
 
 function Side({ label, quote, muted = false }: { label: string; quote: string | null; muted?: boolean }) {
   return (
-    <section className={`rounded-2xl border p-4 ${muted ? "border-line bg-surface-2 text-ink-soft" : "border-brand"}`}>
-      <p className="text-xs font-semibold tracking-wide">{label}</p>
+    <figure className={`rounded-2xl border p-4 ${muted ? "border-line bg-surface-2 text-ink-soft" : "border-brand"}`}>
+      <figcaption className="text-xs font-semibold tracking-wide">{label}</figcaption>
       <blockquote className="source-quote mt-1" dir="auto">{quote}</blockquote>
-    </section>
+    </figure>
   );
 }

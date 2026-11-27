@@ -42,7 +42,7 @@ A learner who had started or mastered a procedure whose clauses changed will see
   - **changed:** "Before" shows the old quote and "After" the new quote. The change reasons come from `reasonLabel`, with "location changed" dropped.
   - **added:** only the new quote, labelled "New rule".
   - **removed:** only the old quote, labelled "No longer applies".
-- **What it leaves out.** Moved and unchanged clauses are omitted (decision 2). A `needs_review` clause counts as changed and is shown as before/after rather than hidden, because hiding a possible change is the worse failure.
+- **What it leaves out.** Moved and unchanged clauses are omitted (decision 2). docproc's status decides, not a raw text comparison: PDF-vs-TXT extraction differences on an unchanged clause are not changes. A `needs_review` clause is shown as a possible change ("May have changed; check it with your supervisor") rather than hidden, because hiding a possible change is the worse failure.
 - **How quotes look.** Quotes are source text. They stay in the document's language and are shown with `dir="auto"` in the serif quote style from `docs/design-identity.md`.
 - **Layout.** Each change is a stacked card, so it works at phone width. There are no modals, and no traffic-light colours.
 - **Labels.** Labels come only from `src/lib/i18n/ar.ts` and `en.ts`. The Arabic is written natively.
@@ -84,7 +84,9 @@ A learner who mastered v1, never opened v2, and comes back after v3:
    - For each stable id, the oldest `old` quote is compared with the newest `new` quote, and that pair decides the net status. A clause changed in v2 and reverted in v3 drops out. One added in v2 and removed in v3 drops out. The moves in between are ignored.
    - A procedure that changed v1→v2 but was carried over at v3 still shows the v1→v2 changes, because the learner never retook it.
 4. **Only current-version attempts count.** Attempts on v2 items made before v3 do not count towards the v3 exam, the same as today.
-5. **A missing link in the chain stops the lesson with an error.** It is a missing or incomplete comparison, or a hop with `complete = false` that the learner would see. In that case the screen fails with a technical error naming the version, like every pipeline error. It never shows a partial diff, and there is no fallback (AGENTS.md).
+5. **A missing link in the chain stops the lesson with an error.** A missing comparison, or a comparison whose `old_version_id` does not continue the chain, fails the screen with a technical error naming the version, like every pipeline error. It never shows a partial diff, and there is no fallback (AGENTS.md).
+   - **Amended after review (needs Mohammad's confirmation):** an incomplete comparison (`complete = false`, pages failed) does not stop the lesson. docproc already turns the would-be removals into `needs_review`, and those clauses of the learner's procedure are shown as possible changes. Throwing would have locked every flagged learner out of the new exam for good, even when the failed pages did not touch their procedure.
+6. **During the update** (the new upload stored, the revised training not yet current) the old flow stays and no answer on the older training can clear `needs_refresh`: only passing the upload that started the refresh, or a later one, does.
 
 ## Acceptance criteria and their checks
 
@@ -92,7 +94,7 @@ Unit tests come first and must fail before the change (`web/src/lib/carry-over.t
 
 1. Given the courier v1→v2 report, composing the screen for the CW-02 procedure shows CW-02's old (15 min) and new (10 min) quotes. CW-04 (moved) and CW-01 (unchanged) are not shown. → unit test.
 2. Given the employee v1→v2 report, ED-02 is shown as before/after and ED-04 as "No longer applies" with its old quote. Unchanged ED clauses are not shown. → unit test.
-3. Given two chained reports (v1→v2 changes a clause, v2→v3 reverts it, and a different clause is added in v3), the net screen shows only the added clause. Given a hop with `complete = false` or a missing comparison, composing the screen throws an error that names the version. → unit test.
+3. Given two chained reports (v1→v2 changes a clause, v2→v3 reverts it, and a different clause is added in v3), the net screen shows only the added clause. Given a missing comparison or a broken link, composing the screen throws an error that names the version; an incomplete hop shows its undecided clauses as possible changes. → unit test.
 4. Given a learner in `needs_refresh` with no attempts on the current published version, `nextScreen` in `auto` mode returns `what_changed`. After one answer on the current version it returns a question. `?changes=1` still returns `what_changed`. → DB test.
 5. Given a `needs_refresh` learner, a wrong exam answer leaves the state `needs_refresh`. **This fails today**, when it becomes `in_progress`. When every exam item's latest attempt is correct, the state is `mastered` with the current `version_id`. → DB test.
 6. Given an `in_progress` learner before the upload, the same lesson and recheck apply. A `not_started` learner gets no what-changed screen. → DB test.

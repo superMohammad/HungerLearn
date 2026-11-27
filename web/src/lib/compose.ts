@@ -33,7 +33,7 @@ export const ScreenSpecSchema = z.discriminatedUnion("kind", [
       .array(
         z.object({
           stableId: z.string().min(1),
-          change: z.enum(["changed", "added", "removed"]),
+          change: z.enum(["changed", "added", "removed", "review"]),
           before: z.string().min(1).nullable(),
           after: z.string().min(1).nullable(),
           /** docproc change-reason codes, labelled in the UI language by reasonLabel. */

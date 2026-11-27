@@ -87,11 +87,14 @@ export async function listVersions(documentId: string): Promise<VersionSummary[]
  * each report's old_version_id. A missing link throws with the version it stopped at: a partial chain
  * could hide a change from the learner.
  */
+/** More uploads than this between two versions means a cycle in old_version_id, not a real history. */
+const MAX_CHAIN = 100;
+
 export async function getComparisonChain(documentId: string, fromVersionId: string, toVersionId: string): Promise<ComparisonReport[]> {
   const chain: ComparisonReport[] = [];
   let version: string | null = toVersionId;
   while (version !== fromVersionId) {
-    if (version === null || chain.length > 100) throw new Error(`no comparison chain from ${fromVersionId} to ${toVersionId} for ${documentId}`);
+    if (version === null || chain.length > MAX_CHAIN) throw new Error(`no comparison chain from ${fromVersionId} to ${toVersionId} for ${documentId}`);
     const report = await getComparison(documentId, version);
     if (report === null) throw new Error(`docproc stored no comparison for ${documentId} ${version}`);
     chain.unshift(report);

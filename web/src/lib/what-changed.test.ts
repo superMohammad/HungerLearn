@@ -47,12 +47,12 @@ const EMPLOYEE = hop("v1", "v2", [
 ]);
 
 test("courier v1→v2: only the changed clause is shown, with its old and new text; moved and unchanged are left out", () => {
-  const changes = netChanges([COURIER], new Set(["CW-01", "CW-02", "CW-04"]));
+  const changes = netChanges([COURIER], (["CW-01", "CW-02", "CW-04"]));
   assert.deepEqual(changes, [{ stableId: "CW-02", change: "changed", before: CW02_V1, after: CW02_V2, reasons: ["numbers: 15 -> 10"] }]);
 });
 
 test("employee v1→v2: a changed clause shows before/after and a removed clause its old text; 'location changed' is dropped", () => {
-  const changes = netChanges([EMPLOYEE], new Set(["ED-01", "ED-02", "ED-04"]));
+  const changes = netChanges([EMPLOYEE], (["ED-01", "ED-02", "ED-04"]));
   assert.deepEqual(changes, [
     { stableId: "ED-02", change: "changed", before: ED02_V1, after: ED02_V2, reasons: ["actor: support agent -> duty lead"] },
     { stableId: "ED-04", change: "removed", before: ED04, after: null, reasons: [] },
@@ -60,18 +60,52 @@ test("employee v1→v2: a changed clause shows before/after and a removed clause
 });
 
 test("only clauses of the learner's procedure are shown", () => {
-  assert.deepEqual(netChanges([COURIER], new Set(["CW-01", "CW-04"])), []);
-  assert.deepEqual(netChanges([EMPLOYEE], new Set(["ED-04"])).map((c) => c.stableId), ["ED-04"]);
+  assert.deepEqual(netChanges([COURIER], (["CW-01", "CW-04"])), []);
+  assert.deepEqual(netChanges([EMPLOYEE], (["ED-04"])).map((c) => c.stableId), ["ED-04"]);
 });
 
 test("an added clause shows its new text only", () => {
   const added = hop("v1", "v2", [{ stable_id: "CW-05", status: "added", old: null, new: "قاعدة جديدة." }]);
-  assert.deepEqual(netChanges([added], new Set(["CW-05"])), [{ stableId: "CW-05", change: "added", before: null, after: "قاعدة جديدة.", reasons: [] }]);
+  assert.deepEqual(netChanges([added], (["CW-05"])), [{ stableId: "CW-05", change: "added", before: null, after: "قاعدة جديدة.", reasons: [] }]);
 });
 
-test("a needs_review clause is shown as before/after, never hidden", () => {
-  const review = hop("v1", "v2", [{ stable_id: "CW-02", status: "needs_review", old: CW02_V1, new: CW02_V2 }]);
-  assert.deepEqual(netChanges([review], new Set(["CW-02"])).map((c) => c.change), ["changed"]);
+test("a needs_review clause is shown as a possible change, never hidden (also with identical text or a deferred removal)", () => {
+  const review = hop("v1", "v2", [
+    { stable_id: "CW-01", status: "needs_review", old: CW01, new: CW01 },
+    { stable_id: "CW-02", status: "needs_review", old: CW02_V1, new: CW02_V2 },
+    { stable_id: "CW-04", status: "needs_review", old: CW04, new: null, reasons: ["removal_deferred"] },
+  ]);
+  assert.deepEqual(netChanges([review], ["CW-01", "CW-02", "CW-04"]), [
+    { stableId: "CW-01", change: "review", before: CW01, after: CW01, reasons: [] },
+    { stableId: "CW-02", change: "review", before: CW02_V1, after: CW02_V2, reasons: [] },
+    { stableId: "CW-04", change: "review", before: CW04, after: null, reasons: ["removal_deferred"] },
+  ]);
+});
+
+test("docproc's status decides: unchanged or moved clauses whose raw text differs (PDF vs TXT) are left out; a changed clause with identical text is shown", () => {
+  const formats = hop("v1", "v2", [
+    { stable_id: "ED-01", status: "unchanged", old: ED01, new: ED01.replace(" open a", "\nopen a") },
+    { stable_id: "CW-02", status: "moved", old: CW02_V1, new: CW02_V1.replace("١٥", "15"), reasons: ["location changed"] },
+    { stable_id: "ED-02", status: "changed", old: ED02_V1, new: ED02_V1, reasons: ["audience: support agent -> duty lead"] },
+  ]);
+  assert.deepEqual(netChanges([formats], ["ED-01", "CW-02", "ED-02"]), [
+    { stableId: "ED-02", change: "changed", before: ED02_V1, after: ED02_V1, reasons: ["audience: support agent -> duty lead"] },
+  ]);
+});
+
+test("changes follow the procedure's clause order, not the report's", () => {
+  const shuffled = hop("v1", "v2", [
+    { stable_id: "ED-04", status: "removed", old: ED04, new: null },
+    { stable_id: "ED-02", status: "changed", old: ED02_V1, new: ED02_V2 },
+  ]);
+  assert.deepEqual(netChanges([shuffled], ["ED-01", "ED-02", "ED-04"]).map((c) => c.stableId), ["ED-02", "ED-04"]);
+});
+
+test("across uploads, the reasons come from the last upload that changed the clause", () => {
+  const v2v3 = hop("v2", "v3", [{ stable_id: "CW-02", status: "changed", old: CW02_V2, new: CW02_V2.replace("10", "12"), reasons: ["numbers: 10 -> 12"] }]);
+  assert.deepEqual(netChanges([COURIER, v2v3], ["CW-02"]), [
+    { stableId: "CW-02", change: "changed", before: CW02_V1, after: CW02_V2.replace("10", "12"), reasons: ["numbers: 10 -> 12"] },
+  ]);
 });
 
 test("skipped versions: the net change from the version the learner learned to the current one", () => {
@@ -81,7 +115,7 @@ test("skipped versions: the net change from the version the learner learned to t
     { stable_id: "CW-04", status: "moved", old: CW04, new: CW04, reasons: ["location changed"] },
     { stable_id: "CW-06", status: "added", old: null, new: "قاعدة الإصدار الثالث." },
   ]);
-  assert.deepEqual(netChanges([COURIER, v2v3], new Set(["CW-01", "CW-02", "CW-04", "CW-06"])), [
+  assert.deepEqual(netChanges([COURIER, v2v3], (["CW-01", "CW-02", "CW-04", "CW-06"])), [
     { stableId: "CW-06", change: "added", before: null, after: "قاعدة الإصدار الثالث.", reasons: [] },
   ]);
 
@@ -91,26 +125,33 @@ test("skipped versions: the net change from the version the learner learned to t
     { stable_id: "CW-02", status: "unchanged", old: CW02_V2, new: CW02_V2 },
     { stable_id: "CW-04", status: "unchanged", old: CW04, new: CW04 },
   ]);
-  assert.deepEqual(netChanges([COURIER, quiet], new Set(["CW-02"])), [
+  assert.deepEqual(netChanges([COURIER, quiet], (["CW-02"])), [
     { stableId: "CW-02", change: "changed", before: CW02_V1, after: CW02_V2, reasons: ["numbers: 15 -> 10"] },
   ]);
 
   // Added in v2, removed in v3: nothing to learn.
   const gone = hop("v2", "v3", [{ stable_id: "CW-05", status: "removed", old: "مؤقتة.", new: null }]);
   const came = hop("v1", "v2", [{ stable_id: "CW-05", status: "added", old: null, new: "مؤقتة." }]);
-  assert.deepEqual(netChanges([came, gone], new Set(["CW-05"])), []);
+  assert.deepEqual(netChanges([came, gone], (["CW-05"])), []);
+});
+
+test("an incomplete comparison (failed pages) does not block the lesson; its deferred clauses show as possible changes", () => {
+  const incomplete = hop("v1", "v2", [
+    { stable_id: "CW-02", status: "changed", old: CW02_V1, new: CW02_V2 },
+    { stable_id: "CW-09", status: "needs_review", old: "بند في صفحة لم تُقرأ.", new: null, reasons: ["removal_deferred"] },
+  ], false);
+  assert.deepEqual(netChanges([incomplete], ["CW-02"]).map((c) => c.change), ["changed"]);
+  assert.deepEqual(netChanges([incomplete], ["CW-09"]).map((c) => c.change), ["review"]);
 });
 
 test("a broken chain fails loudly instead of showing a partial diff", () => {
-  const incomplete = hop("v1", "v2", [{ stable_id: "CW-02", status: "changed", old: CW02_V1, new: CW02_V2 }], false);
-  assert.throws(() => netChanges([incomplete], new Set(["CW-02"])), /v2.*incomplete/);
   const gap = hop("v3", "v4", [{ stable_id: "CW-02", status: "unchanged", old: CW02_V2, new: CW02_V2 }]);
-  assert.throws(() => netChanges([COURIER, gap], new Set(["CW-02"])), /v2.*v3/);
-  assert.throws(() => netChanges([], new Set(["CW-02"])), /no comparison/);
+  assert.throws(() => netChanges([COURIER, gap], (["CW-02"])), /v2.*v3/);
+  assert.throws(() => netChanges([], (["CW-02"])), /no comparison/);
 });
 
 test("the what-changed screen spec passes the schema and holds only quotes, change kinds and reason codes", () => {
-  const changes = netChanges([EMPLOYEE], new Set(["ED-01", "ED-02", "ED-04"]));
+  const changes = netChanges([EMPLOYEE], (["ED-01", "ED-02", "ED-04"]));
   const spec = whatChangedScreen("Delayed order", "v1", "v2", changes);
   assert.ok(spec !== null);
   assert.deepEqual(ScreenSpecSchema.parse(spec), spec);

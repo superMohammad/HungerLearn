@@ -10,8 +10,8 @@ from __future__ import annotations
 import re
 
 from docproc.loaders.text_blocks import CLAUSE_NO
-from docproc.models import Audience, ClauseDraft, Section
-from docproc.normalize import modalities, normalize
+from docproc.models import Audience, ChangeVerdict, ClauseDraft, ClauseRecord, Section
+from docproc.normalize import modalities, normalize, words
 
 _AUDIENCE_WORDS: dict[Audience, list[str]] = {
     Audience.owner: ["owner", "owners", "business owner", "المالك", "الملاك", "للملاك", "صاحب العمل", "أصحاب العمل"],
@@ -91,3 +91,41 @@ class FixtureExtractor:
             clause_number=c["number"],
             heading=heading,
         )
+
+
+# matching.change_reasons prefix -> the change kind a model would report
+_RULE_KINDS = (("numbers", "threshold"), ("negation", "negation"), ("modality", "modality"),
+               ("audience", "audience"), ("wording", "wording"))
+
+
+def _only_in(a: str, b: str) -> str:
+    """Words of `a` (in order, once each) that `b` does not contain."""
+    other, seen, out = set(words(b)), set(), []
+    for w in words(a):
+        if w not in other and w not in seen:
+            seen.add(w)
+            out.append(w)
+    return " ".join(out)
+
+
+class FixtureJudge:
+    """Deterministic stand-in for the change judge (tests, demos, `docproc eval` without --real).
+
+    It reports docproc's fixed text rules (`matching.change_reasons`) as a verdict, so offline runs keep
+    their rule-based results; with a real LLM configured, the model decides instead.
+    """
+
+    name = "fixture"
+
+    def __init__(self, max_output_tokens: int = 512):
+        self.max_output_tokens = max_output_tokens  # reserved by the context guard, like a real judge
+
+    def judge(self, old: ClauseRecord, new: ClauseRecord) -> ChangeVerdict:
+        from docproc.matching import change_reasons  # matching imports the judge protocol from docproc.llm
+
+        reasons = change_reasons(old, new)
+        kind = next((k for prefix, k in _RULE_KINDS if any(r.startswith(prefix) for r in reasons)), "none")
+        if kind == "none":
+            return ChangeVerdict(kind="none", old_evidence="", new_evidence="", explanation="rules: no content change")
+        return ChangeVerdict(kind=kind, old_evidence=_only_in(old.quote, new.quote),
+                             new_evidence=_only_in(new.quote, old.quote), explanation=f"rules: {'; '.join(reasons)}")

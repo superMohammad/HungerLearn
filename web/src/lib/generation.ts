@@ -62,7 +62,7 @@ const CLAUSE_ID_IN_TEXT = /\bC\d+\b|\bP\d+\b/;
  * Extract (structured): clauses are grouped into procedures by the document's own section numbers
  * (procedures.ts, deterministic); the LLM only writes each procedure's short title and steps.
  */
-export async function groupProcedures(doc: HlDocument, clauses: Clause[]): Promise<ProcedureDraft[]> {
+export async function groupProcedures(doc: HlDocument, versionId: string, clauses: Clause[]): Promise<ProcedureDraft[]> {
   const groups = groupBySection(clauses);
   const input = groups.map((g, i) => ({ procedure_id: `P${i + 1}`, clauses: g.map((c) => c.quote) }));
   let lastError: unknown = null;
@@ -70,6 +70,7 @@ export async function groupProcedures(doc: HlDocument, clauses: Clause[]): Promi
     const out = await generateStructured({
       purpose: "understand.name_procedures",
       promptVersion: PROMPT_VERSION,
+      scope: { documentId: doc.documentId, versionId },
       schema: NamingSchema,
       system: `Each item is one procedure of a work document with its clause texts. For EVERY procedure_id return:
 - title: 2 to 5 words in ${languageName(doc)} naming the concrete situation, no numbers. Arabic titles read like a
@@ -188,6 +189,7 @@ async function draftPackage(doc: HlDocument, procedure: Procedure, clauses: Clau
   return generateStructured({
     purpose: "generate.package",
     promptVersion: PROMPT_VERSION,
+    scope: { documentId: procedure.documentId, versionId: procedure.versionId },
     schema: GeneratorOutputSchema,
     system: await loadGeneratorPrompt(),
     prompt: `${JSON.stringify(input)}\n\n${notes}`,
@@ -198,10 +200,11 @@ async function draftPackage(doc: HlDocument, procedure: Procedure, clauses: Clau
 
 const JudgeSchema = z.object({ supported: z.boolean(), reason: z.string() });
 
-async function judge(doc: HlDocument, claim: string, sourceText: string): Promise<z.infer<typeof JudgeSchema>> {
+async function judge(doc: HlDocument, versionId: string, claim: string, sourceText: string): Promise<z.infer<typeof JudgeSchema>> {
   return generateStructured({
     purpose: "verify.judge",
     promptVersion: PROMPT_VERSION,
+    scope: { documentId: doc.documentId, versionId },
     schema: JudgeSchema,
     system: `You are a strict fact checker for training content. Check only the RULES the item teaches: actions,
 conditions, numbers, times, and who must act. supported=false only if the item adds a rule, number or condition
@@ -244,7 +247,7 @@ function wordCount(text: string): number {
   return text.split(/\s+/).filter((w) => w !== "" && !/^[✅❌✓✗✔✖]$/u.test(w)).length;
 }
 
-async function verifyLesson(doc: HlDocument, out: GeneratorOutput, clauses: Clause[], refs: ReadonlyMap<string, Clause>, library: LibraryClip[]): Promise<ResolvedItem | null> {
+async function verifyLesson(doc: HlDocument, versionId: string, out: GeneratorOutput, clauses: Clause[], refs: ReadonlyMap<string, Clause>, library: LibraryClip[]): Promise<ResolvedItem | null> {
   if (out.lesson === null) return null;
   const flags = new Set<string>();
   const cite = (ref: string, quote: string): string => {
@@ -283,6 +286,7 @@ async function verifyLesson(doc: HlDocument, out: GeneratorOutput, clauses: Clau
   if (shots.length === 0) flags.add("no_video");
   const verdict = await judge(
     doc,
+    versionId,
     JSON.stringify({ key_points: keyPoints.map((k) => k.text), on_screen_text: shots.map((s) => s.on_screen_text), narration: shots.map((s) => s.narration) }),
     clauses.map((c) => c.quote).join("\n"),
   );
@@ -303,9 +307,9 @@ async function verifyLesson(doc: HlDocument, out: GeneratorOutput, clauses: Clau
   };
 }
 
-async function verifyPackage(doc: HlDocument, out: GeneratorOutput, clauses: Clause[], library: LibraryClip[]): Promise<ResolvedItem[]> {
+async function verifyPackage(doc: HlDocument, versionId: string, out: GeneratorOutput, clauses: Clause[], library: LibraryClip[]): Promise<ResolvedItem[]> {
   const { refs } = clauseRefs(clauses);
-  const lesson = await verifyLesson(doc, out, clauses, refs, library);
+  const lesson = await verifyLesson(doc, versionId, out, clauses, refs, library);
   const items: ResolvedItem[] = lesson === null ? [] : [lesson];
   const repeated = repeatedExamFormats(out.practice.map((q) => q.format), out.exam.map((q) => q.format));
   const groups: ["practice" | "exam", GenQuestionT[]][] = [["practice", out.practice], ["exam", out.exam]];
@@ -316,6 +320,7 @@ async function verifyPackage(doc: HlDocument, out: GeneratorOutput, clauses: Cla
       const correct = payload.options.filter((o) => o.correct).map((o) => o.text);
       const verdict = await judge(
         doc,
+        versionId,
         JSON.stringify({ question: payload.prompt, scene: payload.scene, correct: correct.length > 0 ? correct : payload.correct_order, feedback: payload.feedback }),
         clause?.quote ?? clauses.map((c) => c.quote).join("\n"),
       );
@@ -347,17 +352,18 @@ export async function buildPackage(doc: HlDocument, procedure: Procedure, clause
     flags: out.flags,
     resourceRequests: out.resource_requests,
     ideas: out.ideas.slice(0, 2),
-    items: out.status === "skipped" ? [] : await verifyPackage(doc, out, procClauses, library),
+    items: out.status === "skipped" ? [] : await verifyPackage(doc, procedure.versionId, out, procClauses, library),
   };
 }
 
 /** Re-runs the gate on a human-edited question: quote check, shape rules, and the judge. */
-export async function verifyEditedQuestion(doc: HlDocument, payload: QuestionPayload, quote: string, clause: Clause): Promise<{ flags: string[]; judgeReason: string }> {
+export async function verifyEditedQuestion(doc: HlDocument, versionId: string, payload: QuestionPayload, quote: string, clause: Clause): Promise<{ flags: string[]; judgeReason: string }> {
   const flags = [...checkQuestionShape(payload)];
   if (!quoteInClause(quote, clause.quote)) flags.push("quote_not_found");
   const correct = payload.options.filter((o) => o.correct).map((o) => o.text);
   const verdict = await judge(
     doc,
+    versionId,
     JSON.stringify({ question: payload.prompt, scene: payload.scene, correct: correct.length > 0 ? correct : payload.correct_order, feedback: payload.feedback }),
     clause.quote,
   );

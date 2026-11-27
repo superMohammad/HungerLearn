@@ -8,6 +8,13 @@ import { serverEnv } from "@/lib/env";
 const PROVIDER_NAME = "local";
 const ATTEMPTS = 3;
 
+/**
+ * The document version a call was for, stored in `ai_calls` for cost and time per document.
+ * `null` only for calls about no document (readiness text-to-SQL). Pass the version being processed,
+ * not `doc.currentVersionId`: during a v2 upload that still points at v1.
+ */
+export type AiCallScope = { documentId: string; versionId: string } | { documentId: string; versionId: null } | null;
+
 export type AiCallSpec<T> = {
   /** What the call is for, e.g. "generate.question"; stored in `ai_calls`. */
   purpose: string;
@@ -16,6 +23,8 @@ export type AiCallSpec<T> = {
   system: string;
   prompt: string;
   schema: z.ZodType<T>;
+  /** Required, so the compiler catches a caller that forgets it. */
+  scope: AiCallScope;
 };
 
 function model() {
@@ -50,9 +59,10 @@ export async function generateStructured<T>(spec: AiCallSpec<T>): Promise<T> {
         providerOptions: { [PROVIDER_NAME]: { reasoningEffort } },
       });
       await sql()`
-        INSERT INTO ai_calls (purpose, model, prompt_version, input_tokens, output_tokens, duration_ms)
+        INSERT INTO ai_calls (purpose, model, prompt_version, input_tokens, output_tokens, duration_ms, document_id, version_id)
         VALUES (${spec.purpose}, ${modelId}, ${spec.promptVersion},
-                ${result.usage.inputTokens ?? 0}, ${result.usage.outputTokens ?? 0}, ${Date.now() - started})`;
+                ${result.usage.inputTokens ?? 0}, ${result.usage.outputTokens ?? 0}, ${Date.now() - started},
+                ${spec.scope?.documentId ?? null}, ${spec.scope?.versionId ?? null})`;
       return result.output;
     } catch (error) {
       lastError = error;

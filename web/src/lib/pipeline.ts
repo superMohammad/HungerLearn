@@ -131,7 +131,7 @@ async function carryProcedures(doc: HlDocument, oldVersionId: string, newVersion
   }
   const orphans = newClauses.filter((c) => !owned.has(c.stableId));
   if (orphans.length === 0) return;
-  for (const draft of await groupProcedures(doc, orphans)) {
+  for (const draft of await groupProcedures(doc, newVersionId, orphans)) {
     await insertProcedure({ documentId: doc.documentId, versionId: newVersionId, procedureKey: randomUUID(), ordinal, ...draft });
     ordinal += 1;
   }
@@ -191,7 +191,7 @@ export async function runUploadPipeline(documentId: string, versionId: string, f
   }
   if (previousVersionId === null) {
     await withJob(documentId, versionId, "procedures", async () => {
-      const drafts = await groupProcedures(doc, clauses);
+      const drafts = await groupProcedures(doc, versionId, clauses);
       for (const [ordinal, d] of drafts.entries()) {
         await insertProcedure({ documentId, versionId, procedureKey: randomUUID(), ordinal, ...d });
       }

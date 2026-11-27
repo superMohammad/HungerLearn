@@ -1,5 +1,5 @@
 import "server-only";
-import { composeQuestion, lessonScreen, nextStep, type ScreenSpec } from "@/lib/compose";
+import { composeQuestion, lessonScreen, nextStep, type AttemptLite, type ScreenSpec } from "@/lib/compose";
 import { sql } from "@/lib/db";
 import { gradeAgainstKey, type Answer } from "@/lib/question-rules";
 import { getItem, getLessonVideo, getProcedureByKey, listPublishedItems } from "@/lib/repo";
@@ -21,6 +21,19 @@ export async function learnerProgress(learner: Learner): Promise<ProcedureProgre
   return rows.map((r) => ({ documentId: r.document_id, documentTitle: r.document_title, procedureKey: r.procedure_key, title: r.title, state: r.state ?? "not_started" }));
 }
 
+/**
+ * A learner's attempts on one procedure version, oldest first. Ties on created_at are broken by id
+ * (insert order), so the latest attempt is deterministic; nextStep's stable sort keeps this order.
+ */
+export async function listAttempts(learnerId: string, documentId: string, versionId: string, procedureKey: string): Promise<AttemptLite[]> {
+  const rows = await sql()<{ item_id: string; correct: boolean; at: number }[]>`
+    SELECT item_id, correct, (extract(epoch FROM created_at) * 1000)::bigint::float8 AS at FROM attempts
+    WHERE learner_id = ${learnerId} AND document_id = ${documentId} AND version_id = ${versionId}
+      AND procedure_key = ${procedureKey}
+    ORDER BY created_at, id`;
+  return rows.map((r) => ({ itemId: r.item_id, correct: r.correct, at: r.at }));
+}
+
 export type LearnScreen = { kind: "screen"; spec: ScreenSpec; title: string } | { kind: "mastered"; title: string } | { kind: "empty"; title: string };
 
 /**
@@ -35,10 +48,7 @@ export async function nextScreen(learner: Learner, doc: HlDocument, procedureKey
   const [procedure, items, attempts] = await Promise.all([
     getProcedureByKey(doc.documentId, versionId, procedureKey),
     listPublishedItems(doc.documentId, versionId, procedureKey),
-    sql()<{ item_id: string; correct: boolean; at: number }[]>`
-      SELECT item_id, correct, (extract(epoch FROM created_at) * 1000)::bigint::float8 AS at FROM attempts
-      WHERE learner_id = ${learner.learnerId} AND document_id = ${doc.documentId} AND version_id = ${versionId}
-        AND procedure_key = ${procedureKey}`,
+    listAttempts(learner.learnerId, doc.documentId, versionId, procedureKey),
   ]);
   const lesson = items.find((i): i is LessonItem => i.kind === "lesson");
   const questions = items.filter((i): i is QuestionItem => i.kind !== "lesson");
@@ -48,9 +58,9 @@ export async function nextScreen(learner: Learner, doc: HlDocument, procedureKey
   if (lessonSpec !== null && (mode === "lesson" || (mode === "auto" && attempts.length === 0))) return { kind: "screen", spec: lessonSpec, title: procedure.title };
 
   const step = nextStep(
-    questions.filter((q) => q.kind === "practice").map((q) => q.id),
-    questions.filter((q) => q.kind === "exam").map((q) => q.id),
-    attempts.map((a) => ({ itemId: a.item_id, correct: a.correct, at: a.at })),
+    questions.filter((q) => q.kind === "practice").map((q) => ({ id: q.id, format: q.payload.format })),
+    questions.filter((q) => q.kind === "exam").map((q) => ({ id: q.id, format: q.payload.format })),
+    attempts,
   );
   if (step.kind === "mastered") return { kind: "mastered", title: procedure.title };
   const q = questions.find((x) => x.id === step.itemId) as QuestionItem;
@@ -74,20 +84,28 @@ async function loadQuestion(learner: Learner, itemId: string): Promise<QuestionI
   return (await getItem(itemId)) as QuestionItem;
 }
 
+/**
+ * Mastered once every published exam item's latest attempt is correct. "Latest" breaks created_at
+ * ties by id, the same order as listAttempts, so the stored state matches the next screen.
+ */
+export async function masteryState(learnerId: string, documentId: string, versionId: string, procedureKey: string): Promise<MasteryState> {
+  const [row] = await sql()<{ exams: number; passed: number }[]>`
+    SELECT COUNT(*)::int AS exams,
+           COUNT(*) FILTER (WHERE (SELECT a.correct FROM attempts a WHERE a.item_id = i.id AND a.learner_id = ${learnerId}
+                                   ORDER BY a.created_at DESC, a.id DESC LIMIT 1))::int AS passed
+    FROM training_items i
+    WHERE i.document_id = ${documentId} AND i.version_id = ${versionId} AND i.procedure_key = ${procedureKey}
+      AND i.kind = 'exam' AND i.status = 'published'`;
+  return row.exams > 0 && row.passed === row.exams ? "mastered" : "in_progress";
+}
+
 /** Stores the attempt and updates mastery: mastered once every exam item's latest attempt is correct. */
 async function record(learner: Learner, q: QuestionItem, answer: unknown, confidence: Confidence, correct: boolean): Promise<MasteryState> {
   await sql()`
     INSERT INTO attempts (learner_id, item_id, document_id, version_id, procedure_key, kind, format, answer, confidence, correct)
     VALUES (${learner.learnerId}, ${q.id}, ${q.documentId}, ${q.versionId}, ${q.procedureKey}, ${q.kind}, ${q.payload.format},
             ${sql().json(answer as never)}, ${confidence}, ${correct})`;
-  const [row] = await sql()<{ exams: number; passed: number }[]>`
-    SELECT COUNT(*)::int AS exams,
-           COUNT(*) FILTER (WHERE (SELECT a.correct FROM attempts a WHERE a.item_id = i.id AND a.learner_id = ${learner.learnerId}
-                                   ORDER BY a.created_at DESC LIMIT 1))::int AS passed
-    FROM training_items i
-    WHERE i.document_id = ${q.documentId} AND i.version_id = ${q.versionId} AND i.procedure_key = ${q.procedureKey}
-      AND i.kind = 'exam' AND i.status = 'published'`;
-  const state: MasteryState = row.exams > 0 && row.passed === row.exams ? "mastered" : "in_progress";
+  const state = await masteryState(learner.learnerId, q.documentId, q.versionId, q.procedureKey);
   await sql()`
     INSERT INTO mastery (learner_id, document_id, procedure_key, version_id, state)
     VALUES (${learner.learnerId}, ${q.documentId}, ${q.procedureKey}, ${q.versionId}, ${state})

@@ -56,6 +56,15 @@ function packagesAtAverage(v: VersionData, prices: LlmPrices, count: number): Es
   };
 }
 
+/**
+ * A version is complete when its `procedures` (first upload) or `update` (new version) job finished: exactly
+ * the steps after which the pipeline sets it as the document's current version, the source of carry-over.
+ * A failed or still-running update already has procedures (they are copied first), so procedures alone are not enough.
+ */
+export function isComplete(v: VersionData): boolean {
+  return v.jobs.some((j) => (j.step === "procedures" || j.step === "update") && j.status === "done");
+}
+
 function seconds(from: Date, to: Date): number {
   return (to.getTime() - from.getTime()) / 1000;
 }
@@ -84,9 +93,10 @@ export function computeVersion(v: VersionData, prices: LlmPrices, options: { hos
     const e = packagesAtAverage(v, prices, regenerated);
     return e === null ? null : { packages: regenerated, ...e };
   })();
-  // No previous version: nothing could be carried (null). Nothing carried: exactly 0 saved, which is known.
+  // Incomplete or no previous version: no saving (null). Nothing carried: exactly 0 saved, which is known.
   // Carried but no logged generation to average: unknown (null), never a made-up 0.
-  const saving = options.previous === null ? null : carried === 0
+  const complete = isComplete(v);
+  const saving = !complete || options.previous === null ? null : carried === 0
     ? { procedures: 0, input_tokens: 0, output_tokens: 0, usd: 0, estimate: true as const }
     : (() => {
       const e = packagesAtAverage(options.previous, prices, carried);
@@ -98,8 +108,8 @@ export function computeVersion(v: VersionData, prices: LlmPrices, options: { hos
     version_id: v.versionId,
     role: v.role,
     language: v.language,
-    // No procedures: the upload failed or is still running, so it is neither a first upload nor an update.
-    kind: v.procedureKeys.length === 0 ? ("incomplete" as const) : options.previous === null ? ("first" as const) : ("update" as const),
+    // Not complete: the upload failed or is still running, so it is neither a first upload nor an update.
+    kind: !complete ? ("incomplete" as const) : options.previous === null ? ("first" as const) : ("update" as const),
     cost: { ...total, by_purpose: byPurpose, hosted_estimate: hosted },
     time: {
       processing_seconds: processing,
@@ -151,15 +161,15 @@ function summarizeBy<K extends string>(versions: VersionReport[], keyOf: (v: Ver
 }
 
 /**
- * Every version, each paired with the nearest earlier version of its document (by first job time) that
- * has procedures. Carry-over copies from the last successful version, so a failed upload in between
- * (no procedures) is never the source.
+ * Every version, each paired with the nearest earlier complete version of its document (by first job
+ * time). Carry-over copies from the last successful version, so a failed or running upload in between
+ * is never the source.
  */
 export function buildCostTimeReport(versions: VersionData[], prices: LlmPrices, hostedModel: string | null) {
   const firstJob = (v: VersionData): number => (v.jobs.length === 0 ? Number.POSITIVE_INFINITY : Math.min(...v.jobs.map((j) => j.startedAt.getTime())));
   const ordered = [...versions].sort((a, b) => a.documentId.localeCompare(b.documentId) || firstJob(a) - firstJob(b) || a.versionId.localeCompare(b.versionId));
   const reports = ordered.map((v, i) => {
-    const previous = ordered.slice(0, i).reverse().find((p) => p.documentId === v.documentId && p.procedureKeys.length > 0) ?? null;
+    const previous = ordered.slice(0, i).reverse().find((p) => p.documentId === v.documentId && isComplete(p)) ?? null;
     return computeVersion(v, prices, { hostedModel, previous });
   });
   return {

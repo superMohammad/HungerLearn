@@ -20,11 +20,11 @@ function grouped<T>(rows: (T & { document_id: string; version_id: string })[]): 
 /**
  * Every document version the pipeline has seen, with the rows cost-time.ts needs. Uses the app's normal
  * pool: ai_calls stays invisible to the read-only role, and only the admin scoreboard and the report read this.
- * Calls without a document (readiness text-to-SQL) are left out.
+ * Calls without a document (readiness text-to-SQL) are left out. The reads run in one read-only,
+ * repeatable-read transaction: the database refuses any write, and all five see the same snapshot.
  */
 export async function loadCostTimeData(): Promise<VersionData[]> {
-  const db = sql();
-  const [versions, calls, jobs, procedures, packages] = await Promise.all([
+  const [versions, calls, jobs, procedures, packages] = await sql().begin("isolation level repeatable read read only", (db) => Promise.all([
     db<{ document_id: string; version_id: string; role: Role; language: Language }[]>`
       SELECT v.document_id, v.version_id, d.role, d.language
       FROM (SELECT document_id, version_id FROM pipeline_jobs UNION SELECT document_id, version_id FROM procedures) v
@@ -42,7 +42,7 @@ export async function loadCostTimeData(): Promise<VersionData[]> {
              EXISTS (SELECT 1 FROM training_items i JOIN item_events e ON e.item_id = i.id
                      WHERE i.package_id = p.id AND e.action = 'carried_over') AS carried
       FROM training_packages p ORDER BY p.created_at`,
-  ]);
+  ]));
   const callsBy = grouped(calls);
   const jobsBy = grouped(jobs);
   const proceduresBy = grouped(procedures);

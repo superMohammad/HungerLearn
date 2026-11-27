@@ -119,7 +119,12 @@ test("a v2 with 3 carried and 1 regenerated procedure saves 3 × v1's average co
 
 test("without logged generation in the previous version, the saving is null, not 0", () => {
   const v1 = version({ procedureKeys: ["A"], packages: [] });
-  const v2 = version({ versionId: "v2", procedureKeys: ["A"], packages: [{ procedureKey: "A", createdAt: at(1), carried: true }] });
+  const v2 = version({
+    versionId: "v2",
+    jobs: [{ step: "update", status: "done", startedAt: at(0), finishedAt: at(2) }],
+    procedureKeys: ["A"],
+    packages: [{ procedureKey: "A", createdAt: at(1), carried: true }],
+  });
   assert.equal(computeVersion(v2, PRICES, { hostedModel: null, previous: v1 }).carry_over_saving_estimate, null);
   assert.equal(computeVersion(v2, PRICES, { hostedModel: null, previous: null }).carry_over_saving_estimate, null);
 });
@@ -214,6 +219,33 @@ test("a failed upload between v1 and v2 is incomplete: v2 is paired with v1, and
   assert.equal(report.coverage.failed_jobs, 1);
 });
 
+test("a failed update is incomplete even though it already has procedures and carried packages; v3 is paired with v1", () => {
+  const v1 = version({
+    jobs: [{ step: "procedures", status: "done", startedAt: at(0), finishedAt: at(100) }],
+    calls: [call("generate.package", 100_000, 0, "m")],
+    procedureKeys: ["A", "B"],
+    packages: [{ procedureKey: "A", createdAt: at(50), carried: false }, { procedureKey: "B", createdAt: at(60), carried: false }],
+  });
+  const failedV2 = version({
+    versionId: "v2",
+    jobs: [{ step: "update", status: "failed", startedAt: at(1000), finishedAt: at(1030) }],
+    procedureKeys: ["A", "B"],
+    packages: [{ procedureKey: "A", createdAt: at(1010), carried: true }],
+  });
+  const v3 = version({
+    versionId: "v3",
+    jobs: [{ step: "update", status: "done", startedAt: at(2000), finishedAt: at(2020) }],
+    procedureKeys: ["A", "B"],
+    packages: [{ procedureKey: "A", createdAt: at(2010), carried: true }, { procedureKey: "B", createdAt: at(2015), carried: true }],
+  });
+  const report = buildCostTimeReport([v3, failedV2, v1], PAID, null);
+  assert.deepEqual(report.versions.map((v) => `${v.version_id}:${v.kind}`), ["v1:first", "v2:incomplete", "v3:update"]);
+  assert.equal(report.versions[1].carry_over_saving_estimate, null, "an incomplete version has no saving");
+  assert.equal(report.versions[2].carry_over_saving_estimate?.input_tokens, 100_000, "2 carried × v1's 50,000 per package");
+  assert.equal(report.summary.update.versions, 1);
+  assert.equal(report.summary.incomplete.carry_over_saving_usd_estimate, null);
+});
+
 test("unknown savings are reported as unknown, never added up as $0", () => {
   const noGeneration = version({ procedureKeys: ["A"], packages: [{ procedureKey: "A", createdAt: at(1), carried: false }], jobs: [{ step: "procedures", status: "done", startedAt: at(0), finishedAt: at(1) }] });
   const v2 = version({ versionId: "v2", procedureKeys: ["A"], packages: [{ procedureKey: "A", createdAt: at(20), carried: true }], jobs: [{ step: "update", status: "done", startedAt: at(10), finishedAt: at(20) }] });
@@ -236,7 +268,12 @@ test("unknown savings are reported as unknown, never added up as $0", () => {
 
 test("an update that carried nothing saved exactly 0, which is known, not unknown", () => {
   const v1 = version({ procedureKeys: ["A"], packages: [{ procedureKey: "A", createdAt: at(1), carried: false }] });
-  const v2 = version({ versionId: "v2", procedureKeys: ["A"], packages: [{ procedureKey: "A", createdAt: at(5), carried: false }] });
+  const v2 = version({
+    versionId: "v2",
+    jobs: [{ step: "update", status: "done", startedAt: at(2), finishedAt: at(6) }],
+    procedureKeys: ["A"],
+    packages: [{ procedureKey: "A", createdAt: at(5), carried: false }],
+  });
   assert.deepEqual(computeVersion(v2, PRICES, { hostedModel: null, previous: v1 }).carry_over_saving_estimate, {
     procedures: 0, input_tokens: 0, output_tokens: 0, usd: 0, estimate: true,
   });

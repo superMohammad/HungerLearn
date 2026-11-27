@@ -1,4 +1,5 @@
 import type { Dict } from "@/lib/i18n";
+import { uploadNumber } from "@/lib/uploads";
 
 /** English UI copy, same shape as `ar.ts`, written natively for English-speaking couriers, staff, and partners. */
 export const en: Dict = {
@@ -20,6 +21,7 @@ export const en: Dict = {
     noResults: "No results.",
     seconds: (n: number) => `${n}s`,
     page: (n: number) => `p. ${n}`,
+    upload: (n: number) => `Upload ${n}`,
     switchLanguage: { label: "عربي", aria: "التبديل إلى العربية" },
   },
   labels: {
@@ -73,7 +75,7 @@ export const en: Dict = {
     exact: { "negation changed": "Negation changed", "wording changed": "Wording changed", "location changed": "Moved in the document" },
     arrow: "→",
     join: "; ",
-    update: (title: string, versionId: string) => `Update to "${title}" (${versionId}):`,
+    update: (title: string, versionId: string) => `Update to "${title}" (Upload ${uploadNumber(versionId)}):`,
   },
   landing: {
     nav: { paths: "Paths", journey: "How it works", levels: "Levels", faq: "FAQ" },
@@ -264,7 +266,7 @@ export const en: Dict = {
       submit: "Upload and start processing",
     },
     doc: {
-      versions: "Versions: ",
+      uploads: (current: number, total: number) => `Upload ${current} of ${total}`,
       pipeline: "Processing",
       notStarted: "Not started yet.",
       step: {
@@ -278,7 +280,7 @@ export const en: Dict = {
       approvedWaiting: "Approved, waiting to publish: ",
       onlyPublished: ". Learners only see published content.",
       publish: (n: number) => `Publish approved content (${n})`,
-      newVersion: (n: number) => `Upload a new version (v${n})`,
+      newVersion: (n: number) => `Upload a new version of this manual (Upload ${n})`,
       compare: "Compare and update",
       changesTitle: "What changed in this version?",
       changesBody: "Procedures whose clauses didn't change kept their approved training at no AI cost; only the others were regenerated.",

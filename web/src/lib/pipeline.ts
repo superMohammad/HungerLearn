@@ -6,6 +6,7 @@ import { getComparison, listClauses, listVersionIssues, runDocproc } from "@/lib
 import { zeroClausesError } from "@/lib/docproc-issues";
 import { buildPackage, groupProcedures } from "@/lib/generation";
 import { copyLessonVideo, queueLessonVideo } from "@/lib/media";
+import { initialItemState } from "@/lib/publication-rules";
 import { DICTIONARIES } from "@/lib/i18n";
 import {
   getDocument,
@@ -57,8 +58,7 @@ export async function generatePackageFor(procedureId: string, reviewerFeedback: 
             ${pkg.status}, ${pkg.skipReason}, ${sql().json(pkg.flags)}, ${sql().json(pkg.resourceRequests)}, ${sql().json(pkg.ideas)})
     RETURNING id`;
   for (const item of pkg.items) {
-    const flags = pkg.status === "needs_human" ? [...new Set([...item.flags, "needs_human"])] : item.flags;
-    const status = flags.length === 0 ? "verified" : "draft";
+    const { flags, status } = initialItemState(pkg.status, item.flags);
     const [inserted] = await sql()<{ id: string }[]>`
       INSERT INTO training_items (package_id, document_id, version_id, procedure_key, role, kind, ordinal, stable_id, quote,
                                   payload, status, flags, judge_reason)

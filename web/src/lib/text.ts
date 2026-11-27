@@ -6,7 +6,7 @@ const ARABIC_INDIC_DIGITS = "٠١٢٣٤٥٦٧٨٩";
 const PERSIAN_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
 const PUNCTUATION = /[«»"“”'‘’.,،؛;:!?؟()\[\]{}\-–—_/\\]/g;
 
-function foldDigits(text: string): string {
+export function foldDigits(text: string): string {
   return text.replace(/[٠-٩۰-۹]/g, (ch) => {
     const arabic = ARABIC_INDIC_DIGITS.indexOf(ch);
     return String(arabic >= 0 ? arabic : PERSIAN_DIGITS.indexOf(ch));

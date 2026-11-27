@@ -3,6 +3,8 @@
  * dictionary in `en.ts` has the same shape and is written natively in English, not translated word by word.
  * Training content (lessons, questions, clause quotes) is not here: it stays in its document's language.
  */
+import { uploadNumber } from "@/lib/uploads";
+
 export const ar = {
   meta: {
     description: "منصة تدريب تحوّل أدلة إجراءات العمل إلى تدريب معتمد لكل فئة: المناديب والموظفين والشركاء.",
@@ -22,6 +24,7 @@ export const ar = {
     noResults: "لا نتائج.",
     seconds: (n: number) => `${n} ث`,
     page: (n: number) => `ص ${n}`,
+    upload: (n: number) => `الرفع رقم ${n}`,
     switchLanguage: { label: "English", aria: "Switch to English" },
   },
   labels: {
@@ -78,7 +81,7 @@ export const ar = {
     arrow: "←",
     join: "؛ ",
     /** Learner notification after a v2 changes a procedure they trained on. */
-    update: (title: string, versionId: string) => `تحديث على «${title}» (${versionId}):`,
+    update: (title: string, versionId: string) => `تحديث على «${title}» (الرفع رقم ${uploadNumber(versionId)}):`,
   },
   landing: {
     nav: { paths: "المسارات", journey: "رحلتك", levels: "المستويات", faq: "الأسئلة الشائعة" },
@@ -269,7 +272,7 @@ export const ar = {
       submit: "رفع وبدء المعالجة",
     },
     doc: {
-      versions: "النسخ: ",
+      uploads: (current: number, total: number) => `الرفع رقم ${current} من ${total}`,
       pipeline: "سير المعالجة",
       notStarted: "لم تبدأ بعد.",
       step: {
@@ -283,7 +286,7 @@ export const ar = {
       approvedWaiting: "معتمد بانتظار النشر: ",
       onlyPublished: ". لا يرى المتدربون إلا المحتوى المنشور.",
       publish: (n: number) => `نشر المحتوى المعتمد (${n})`,
-      newVersion: (n: number) => `رفع نسخة جديدة (v${n})`,
+      newVersion: (n: number) => `رفع نسخة جديدة من الدليل (الرفع رقم ${n})`,
       compare: "مقارنة وتحديث",
       changesTitle: "ما الذي تغيّر في هذه النسخة؟",
       changesBody: "الإجراءات التي لم تتغيّر بنودها احتفظت بتدريبها المعتمد دون أي تكلفة ذكاء اصطناعي، وأعيد توليد غيرها فقط.",

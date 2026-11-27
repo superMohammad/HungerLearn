@@ -100,5 +100,13 @@
  "tests/fixtures/policy_v1.pdf": [
   "b01dfaa03ae5b0dbe72f09c83b7ca3a0c91345cfe4e62a43980cf57445a366ee",
   "fbdc7933b39ee3cf7047e22e9a13222eaf97ae142caf88eb48fb850ecb95df2d"
+ ],
+ "tests/fixtures/policy_v2.pdf": [
+  "232a7cbfa08756d167c9689f567654825db898b7d72013c09b61ae2510439a3c",
+  "63236574c4b4ef40c083de5df1f0e41dcad207ea22a8c556035bba4b9deb357a"
+ ],
+ "tests/fixtures/policy_v2_scanned.pdf": [
+  "232a7cbfa08756d167c9689f567654825db898b7d72013c09b61ae2510439a3c",
+  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
  ]
 }

@@ -87,12 +87,41 @@ def test_a_glyph_the_font_cannot_map_takes_the_actualtext_marks_at_its_spot() ->
     assert logical_rows(restore_unmapped([[*lam, unmapped]], marks)) == ["لَّ"]
 
 
-def test_only_right_anchored_arabic_drawn_right_to_left_is_rebuilt() -> None:
+def test_which_blocks_are_rebuilt_is_decided_from_the_block_alone() -> None:
     chrome = [rtl("يجب على الموظفين", 540.0)]
-    left_anchored = [ltr("1.2 ", 41.0) + rtl("يجب على الموظفين", 300.0)]  # an LTR paragraph quoting Arabic
+    table_cell_on_the_left = [rtl("يجب على الموظفين", 200.0)]  # far from the right margin, still right to left
+    ltr_paragraph = [ltr("1.2 ", 41.0) + rtl("يجب على الموظفين", 300.0)]  # an LTR paragraph quoting Arabic
     drawn_left_to_right = [ltr("يجب على الموظفين", 300.0)]  # a generator that does not shape Arabic
     english = [ltr("Wear gloves", 41.0)]
-    assert rebuilds(chrome, 41.0, 540.0)
-    assert not rebuilds(left_anchored, 41.0, 540.0)
-    assert not rebuilds(drawn_left_to_right, 41.0, 540.0)
-    assert not rebuilds(english, 41.0, 540.0)
+    assert rebuilds(chrome) and rebuilds(table_cell_on_the_left)
+    assert not rebuilds(ltr_paragraph)
+    assert not rebuilds(drawn_left_to_right)
+    assert not rebuilds(english)
+
+
+def test_an_arabic_paragraph_that_opens_with_a_latin_code_is_rebuilt() -> None:
+    words = rtl("يجب الالتزام", 400.0)
+    code = ltr("SOP-12", words[0].x1 + SPACE)  # at the row's right end, where a right-to-left paragraph starts
+    assert rebuilds([code + words])
+    assert logical_rows([code + words]) == ["SOP-12 يجب الالتزام"]
+
+
+def test_punctuation_between_latin_words_stays_inside_the_latin_stretch() -> None:
+    lead = rtl("راسل", 500.0)
+    email = ltr("ops@hl.sa", 380.0)
+    amp = ltr("A & B", 300.0)
+    assert logical_rows([lead + email]) == ["راسل ops@hl.sa"]
+    assert logical_rows([lead + amp]) == ["راسل A & B"]
+
+
+def test_a_date_inside_arabic_reads_left_to_right() -> None:
+    lead = rtl("تاريخ السريان", 500.0)
+    date = ltr("2026-12-01", 300.0)
+    assert logical_rows([date + lead]) == ["تاريخ السريان 2026-12-01"]
+
+
+def test_a_mark_written_after_the_full_stop_joins_its_letter() -> None:
+    word = rtl("فورا", 500.0)
+    stop = Glyph(".", word[-1].x0 - 2.0, 100.0, word[-1].x0, 100.0 + SIZE, SIZE)
+    tanween = Glyph("\u064b", word[-1].x0, 100.0, word[-1].x0, 100.0 + SIZE, SIZE)
+    assert logical_rows([[*word, stop, tanween]]) == ["فوراً."]

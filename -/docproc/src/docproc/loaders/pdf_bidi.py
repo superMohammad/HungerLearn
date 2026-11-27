@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import unicodedata
 from dataclasses import dataclass
+from typing import Literal
 
 RTL_CLASSES = frozenset({"R", "AL"})
 LTR_CLASSES = frozenset({"L", "EN", "AN"})
@@ -22,7 +23,6 @@ TOUCH = 0.35  # glyphs closer than this × font size belong to one unit
 SPACE_GAP = 0.15  # a gap between units wider than this × font size is a space
 SAME_ROW = 0.5  # vertical centres closer than this × font size are one row
 ZERO_WIDTH = 0.5  # points
-LEFT_ANCHORED = 0.1  # a block this much (× text width) closer to the left margin than to the right one is left-to-right
 ALEFS = frozenset("اأإآ")
 # A PDF stores the shape it draws, so a bracket or guillemet inside right-to-left text comes out mirrored.
 MIRROR = str.maketrans("()[]{}<>«»‹›", ")(][}{><»«›‹")
@@ -46,12 +46,15 @@ class Glyph:
         return self.x1 - self.x0 < ZERO_WIDTH
 
 
+Kind = Literal["rtl", "ltr", "separator", "neutral"]
+
+
 @dataclass(frozen=True)
 class Unit:
     """Glyphs that touch on the page, in the order they are read."""
     glyphs: tuple[Glyph, ...]
     text: str
-    kind: str  # "rtl" | "ltr" | "separator" | "neutral"
+    kind: Kind
 
     @property
     def x0(self) -> float:
@@ -70,16 +73,22 @@ class Unit:
         return self.glyphs[0].cy
 
 
-def _first_strong_is_rtl(lines: list[list[Glyph]]) -> bool:
-    """Unicode bidi rules P2 and P3: the first strong letter in stream order sets the base direction."""
-    for line in lines:
-        for g in line:
-            cls = unicodedata.bidirectional(g.char)
-            if cls in RTL_CLASSES:
-                return True
-            if cls == "L":
-                return False
-    return False
+def _mostly_arabic(lines: list[list[Glyph]]) -> bool:
+    """At least as many right-to-left letters as left-to-right ones."""
+    classes = [unicodedata.bidirectional(g.char) for line in lines for g in line]
+    return sum(c in RTL_CLASSES for c in classes) >= sum(c == "L" for c in classes)
+
+
+def _left_to_right_paragraph(lines: list[list[Glyph]]) -> bool:
+    """The stream opens with digits or Latin at the left end of their row («1.2 يجب …» at the left margin): a
+    left-to-right paragraph quoting Arabic, already in order. In a right-to-left paragraph a leading number sits at
+    the row's right end, and browsers start the stream with an Arabic run."""
+    glyphs = [g for line in lines for g in line]
+    first = next((g for g in glyphs if unicodedata.bidirectional(g.char) in RTL_CLASSES | LTR_CLASSES), None)
+    if first is None or unicodedata.bidirectional(first.char) in RTL_CLASSES:
+        return False
+    row_left = min(g.x0 for g in glyphs if abs(g.cy - first.cy) <= SAME_ROW * first.size)
+    return first.x0 - row_left <= TOUCH * first.size
 
 
 def _drawn_right_to_left(lines: list[list[Glyph]]) -> bool:
@@ -94,17 +103,10 @@ def _drawn_right_to_left(lines: list[list[Glyph]]) -> bool:
     return left > right
 
 
-def rebuilds(lines: list[list[Glyph]], text_left: float, text_right: float) -> bool:
-    """Whether a block needs rebuilding: right-to-left text, drawn right to left, not clearly anchored at the left margin.
-
-    `text_left` and `text_right` are the page's text margins. A left-anchored block that starts with Arabic is a
-    left-to-right paragraph quoting Arabic («1.2 يجب …» at the left margin), whose stream is already in order.
-    """
-    glyphs = [g for line in lines for g in line]
-    if not glyphs or not (_first_strong_is_rtl(lines) and _drawn_right_to_left(lines)):
-        return False
-    right_gap, left_gap = text_right - max(g.x1 for g in glyphs), min(g.x0 for g in glyphs) - text_left
-    return right_gap - left_gap <= LEFT_ANCHORED * (text_right - text_left)
+def rebuilds(lines: list[list[Glyph]]) -> bool:
+    """Whether a block needs rebuilding: mostly Arabic, drawn right to left, and not a left-to-right paragraph.
+    Decided from the block alone, so table cells and columns anywhere on the page are handled alike."""
+    return _mostly_arabic(lines) and _drawn_right_to_left(lines) and not _left_to_right_paragraph(lines)
 
 
 def restore_unmapped(lines: list[list[Glyph]], marks: list[Glyph]) -> list[list[Glyph]]:
@@ -114,13 +116,19 @@ def restore_unmapped(lines: list[list[Glyph]], marks: list[Glyph]) -> list[list[
     for line in lines:
         fixed: list[Glyph] = []
         for g in line:
-            found = [m for m in marks if g.char == "\ufffd" and _near(m.x0, g.x0) and abs(m.cy - g.cy) <= SAME_ROW * g.size]
-            fixed.extend(Glyph(m.char, g.x0, g.y0, g.x0, g.y1, g.size) for m in found) if found else fixed.append(g)
+            if g.char != "\ufffd":
+                fixed.append(g)
+                continue
+            found = [m for m in marks if _near(m.x0, g.x0) and abs(m.cy - g.cy) <= SAME_ROW * g.size]
+            if found:
+                fixed.extend(Glyph(m.char, g.x0, g.y0, g.x0, g.y1, g.size) for m in found)
+            else:
+                fixed.append(g)
         out.append(fixed)
     return out
 
 
-def _kind(text: str) -> str:
+def _kind(text: str) -> Kind:
     classes = {unicodedata.bidirectional(c) for c in text}
     if classes & RTL_CLASSES:
         return "rtl"
@@ -176,10 +184,11 @@ def _attach_marks(units: list[Unit]) -> list[Unit]:
         if not hosts:
             out.append(mark_unit)
             continue
-        host = out[hosts[0]]
+        nearest = min(hosts, key=lambda k: abs(out[k].cy - mark_unit.cy))
+        host = out[nearest]
         at = min(range(len(host.glyphs)), key=lambda n: abs(host.glyphs[n].x0 - x))
         glyphs = host.glyphs[:at + 1] + mark_unit.glyphs + host.glyphs[at + 1:]
-        out[hosts[0]] = Unit(glyphs=glyphs, text="".join(g.char for g in glyphs), kind="rtl")
+        out[nearest] = Unit(glyphs=glyphs, text="".join(g.char for g in glyphs), kind="rtl")
     return out
 
 
@@ -232,8 +241,30 @@ def _rows(units: list[Unit]) -> list[list[Unit]]:
     return rows
 
 
+def _latin(unit: Unit) -> bool:
+    return any(unicodedata.bidirectional(c) == "L" for c in unit.text)
+
+
+def _split_at_number_spaces(stretch: list[Unit]) -> list[list[Unit]]:
+    """Unicode bidi rule N1 treats numbers as right-to-left when resolving the space between them, so a spaced
+    boundary splits a stretch unless the nearest strong units on both sides are Latin («1 2026-03-01» in a table row
+    reads «1» first; «A & B» stays one stretch). `stretch` is in right-to-left order."""
+    pieces: list[list[Unit]] = [[stretch[0]]]
+    for k in range(1, len(stretch)):
+        prev, cur = stretch[k - 1], stretch[k]
+        if _spaced(prev, cur, prev.x0 - cur.x1):
+            before = next((u for u in reversed(stretch[:k]) if u.kind == "ltr"), None)
+            after = next((u for u in stretch[k:] if u.kind == "ltr"), None)
+            if not (before is not None and after is not None and _latin(before) and _latin(after)):
+                pieces.append([cur])
+                continue
+        pieces[-1].append(cur)
+    return pieces
+
+
 def _groups(row: list[Unit]) -> list[list[Unit]]:
-    """Right to left. A left-to-right stretch (digits, Latin, the separators inside it) is one group read left to right."""
+    """Right to left. A left-to-right stretch is one group read left to right: digits and Latin, with the separators
+    and punctuation between them (Unicode bidi rule N1: "A & B", "user@example.com", "2026-12-01")."""
     ordered = sorted(row, key=lambda u: -u.x1)
     groups: list[list[Unit]] = []
     i = 0
@@ -244,11 +275,11 @@ def _groups(row: list[Unit]) -> list[list[Unit]]:
             continue
         last = i
         j = i + 1
-        while j < len(ordered) and ordered[j].kind in ("ltr", "separator"):
+        while j < len(ordered) and ordered[j].kind != "rtl":
             if ordered[j].kind == "ltr":
                 last = j
             j += 1
-        groups.append(list(reversed(ordered[i:last + 1])))
+        groups.extend(list(reversed(piece)) for piece in _split_at_number_spaces(ordered[i:last + 1]))
         i = last + 1
     return groups
 

@@ -1,4 +1,5 @@
 import "server-only";
+import { parseLlmPrices, type LlmPrices } from "@/lib/prices";
 
 /** Typed server configuration. Every value is required; a missing one fails loudly at first use. */
 export type ServerEnv = {
@@ -9,6 +10,8 @@ export type ServerEnv = {
   llmApiKey: string;
   /** Sent as `reasoning_effort`: "high" turns Gemma 4 thinking on, "none" turns it off. */
   llmReasoningEffort: string;
+  /** LLM_PRICES_USD_PER_MTOK: USD per million input/output tokens per model; must include llmModel. */
+  llmPrices: LlmPrices;
   docprocDir: string;
   docprocBin: string;
   mediaDir: string;
@@ -32,13 +35,15 @@ function required(name: string): string {
 }
 
 export function serverEnv(): ServerEnv {
+  const llmModel = required("LLM_MODEL");
   return {
     databaseUrl: required("DATABASE_URL"),
     readonlyDatabaseUrl: required("READONLY_DATABASE_URL"),
     llmBaseUrl: required("LLM_BASE_URL"),
-    llmModel: required("LLM_MODEL"),
+    llmModel,
     llmApiKey: required("LLM_API_KEY"),
     llmReasoningEffort: required("LLM_REASONING_EFFORT"),
+    llmPrices: parseLlmPrices(required("LLM_PRICES_USD_PER_MTOK"), llmModel),
     docprocDir: required("DOCPROC_DIR"),
     docprocBin: required("DOCPROC_BIN"),
     mediaDir: required("MEDIA_DIR"),

@@ -13,6 +13,12 @@ import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { REPO } from "../lib/hl.mjs";
 
+/**
+ * Git exports GIT_DIR, GIT_INDEX_FILE etc. to hooks (check-fast runs from pre-commit); they would point every
+ * git call in a throwaway repo at the outer repo (a sandbox `git init` there turns it bare). Same filter as pr-policy.test.mjs.
+ */
+const ENV = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith("GIT_")));
+
 /** @typedef {{ dir: string; guard: (command: string) => import("node:child_process").SpawnSyncReturns<string>; logFile: string }} Sandbox */
 
 /** A repo on branch feat/x whose only change is under scripts/ (High-risk), with this guard copied in. @returns {Sandbox} */
@@ -21,7 +27,7 @@ function sandbox() {
   cpSync(path.join(REPO, "scripts"), path.join(dir, "scripts"), { recursive: true });
   /** @param {string[]} args */
   const git = (...args) => {
-    const r = spawnSync("git", ["-c", "user.name=test", "-c", "user.email=test@example.test", ...args], { cwd: dir, encoding: "utf8" });
+    const r = spawnSync("git", ["-c", "user.name=test", "-c", "user.email=test@example.test", "-c", "commit.gpgsign=false", "-c", "core.hooksPath=", ...args], { cwd: dir, encoding: "utf8", env: ENV });
     assert.equal(r.status, 0, `git ${args.join(" ")}: ${r.stderr}`);
   };
   writeFileSync(path.join(dir, "README.md"), "x\n");
@@ -35,7 +41,7 @@ function sandbox() {
   return {
     dir,
     logFile: path.join(dir, ".git", "hl-skills", "feat%2Fx.jsonl"),
-    guard: (command) => spawnSync(process.execPath, [hook], { cwd: dir, input: JSON.stringify({ tool_input: { command } }), encoding: "utf8" }),
+    guard: (command) => spawnSync(process.execPath, [hook], { cwd: dir, input: JSON.stringify({ tool_input: { command } }), encoding: "utf8", env: ENV }),
   };
 }
 
@@ -75,7 +81,7 @@ test("guard: a broken skill log or rule module denies (fail closed), never lets 
 test("readonlySurfaceFiles: a removed SQL comment mentioning readiness_v counts, and names its file", (t) => {
   const box = sandbox();
   t.after(() => rmSync(box.dir, { recursive: true, force: true }));
-  const git = (/** @type {string[]} */ ...args) => spawnSync("git", ["-c", "user.name=test", "-c", "user.email=test@example.test", ...args], { cwd: box.dir, encoding: "utf8" });
+  const git = (/** @type {string[]} */ ...args) => spawnSync("git", ["-c", "user.name=test", "-c", "user.email=test@example.test", "-c", "commit.gpgsign=false", "-c", "core.hooksPath=", ...args], { cwd: box.dir, encoding: "utf8", env: ENV });
   writeFileSync(path.join(box.dir, "q.sql"), "-- reads readiness_v\nSELECT 1;\n");
   git("add", "q.sql");
   git("commit", "-q", "-m", "sql");
@@ -83,7 +89,7 @@ test("readonlySurfaceFiles: a removed SQL comment mentioning readiness_v counts,
   writeFileSync(path.join(box.dir, "q.sql"), "SELECT 1;\n");
   const probe = spawnSync(process.execPath, ["--input-type=module", "-e",
     `import { readonlySurfaceFiles, baseRev } from ${JSON.stringify(pathToFileURL(path.join(box.dir, "scripts", "lib", "hl.mjs")).href)};
-     console.log(JSON.stringify(readonlySurfaceFiles(baseRev())));`], { cwd: box.dir, encoding: "utf8" });
+     console.log(JSON.stringify(readonlySurfaceFiles(baseRev())));`], { cwd: box.dir, encoding: "utf8", env: ENV });
   assert.equal(probe.status, 0, probe.stderr);
   assert.deepEqual(JSON.parse(probe.stdout), ["q.sql"]);
 });
@@ -91,7 +97,7 @@ test("readonlySurfaceFiles: a removed SQL comment mentioning readiness_v counts,
 const GUARD = path.join(REPO, "scripts", "agent-bash-guard-hook.mjs");
 /** @param {string} command */
 function guardRun(command) {
-  return spawnSync(process.execPath, [GUARD], { input: JSON.stringify({ tool_input: { command } }), encoding: "utf8" });
+  return spawnSync(process.execPath, [GUARD], { input: JSON.stringify({ tool_input: { command } }), encoding: "utf8", env: ENV });
 }
 
 test("guard: agents never use the admin bypass to merge, in any spelling", () => {

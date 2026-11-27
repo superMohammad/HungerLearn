@@ -89,6 +89,7 @@ jobs:
           LLM_MODEL=none
           LLM_API_KEY=none
           LLM_REASONING_EFFORT=none
+          LLM_PRICES_USD_PER_MTOK='{"none":{"input":0,"output":0}}'
           DOCPROC_DIR=$GITHUB_WORKSPACE/-/docproc
           DOCPROC_BIN=/bin/false
           MEDIA_DIR=$GITHUB_WORKSPACE/media
@@ -102,6 +103,10 @@ jobs:
           pnpm db:migrate
           pnpm db:seed
           pnpm build
+      - name: Migration and AI-call scope tests (each run uses its own fresh database)
+        working-directory: web
+        env: { TEST_DATABASE_URL: "postgresql://hungerlearn:hungerlearn@127.0.0.1:5442/hungerlearn" }
+        run: pnpm test:db
       - name: Start the app and verify feature-map rows
         run: |
           (cd web && pnpm start > "$RUNNER_TEMP/app.log" 2>&1 &)

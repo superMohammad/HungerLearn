@@ -1,6 +1,6 @@
 # B7 — "What changed" lesson and badge recheck after a new SOP version
 
-**Risk tier:** Enhanced. This is a stage 6 pipeline change plus a learner-flow change in `web/`, with browser tests for F05 and F07. The recommended option touches no High-risk path: no migration, and no change to `readiness.ts`, `readiness_v`, `hl_readonly`, `session.ts` or `db.ts`. If Mohammad picks storage option B (decision D1), its migration ships first as its own High-risk PR.
+**Risk tier:** Enhanced. This is a stage 6 pipeline change plus a learner-flow change in `web/`, with browser tests for F05 and F07. Option A touches no High-risk path: no migration, and no change to `readiness.ts`, `session.ts` or `db.ts`. The readiness reporting view, and the read-only database role that the Arabic question box on the readiness page uses, keep their current definitions and permissions. If Mohammad picks storage option B (decision D1), its migration ships first as its own High-risk PR.
 **Approved:** @superMohammad, 2026-11-27
 
 ## Goal
@@ -85,7 +85,7 @@ A learner who mastered v1, never opened v2, and comes back after v3:
    - A procedure that changed v1→v2 but was carried over at v3 still shows the v1→v2 changes, because the learner never retook it.
 4. **Only current-version attempts count.** Attempts on v2 items made before v3 do not count towards the v3 exam, the same as today.
 5. **A missing link in the chain stops the lesson with an error.** A missing comparison, or a comparison whose `old_version_id` does not continue the chain, fails the screen with a technical error naming the version, like every pipeline error. It never shows a partial diff, and there is no fallback (AGENTS.md).
-   - **Amended after review (needs Mohammad's confirmation):** an incomplete comparison (`complete = false`, pages failed) does not stop the lesson. docproc already turns the would-be removals into `needs_review`, and those clauses of the learner's procedure are shown as possible changes. Throwing would have locked every flagged learner out of the new exam for good, even when the failed pages did not touch their procedure.
+   - **Amended after review (awaiting Mohammad's confirmation):** an incomplete comparison (`complete = false`, pages failed) does not stop the lesson. docproc already turns the would-be removals into `needs_review`, and those clauses of the learner's procedure are shown as possible changes. Throwing would have locked every flagged learner out of the new exam for good, even when the failed pages did not touch their procedure.
 6. **During the update** (the new upload stored, the revised training not yet current) the old flow stays and no answer on the older training can clear `needs_refresh`: only passing the upload that started the refresh, or a later one, does.
 
 ## Acceptance criteria and their checks
@@ -115,7 +115,7 @@ Unit tests come first and must fail before the change (`web/src/lib/carry-over.t
 - `web/src/lib/i18n/ar.ts`, `en.ts`: "What changed", "Before", "After", "New rule", "No longer applies", "Continue to the lesson", and the reason line.
 - Tests: `carry-over.test.ts`, `logic.test.ts`, `web/db/tests/what-changed.test.ts`, and the F05 and F07 cases in `web/e2e/feature-map.spec.ts`.
 - `docs/feature-map.md`: the F05 and F07 Proof (below).
-- Not touched: `readiness.ts`, `readiness_v`, `hl_readonly`, migrations (under option A), and the carry-over decision (`carriesOver`).
+- Not touched: `readiness.ts`, the readiness reporting view and its read-only role (same columns, same single-view permission), migrations (under option A), and the carry-over decision (`carriesOver`).
 
 ## Storage
 
@@ -138,7 +138,7 @@ Unit tests come first and must fail before the change (`web/src/lib/carry-over.t
     - **Recording:** "Continue to the lesson" becomes a server action that writes the current version id there.
     - **Enforcement:** `nextScreen` and `gradeAnswer` refuse exam answers from a `needs_refresh` learner until the column equals the current version. That closes the URL bypass, gives an audit timestamp, and handles skipped versions on its own: a newer version means a new view is needed.
     - **Review path:** it touches `web/db/migrations/**`, so it would ship first as a separate High-risk PR, with a threat model and a rollback (drop the column).
-    - **Readiness is unaffected.** `readiness_v` does not need the column.
+    - **Readiness is unaffected.** The readiness reporting view would not need the new column.
   - **Choose B** if supervisors must see proof that a learner read the change.
 - **D2, showing a suspended badge differently from "never mastered".** `needs_refresh` does not record whether the learner had `mastered` or was `in_progress`. The B9 decision as written does not need this; `/learn` shows both as "needs refresh". If B9 should show "badge under recheck" only for learners who had the badge, a nullable `mastery.badge_version_id TEXT` (the last version mastered) is needed. Same High-risk migration route. Not proposed unless Mohammad asks for it.
 - **Not needed.** `notifications` has no `procedure_key`. That is fine for B7, because the `/learn` card, not the notification, links to the lesson.
@@ -172,3 +172,12 @@ Unit tests come first and must fail before the change (`web/src/lib/carry-over.t
 - **Lesson skipped by a typed URL (option A).** This is accepted until D1 is decided. Option B closes it.
 - **Source text direction.** Mixed AR/EN quotes could render the wrong way. Each quote has `dir="auto"`, and the Arabic and English screenshots check it.
 - **Rollback:** revert the B7 PR. Under option A no migration or data rewrite ships. Mastery rows written while B7 was live are ordinary `mastered`, `in_progress` or `needs_refresh` values and stay valid. Extra notifications stay as harmless history. Under option B, also revert the migration PR (drop the nullable column) after the B7 revert.
+
+## Status (2026-11-27)
+
+- **Approval:** `**Approved:**` line above (option A, no migration). The incomplete-comparison amendment under "Skipped SOP versions" step 5 is awaiting Mohammad's confirmation.
+- **Reviews:** the `reviewer` subagent and a second `review-change` pass; every must-fix resolved in `0eb1db0`.
+- **Checks:** `node scripts/check.mjs` passed (web, docproc, media, scripts); `pnpm test` 85/85; `pnpm test:db` 22/22.
+- **Browser verification (`node scripts/verify-app.mjs F01 F02 F05 F06`, disposable database):** 19/19 in Arabic and English, including the F05 skipped-upload case. Inspected screenshots in `.verify/vgolden25-b7-what-changed/shareable/`; traces and the HTML report stay local.
+- **PR preparation:** a description drafted locally from the template and checked with `node scripts/pr-policy.mjs`; the PR is not opened.
+- **Pending:** the live F07 v2 upload and comparison in Arabic and English, which need a working LLM endpoint.

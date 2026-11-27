@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { approveAction, approvePackageAction, editQuestionAction, rejectPackageAction, rerenderVideoAction } from "@/app/actions";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { ensureAdmin } from "@/components/guard";
-import { CheckIcon, PageHeader, Pill, Skeleton, WarnIcon } from "@/components/ui";
+import { CheckIcon, NumText, PageHeader, Pill, Skeleton, WarnIcon } from "@/components/ui";
 import { citedClauses } from "@/lib/carry-over";
 import { listClauses } from "@/lib/docproc";
 import { getItem, getLessonVideo, getPackage, listItemEvents, listReviewQueue } from "@/lib/repo";
@@ -199,7 +199,7 @@ async function Panel({ itemId, t }: { itemId: string; t: Dict }) {
               <span className="text-ink">{e.actor}</span>
               <span>{e.action}</span>
               <span className="num" dir="ltr">{e.fromStatus ?? "∅"} → {e.toStatus}</span>
-              <span className="num">{t.common.upload(uploadNumber(e.versionId))}</span>
+              <span><NumText text={t.common.upload(uploadNumber(e.versionId))} /></span>
               {e.note !== "" ? <span dir="auto">{e.note}</span> : null}
             </li>
           ))}

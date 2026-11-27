@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { generateProcedureAction, publishAction, uploadNewVersion } from "@/app/actions";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { ensureAdmin } from "@/components/guard";
-import { Card, CheckIcon, PageHeader, Pill, Skeleton, WarnIcon } from "@/components/ui";
+import { Card, CheckIcon, NumText, PageHeader, Pill, Skeleton, WarnIcon } from "@/components/ui";
 import { getComparison, listClauses, listVersions } from "@/lib/docproc";
 import { reasonLabel } from "@/lib/reasons";
 import { getDocument, latestPackages, listJobs, listProcedures, listVersionItems } from "@/lib/repo";
@@ -62,7 +62,7 @@ async function DocumentDetail({ params }: { params: PageProps<"/[lang]/admin/doc
     <>
       <AutoRefresh active={running} intervalMs={4000} />
       <PageHeader eyebrow={`${t.labels.role[doc.role]} · ${t.labels.language[doc.language]}`} title={doc.title}>
-        <span className="num">{documentId}</span> · <span className="num">{versionId === null ? "…" : d.uploads(uploadNumber(versionId), versions.length)}</span>
+        <span className="num">{documentId}</span> · {versionId === null ? "…" : <NumText text={d.uploads(uploadNumber(versionId), versions.length)} />}
       </PageHeader>
 
       <div className="mb-8 grid gap-6 lg:grid-cols-[1fr_360px]">
@@ -72,7 +72,7 @@ async function DocumentDetail({ params }: { params: PageProps<"/[lang]/admin/doc
           <ol className="mt-3 grid gap-2">
             {jobs.map((j) => (
               <li key={j.id} className="flex flex-wrap items-center gap-3 text-sm">
-                <span className="num text-ink-soft">{t.common.upload(uploadNumber(j.versionId))}</span>
+                <span className="text-ink-soft"><NumText text={t.common.upload(uploadNumber(j.versionId))} /></span>
                 <span className="font-medium"><bdi>{stepLabel(j.step, d.step)}</bdi></span>
                 <Pill tone={j.status === "failed" ? "warn" : j.status === "running" ? "accent" : "neutral"}>
                   {j.status === "failed" ? <WarnIcon /> : j.status === "done" ? <CheckIcon /> : null}

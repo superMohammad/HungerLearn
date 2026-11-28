@@ -2,7 +2,7 @@
 
 **Tier:** Enhanced. The change is 12 lines, but `-/docproc/src/docproc/evaluation.py` is on pr-policy's Enhanced list (`scripts/lib/policy.mjs:43`). · **Owner:** Yasser (@altayariyasser) · **Branch:** `feat/docproc-eval-date` (from `main` at 302f803)
 
-**Approved:** _pending @superMohammad_
+**Approved:** @superMohammad, 2026-11-28 (on [#32](https://github.com/superMohammad/HungerLearn/issues/32): "eval date yes")
 
 ## Problem
 The scoreboard (A2d, #31) shows each number with its date. A2a's and A2c's result files carry their own date, but docproc's `out/eval_dev_*.json` has none. So the extraction card has to use the file's save time, which changes whenever the file is copied.
@@ -25,5 +25,5 @@ None by construction: only a timestamp is added, and every score is computed exa
 - **Additive:** one new key. Readers that ignore unknown keys are unaffected, and nothing reads it yet.
 - **Rollback:** revert the PR.
 
-## Open question for @superMohammad
-1. Approve as Enhanced (the file is on the Enhanced list), with the "eval delta: none by construction" note instead of a before-and-after `--real` run?
+## Decision
+Approved as Enhanced, with the "eval delta: none by construction" note instead of a before-and-after `--real` run (@superMohammad on #32, 2026-11-28).

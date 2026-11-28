@@ -242,6 +242,17 @@ test("policy: a plan line without a matching review names who must approve", () 
   assert.deepEqual(policyProblems({ ...input, meta: { author: "vGolden25", headSha: HEAD, reviews: [review("altayariyasser", "APPROVED", "COLLABORATOR")] } }), []);
 });
 
+test("policy: an **Approved:** line that names no one says so", () => {
+  const files = ["web/src/lib/pipeline.ts", "docs/plans/2026-11-28-x.md"];
+  const input = { ...diff(files, 80), body: body("Enhanced", "plan-change, review-change, pr-ready"),
+    plans: { "docs/plans/2026-11-28-x.md": "# Plan\n\n**Approved:** pending\n" }, meta: { author: "vGolden25", headSha: HEAD, reviews: [] } };
+  assert.match(policyProblems(input).join("\n"), /names no one/);
+});
+
+test("approval: reviewer logins match the plan handle in any letter case", () => {
+  assert.equal(isApprovedPlan(PEER_PLAN, { author: "vGolden25", headSha: HEAD, reviews: [review("AltayariYasser", "APPROVED", "COLLABORATOR")] }), true);
+});
+
 test("merge decision: only with all required checks green, never with --admin", () => {
   assert.equal(mergeProblem(["8", "--squash"], 0), null);
   assert.match(mergeProblem(["8", "--squash"], 8) ?? "", /pending/);

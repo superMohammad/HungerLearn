@@ -42,7 +42,7 @@ A changed plan in `docs/plans/` is approved when its `**Approved:**` line names 
 
 ## Rollout
 
-The gate depends on branch protection: peers can merge, and `pr-policy` runs the PR's own scripts. Apply protection **right after this PR merges**, before any peer PR is merged. Mohammad runs the call, or asks for it:
+The gate depends on branch protection: peers can merge, and `pr-policy` runs the PR's own scripts. Apply protection **just before this PR merges**, so AGENTS.md never describes a review that isn't enforced. It doesn't block this PR: Mohammad merges it with the admin bypass, since `enforce_admins` stays off. Mohammad runs the call, or asks for it, then checks it with `gh api repos/superMohammad/HungerLearn/branches/main/protection`. If the PATCH returns 404 because review protection isn't on yet, `PUT …/branches/main/protection` with the full settings does the same.
 
 ```sh
 gh api -X PATCH repos/superMohammad/HungerLearn/branches/main/protection/required_pull_request_reviews \
@@ -62,7 +62,7 @@ Fork PRs get a read-only token, which is enough. A first-time contributor's work
   - an owner-authored PR passes on its line alone;
   - a line with no review fails;
   - a review that is later changes-requested or dismissed fails;
-  - an approval of an older commit fails;
+  - an approval of an older commit fails; reviews of deleted accounts or garbage-collected commits are left out by `pr-meta`;
   - a review by a non-collaborator fails;
   - bad meta raises.
 - `scripts/test/pr-policy.test.mjs`: the end-to-end runs take a meta file.

@@ -272,6 +272,9 @@ function planProblem(tier, files, plans, meta) {
   if (texts.some((t) => isApprovedPlan(t, meta))) return null;
   const named = [...new Set(texts.flatMap(approvalHandles))];
   const who = `a teammate other than @${meta.author}`;
+  if (texts.some((t) => normalized(t).split("\n").some((l) => l.startsWith("**Approved:**"))) && named.length === 0) {
+    return `Plan: the **Approved:** line names no one; write the @handle of ${who} who approves this PR (or @${OWNER} on his own PR).`;
+  }
   if (named.length === 0) {
     return `Plan: this ${tier} PR needs its own plan in docs/plans/, added or changed in this PR, with an **Approved:** line naming ${who} (or @${OWNER} on his own PR).`;
   }

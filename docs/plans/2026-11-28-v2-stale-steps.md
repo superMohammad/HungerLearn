@@ -15,6 +15,8 @@ Found by Mohammad in the F07 run for #17: after uploading `courier-pickup-wait-v
 - the admin's document page lists them (`app/[lang]/admin/documents/[id]/page.tsx:166`);
 - learners get them as the **fallback lesson** when a lesson spec is missing (`learning.ts:76`).
 
+**Every new version, not only v2:** `carryProcedures` runs for each upload after the first, so v2 → v3 hits the same bug. Mohammad's B7 run uploads `courier-pickup-wait-v3` (17 procedures) over v2, so its changed procedures will show stale steps until this is fixed.
+
 **A second gap:** a changed procedure with no package yet is skipped (`pipeline.ts:152`, `pkg === undefined`), so it keeps stale steps too, with no regeneration to expose them.
 
 ## Approach
@@ -34,7 +36,9 @@ Found by Mohammad in the F07 run for #17: after uploading `courier-pickup-wait-v
 - Given a changed procedure that had no package, then its steps are refreshed too → DB test.
 - Given a naming call that fails 3 times, then the update job fails with the procedure named in the error, not silently with old steps → DB test.
 - `groupProcedures` behaves exactly as before → the existing tests and the `ai-call-scope` DB test stay green.
-- `verify-app` F07 (v2 upload) in Arabic and English on the GPU machine: no `contradiction` flag from stale steps on CW-02, and the document page shows the new steps → Mohammad's run (it needs the real LLM).
+- Real check on the GPU machine (it needs the real LLM), by Mohammad, in Arabic and English:
+  - his **B7 v2 → v3 run** (`courier-pickup-wait-v3` over v2): every changed procedure shows steps from the v3 clauses on the document page, with no `contradiction` flag caused by stale steps;
+  - `verify-app` F07 (v1 → v2): no `contradiction` flag from stale steps on CW-02.
 - `node scripts/check.mjs` passes; two fresh-context reviews have no open must-fix.
 
 ## Files
@@ -54,7 +58,7 @@ docproc is unchanged, so `docproc eval --real` doesn't move. The effect shows in
 ## Open questions for @superMohammad
 1. **Steps only, or title and steps?** I propose refreshing only the steps and keeping the title (stable for learners and notices; titles carry no numbers). Or should a changed procedure get a fresh title as well?
 2. Should a **moved** procedure keep its steps? (Proposal: yes. Its text is unchanged, and moved already carries the training over.)
-3. **Real check:** will you rerun F07 on the 3090 after the fix (v1 → v2 courier-pickup-wait), so the PR can show the contradiction flag gone?
+3. **Real check:** after the fix, will you rerun your B7 v2 → v3 upload (and F07, v1 → v2) on the 3090, so the PR can show the new steps and the contradiction flag gone?
 
 ## Out of scope
 - Changing the naming prompt or the generator prompt.

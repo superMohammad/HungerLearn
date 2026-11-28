@@ -2,7 +2,7 @@
 
 **Tier:** Enhanced (pipeline change in `web/src/lib/pipeline.ts`, plus one new LLM call per changed procedure) · **Owner:** Yasser (@altayariyasser) · **Branch:** `fix/v2-stale-steps` (from `main` at 302f803)
 
-**Approved:** @superMohammad, 2026-11-28 (on [#32](https://github.com/superMohammad/HungerLearn/issues/32): "stale steps 1 steps only, 2 yes, 3 yes")
+**Approved:** @vGolden25 (PR review, under the peer-approval rule from #33); the plan itself was approved by @superMohammad on 2026-11-28 (on [#32](https://github.com/superMohammad/HungerLearn/issues/32): "stale steps 1 steps only, 2 yes, 3 yes")
 
 ## Problem
 Found by Mohammad in the F07 run for #17: after uploading `courier-pickup-wait-v2`, the changed procedure's steps still say «…بعد ١٥ دقيقة», while its rule CW-02 now says 10 minutes. The regenerated draft was then flagged `contradiction` and needed a reviewer.

@@ -19,7 +19,7 @@ import {
   setCurrentVersion,
   updateProcedureSteps,
 } from "@/lib/repo";
-import type { ClauseStatus, ComparisonReport, HlDocument, LessonPayload, Procedure, TrainingItem, TrainingPackage } from "@/lib/types";
+import type { ComparisonReport, HlDocument, LessonPayload, Procedure, TrainingItem, TrainingPackage } from "@/lib/types";
 
 const SYSTEM_ACTOR = "ai:pipeline";
 
@@ -143,11 +143,10 @@ async function carryProcedures(doc: HlDocument, oldVersionId: string, newVersion
  * its new clauses (its title stays, so learners and notices keep naming the same procedure). All of them are
  * refreshed before any package is generated, so a naming failure stops the update before it writes training.
  */
-async function refreshChangedSteps(doc: HlDocument, newVersionId: string, oldProcedures: Procedure[], newByKey: ReadonlyMap<string, Procedure>, status: ReadonlyMap<string, ClauseStatus>): Promise<void> {
+async function refreshChangedSteps(doc: HlDocument, newVersionId: string, changed: readonly { old: Procedure; next: Procedure }[]): Promise<void> {
+  if (changed.length === 0) return;
   const clauses = await listClauses(doc.documentId, newVersionId);
-  for (const old of oldProcedures) {
-    const next = newByKey.get(old.procedureKey);
-    if (next === undefined || carriesOver(old, next, status)) continue;
+  for (const { old, next } of changed) {
     const own = new Set(next.stableIds);
     try {
       const { steps } = await nameProcedure(doc, newVersionId, clauses.filter((c) => own.has(c.stableId)));
@@ -169,12 +168,20 @@ async function applyNewVersion(doc: HlDocument, oldVersionId: string, newVersion
     latestPackages(doc.documentId, oldVersionId),
   ]);
   const newByKey = new Map(newProcedures.map((p) => [p.procedureKey, p]));
-  await refreshChangedSteps(doc, newVersionId, oldProcedures, newByKey, status);
+  // Decided once, so the steps refresh and the regeneration below always agree on which procedures changed.
+  const changed = new Set(oldProcedures.filter((old) => {
+    const next = newByKey.get(old.procedureKey);
+    return next !== undefined && !carriesOver(old, next, status);
+  }).map((old) => old.procedureKey));
+  await refreshChangedSteps(doc, newVersionId, oldProcedures.flatMap((old) => {
+    const next = newByKey.get(old.procedureKey);
+    return next !== undefined && changed.has(old.procedureKey) ? [{ old, next }] : [];
+  }));
   for (const old of oldProcedures) {
     const pkg = oldPackages.get(old.id);
     const next = newByKey.get(old.procedureKey);
     if (pkg === undefined || next === undefined) continue;
-    if (carriesOver(old, next, status)) {
+    if (!changed.has(old.procedureKey)) {
       await carryPackage(pkg, next);
       continue;
     }

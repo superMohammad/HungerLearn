@@ -34,8 +34,10 @@ let appEnvSet = false;
 const namingInputs: string[][] = [];
 const generatorInputs: string[] = [];
 
-/** A clause text containing this makes the fake LLM fail every naming call for it. */
+/** A clause text containing this makes the fake LLM fail every naming call for it (HTTP 500). */
 const NAMING_FAILS = "تعذر التسمية";
+/** A clause text containing this makes the fake LLM answer with a clause id in the steps, which the app rejects. */
+const LEAKS_ID = "معرّف مسرّب";
 
 /** The fake naming answer: one step per clause, quoting the clause, so a step shows which text it came from. */
 const freshSteps = (quotes: readonly string[]): string[] => quotes.map((q) => `الخطوة: ${q}`);
@@ -81,7 +83,13 @@ function fakeAnswer(system: string, user: string): unknown {
     const input = JSON.parse(user) as { procedures: { procedure_id: string; clauses: string[] }[] };
     for (const p of input.procedures) namingInputs.push(p.clauses);
     if (input.procedures.some((p) => p.clauses.some((q) => q.includes(NAMING_FAILS)))) throw new Error("fake naming failure");
-    return { procedures: input.procedures.map((p) => ({ procedure_id: p.procedure_id, title: "عنوان جديد", steps: freshSteps(p.clauses) })) };
+    return {
+      procedures: input.procedures.map((p) => ({
+        procedure_id: p.procedure_id,
+        title: "عنوان جديد",
+        steps: p.clauses.some((q) => q.includes(LEAKS_ID)) ? ["راجع C3 ثم بلّغ"] : freshSteps(p.clauses),
+      })),
+    };
   }
   if (system.includes("strict fact checker")) return { supported: true, reason: "مدعوم بالنص" };
   throw new Error(`unexpected prompt: ${system.slice(0, 80)}`);
@@ -228,8 +236,9 @@ test("a v2 upload refreshes the steps of changed procedures and leaves unchanged
   // Unchanged and moved procedures (decision 2): copied exactly, and no naming call was made for them.
   assert.deepEqual(await v2Procedure(doc, "uniform"), { title: "الزي الرسمي", steps: ["ارتدِ الزي الرسمي"] });
   assert.deepEqual(await v2Procedure(doc, "sealed"), { title: "الأكياس المختومة", steps: ["لا تفتح الكيس"] });
-  // Exactly one naming call each for the two changed procedures, and nothing else (this test runs first).
-  assert.deepEqual(namingInputs, [[DELAY.v2], [HANDOVER.v2]]);
+  // Exactly one naming call each for the two changed procedures, and none for this document's other clauses.
+  const thisDoc = new Set([UNIFORM, DELAY, HANDOVER, SEALED].map((c) => c.v2));
+  assert.deepEqual(namingInputs.filter((quotes) => quotes.some((q) => thisDoc.has(q))), [[DELAY.v2], [HANDOVER.v2]]);
   // Logged against the new version, so A2c counts the refresh in v2's cost.
   const [logged] = await testDb()<{ n: number }[]>`
     SELECT count(*)::int AS n FROM ai_calls WHERE document_id = ${doc} AND version_id = 'v2' AND purpose = 'understand.name_procedures'`;
@@ -249,9 +258,27 @@ test("when naming a changed procedure keeps failing, the update job fails and na
   assert.equal(jobs[0].status, "failed");
   assert.match(jobs[0].error, /تأخر تجهيز الطلب/, "the error names the procedure");
   assert.match(jobs[0].error, /fake naming failure/, "the error says why naming failed");
-  assert.equal(namingInputs.filter((q) => q.includes(broken.v2)).length, 3, "naming was tried 3 times");
+  assert.equal(namingInputs.filter((q) => q.includes(broken.v2)).length, 3, "the failing AI call was retried 3 times");
   // Nothing was regenerated from the old steps, and the document still points at v1.
   assert.ok(!generatorInputs.some((u) => u.includes(NAMING_FAILS)), "no package generated without fresh steps");
   const [d] = await testDb()<{ current_version_id: string }[]>`SELECT current_version_id FROM hl_documents WHERE document_id = ${doc}`;
   assert.equal(d.current_version_id, "v1");
+});
+
+test("an answer that writes a clause id into the steps is rejected 3 times, then the update fails with the reason", { timeout: 120_000 }, async () => {
+  const doc = "courier-leaked-id";
+  const leaky: ClauseSpec = { ...DELAY, stableId: "LI-02", v2: `${DELAY.v2} ${LEAKS_ID}` };
+  await seedDocument(doc, [leaky], [{ key: "delay", title: "تأخر تجهيز الطلب", steps: ["انتظر ١٥ دقيقة ثم بلّغ"], stableIds: ["LI-02"], withPackage: true }]);
+
+  await assert.rejects(runV2Update(doc));
+
+  // The AI call itself succeeds each time; it is nameProcedure's own check that rejects and retries the answer.
+  assert.equal(namingInputs.filter((q) => q.includes(leaky.v2)).length, 3, "naming was attempted 3 times");
+  const [job] = await testDb()<{ status: string; error: string }[]>`
+    SELECT status, error FROM pipeline_jobs WHERE document_id = ${doc} AND version_id = 'v2' AND step = 'update'`;
+  assert.equal(job.status, "failed");
+  assert.match(job.error, /تأخر تجهيز الطلب/, "the error names the procedure");
+  assert.match(job.error, /id written into learner text/, "the error says why the answers were rejected");
+  const [p] = await testDb()<{ steps: string[] }[]>`SELECT steps FROM procedures WHERE document_id = ${doc} AND version_id = 'v2'`;
+  assert.ok(!p.steps.some((s) => s.includes("C3")), "a rejected answer is never stored");
 });

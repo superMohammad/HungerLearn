@@ -92,7 +92,8 @@ function testDb(): postgres.Sql {
   return db;
 }
 
-type ClauseSpec = { stableId: string; v1: string; v2: string; status: ClauseStatus; heading: string; number: string };
+/** `v2Number` gives a moved clause its new place; otherwise v2 keeps v1's clause number. */
+type ClauseSpec = { stableId: string; v1: string; v2: string; status: ClauseStatus; heading: string; number: string; v2Number?: string };
 type ProcedureSpec = { key: string; title: string; steps: string[]; stableIds: string[]; withPackage: boolean };
 
 /**
@@ -111,7 +112,7 @@ async function seedDocument(documentId: string, clauses: readonly ClauseSpec[], 
     for (const versionId of ["v1", "v2"] as const) {
       await t`INSERT INTO clause_versions (record_id, document_id, version_id, ordinal, stable_id, quote, statement, clause_number, heading, location, content_hash)
               VALUES (${`${documentId}-${versionId}-${c.stableId}`}, ${documentId}, ${versionId}, ${ordinal}, ${c.stableId}, ${c[versionId]}, '',
-                      ${c.number}, ${c.heading}, ${t.json({ page: 1 })}, ${`${c.stableId}-${c[versionId]}`})`;
+                      ${versionId === "v2" ? (c.v2Number ?? c.number) : c.number}, ${c.heading}, ${t.json({ page: 1 })}, ${`${c.stableId}-${c[versionId]}`})`;
     }
   }
   const report: ComparisonReport = {
@@ -124,7 +125,7 @@ async function seedDocument(documentId: string, clauses: readonly ClauseSpec[], 
       stable_id: c.stableId,
       old: { quote: c.v1, heading: c.heading },
       new: { quote: c.v2, heading: c.heading },
-      change_reasons: c.status === "changed" ? ["number changed"] : [],
+      change_reasons: c.status === "changed" ? ["number changed"] : c.status === "moved" ? ["location changed"] : [],
     })),
   };
   await t`INSERT INTO comparisons (document_id, new_version_id, old_version_id, complete, report) VALUES (${documentId}, 'v2', 'v1', true, ${t.json(report)})`;
@@ -199,11 +200,13 @@ const DELAY: ClauseSpec = {
   number: "2.1",
 };
 const HANDOVER: ClauseSpec = { stableId: "CW-03", v1: "سلّم الطلب خلال ٣٠ دقيقة.", v2: "سلّم الطلب خلال 25 دقيقة.", status: "changed", heading: "٣. التسليم", number: "3.1" };
+const SEALED: ClauseSpec = { stableId: "CW-04", v1: "لا تفتح الكيس المختوم.", v2: "لا تفتح الكيس المختوم.", status: "moved", heading: "٤. الأكياس", number: "4.1", v2Number: "4.3" };
 
 test("a v2 upload refreshes the steps of changed procedures and leaves unchanged ones alone", { timeout: 120_000 }, async () => {
   const doc = "courier-pickup-wait";
-  await seedDocument(doc, [UNIFORM, DELAY, HANDOVER], [
+  await seedDocument(doc, [UNIFORM, DELAY, HANDOVER, SEALED], [
     { key: "uniform", title: "الزي الرسمي", steps: ["ارتدِ الزي الرسمي"], stableIds: ["CW-01"], withPackage: true },
+    { key: "sealed", title: "الأكياس المختومة", steps: ["لا تفتح الكيس"], stableIds: ["CW-04"], withPackage: true },
     { key: "delay", title: "تأخر تجهيز الطلب", steps: ["انتظر ١٥ دقيقة ثم بلّغ"], stableIds: ["CW-02"], withPackage: true },
     // Changed, but never generated: nothing regenerates it, so only the steps refresh can fix it.
     { key: "handover", title: "تسليم الطلب", steps: ["سلّم خلال ٣٠ دقيقة"], stableIds: ["CW-03"], withPackage: false },
@@ -211,7 +214,7 @@ test("a v2 upload refreshes the steps of changed procedures and leaves unchanged
 
   await runV2Update(doc);
 
-  // Changed procedure with a package: new steps from the v2 clause; the title is kept (plan, open question 1).
+  // Changed procedure with a package: new steps from the v2 clause; the title is kept (plan, decision 1).
   assert.deepEqual(await v2Procedure(doc, "delay"), { title: "تأخر تجهيز الطلب", steps: freshSteps([DELAY.v2]) });
   // Its regenerated package was written from the new steps, never the old "15 minutes" ones.
   const delayInputs = generatorInputs.filter((u) => u.includes(DELAY.v2));
@@ -222,9 +225,15 @@ test("a v2 upload refreshes the steps of changed procedures and leaves unchanged
   // Changed procedure without a package: its steps are refreshed too.
   assert.deepEqual(await v2Procedure(doc, "handover"), { title: "تسليم الطلب", steps: freshSteps([HANDOVER.v2]) });
 
-  // Unchanged procedure: copied exactly, and no naming call was made for its clause.
+  // Unchanged and moved procedures (decision 2): copied exactly, and no naming call was made for them.
   assert.deepEqual(await v2Procedure(doc, "uniform"), { title: "الزي الرسمي", steps: ["ارتدِ الزي الرسمي"] });
-  assert.ok(!namingInputs.some((quotes) => quotes.includes(UNIFORM.v2)), "no naming call for the unchanged procedure");
+  assert.deepEqual(await v2Procedure(doc, "sealed"), { title: "الأكياس المختومة", steps: ["لا تفتح الكيس"] });
+  // Exactly one naming call each for the two changed procedures, and nothing else (this test runs first).
+  assert.deepEqual(namingInputs, [[DELAY.v2], [HANDOVER.v2]]);
+  // Logged against the new version, so A2c counts the refresh in v2's cost.
+  const [logged] = await testDb()<{ n: number }[]>`
+    SELECT count(*)::int AS n FROM ai_calls WHERE document_id = ${doc} AND version_id = 'v2' AND purpose = 'understand.name_procedures'`;
+  assert.equal(logged.n, 2);
 });
 
 test("when naming a changed procedure keeps failing, the update job fails and names the procedure", { timeout: 120_000 }, async () => {
@@ -239,6 +248,8 @@ test("when naming a changed procedure keeps failing, the update job fails and na
   assert.equal(jobs.length, 1);
   assert.equal(jobs[0].status, "failed");
   assert.match(jobs[0].error, /تأخر تجهيز الطلب/, "the error names the procedure");
+  assert.match(jobs[0].error, /fake naming failure/, "the error says why naming failed");
+  assert.equal(namingInputs.filter((q) => q.includes(broken.v2)).length, 3, "naming was tried 3 times");
   // Nothing was regenerated from the old steps, and the document still points at v1.
   assert.ok(!generatorInputs.some((u) => u.includes(NAMING_FAILS)), "no package generated without fresh steps");
   const [d] = await testDb()<{ current_version_id: string }[]>`SELECT current_version_id FROM hl_documents WHERE document_id = ${doc}`;

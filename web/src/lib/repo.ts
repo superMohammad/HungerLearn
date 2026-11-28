@@ -89,6 +89,11 @@ export async function insertProcedure(p: Omit<Procedure, "id">): Promise<string>
   return row.id;
 }
 
+export async function updateProcedureSteps(procedureId: string, steps: string[]): Promise<void> {
+  const rows = await sql()`UPDATE procedures SET steps = ${sql().json(steps)} WHERE id = ${procedureId} RETURNING id`;
+  if (rows.length === 0) throw new Error(`Unknown procedure id=${procedureId}`);
+}
+
 // ---------------------------------------------------------------- packages
 
 type PackageRow = {

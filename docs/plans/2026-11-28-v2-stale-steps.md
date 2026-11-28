@@ -2,7 +2,7 @@
 
 **Tier:** Enhanced (pipeline change in `web/src/lib/pipeline.ts`, plus one new LLM call per changed procedure) · **Owner:** Yasser (@altayariyasser) · **Branch:** `fix/v2-stale-steps` (from `main` at 302f803)
 
-**Approved:** _pending @superMohammad_
+**Approved:** @superMohammad, 2026-11-28 (on [#32](https://github.com/superMohammad/HungerLearn/issues/32): "stale steps 1 steps only, 2 yes, 3 yes")
 
 ## Problem
 Found by Mohammad in the F07 run for #17: after uploading `courier-pickup-wait-v2`, the changed procedure's steps still say «…بعد ١٥ دقيقة», while its rule CW-02 now says 10 minutes. The regenerated draft was then flagged `contradiction` and needed a reviewer.
@@ -26,7 +26,7 @@ Found by Mohammad in the F07 run for #17: after uploading `courier-pickup-wait-v
    - a naming step that can name one given group of clauses: `nameProcedure(doc, versionId, clauses)`, returning `{ title, steps }`, with the same prompt (`understand.name_procedures`), the same validation (no clause ids in learner text, non-empty steps) and the same 3 attempts.
 
    `groupProcedures` keeps its behaviour, and its existing tests must stay green.
-3. **Keep the title by default and refresh only the steps.** The title is the procedure's name for learners and appears in the change notice («{title} was updated…»). The naming prompt already forbids numbers in titles, so a title can't carry a stale number. See open question 1.
+3. **Keep the title by default and refresh only the steps.** The title is the procedure's name for learners and appears in the change notice («{title} was updated…»). The naming prompt already forbids numbers in titles, so a title can't carry a stale number. Approved as decision 1.
 4. In `applyNewVersion`, for each old procedure whose `next` doesn't carry over: refresh the steps (an `UPDATE procedures SET steps = … WHERE id = next.id`) **before** `generatePackageFor`, so the generator and the fallback lesson see the new steps. This includes the case with no package.
 5. **Cost:** one naming call per changed procedure, logged in `ai_calls` with the new version (A2b), so A2c counts it.
 
@@ -55,10 +55,10 @@ docproc is unchanged, so `docproc eval --real` doesn't move. The effect shows in
 - **Title stability:** titles are kept, so notices and learner progress still name the same procedure.
 - **Rollback:** revert the PR. No migration and no data change. Steps written by the fixed code are just newer text.
 
-## Open questions for @superMohammad
-1. **Steps only, or title and steps?** I propose refreshing only the steps and keeping the title (stable for learners and notices; titles carry no numbers). Or should a changed procedure get a fresh title as well?
-2. Should a **moved** procedure keep its steps? (Proposal: yes. Its text is unchanged, and moved already carries the training over.)
-3. **Real check:** after the fix, will you rerun your B7 v2 → v3 upload (and F07, v1 → v2) on the 3090, so the PR can show the new steps and the contradiction flag gone?
+## Decisions (@superMohammad on #32, 2026-11-28)
+1. **Steps only:** a changed procedure keeps its title; only its steps are refreshed.
+2. **A moved procedure keeps its steps**, like its training.
+3. **Real check:** he reruns his B7 v2 → v3 upload (and F07, v1 → v2) on the 3090 after the fix.
 
 ## Out of scope
 - Changing the naming prompt or the generator prompt.

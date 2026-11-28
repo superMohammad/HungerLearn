@@ -19,7 +19,7 @@ skills:
 ## Review
 - [ ] Fresh-context review done (`reviewer` subagent, `review-change`, or Codex) and every must-fix resolved (Standard+);
       Enhanced+: a second review (the other tool or a second `review-change` pass); High-risk: `/security-review`
-- [ ] This PR adds or changes its plan in `docs/plans/`, with an **Approved:** line by `@superMohammad` (Enhanced, High-risk)
+- [ ] This PR adds or changes its plan in `docs/plans/`, with an **Approved:** line naming a teammate other than the author who approves this PR on GitHub, or `@superMohammad` on his own PR (Enhanced, High-risk)
 
 ## Risks and rollback
 <!-- Required for Enhanced and High-risk: what could break, how to revert, data/migration impact. -->

@@ -1,5 +1,6 @@
-# High-risk paths and the rules that guard everything else. Mohammad is the only approver and the only one
-# who merges (AGENTS.md → Always human-controlled); the required check pr-policy enforces the workflow.
+# High-risk paths and the rules that guard everything else. Listing them requests Mohammad's review; any teammate
+# other than the author may approve and merge (AGENTS.md → Always human-controlled). The required check pr-policy
+# enforces the workflow.
 /.github/                       @superMohammad
 /.githooks/                     @superMohammad
 /.claude/                       @superMohammad

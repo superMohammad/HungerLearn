@@ -9,7 +9,7 @@
  * shell is denied. Each distinct command is checked once, and `gh pr checks` runs at most once per target.
  * Known limits (a rail, not a sandbox): aliases defined in earlier commands, script files a command runs,
  * GraphQL queries read from files, and variable values are not read. Such a script runs with the owner's gh
- * login, which has admin rights, so an `--admin` merge inside it is caught only by Mohammad reviewing merges;
+ * login, which has admin rights, so an `--admin` merge inside it is caught only by the team reviewing merges;
  * .githooks/pre-push and branch protection remain the backstops for pushes.
  */
 import { spawnSync } from "node:child_process";

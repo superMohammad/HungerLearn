@@ -10,8 +10,16 @@ import { packagesOf } from "./hl.mjs";
 /** @typedef {"Minimal" | "Standard" | "Enhanced" | "High-risk"} Tier */
 /** @type {readonly Tier[]} */
 export const TIERS = ["Minimal", "Standard", "Enhanced", "High-risk"];
-/** The only human who approves plans and merges (AGENTS.md → Always human-controlled). */
-export const APPROVER = "@superMohammad";
+/**
+ * The project owner: the one author whose own `**Approved:**` line counts, because GitHub does not let an author
+ * approve their own PR. Everyone else's plan needs an approving review by a teammate other than the author.
+ */
+export const OWNER = "superMohammad";
+/**
+ * GitHub author associations of people on the team. The repo is user-owned, where every COLLABORATOR has write
+ * access; on an organisation repo COLLABORATOR also covers read-only access and this check would need the permission.
+ */
+const TEAM = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
 /** Enhanced starts above this many changed lines (AGENTS.md: "diff over ~400 lines"). */
 const MAX_STANDARD_LINES = 400;
 
@@ -147,15 +155,136 @@ export function changedPlans(files) {
   return files.filter((f) => PLAN_FILE.test(f));
 }
 
-/** A plan is approved when its `**Approved:**` line names the approver. @param {string} text */
-export function isApprovedPlan(text) {
-  return normalized(text).split("\n").some((l) => l.startsWith("**Approved:**") && l.includes(APPROVER));
+/**
+ * One GitHub review of the PR: who wrote it, its state (APPROVED, CHANGES_REQUESTED, COMMENTED, DISMISSED, PENDING),
+ * the reviewer's author association with the repo, and the commit it reviewed.
+ * @typedef {{ login: string; state: string; association: string; commitId: string }} Review
+ */
+/**
+ * The PR's author, head commit and reviews (oldest first), as `scripts/pr-meta.mjs` reads them from GitHub.
+ * @typedef {{ author: string; headSha: string; reviews: readonly Review[] }} PrMeta
+ */
+
+/** @param {Record<string, unknown>} obj @param {string} key @param {string} where @returns {string} */
+function stringField(obj, key, where) {
+  const value = obj[key];
+  if (typeof value !== "string" || value === "") throw new Error(`PR meta: ${where}.${key} must be a non-empty string, got ${JSON.stringify(value)}.`);
+  return value;
+}
+
+/** @param {unknown} value @param {string} where @returns {Record<string, unknown>} */
+function objectAt(value, where) {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) throw new Error(`PR meta: ${where} must be an object, got ${JSON.stringify(value)}.`);
+  return /** @type {Record<string, unknown>} */ (value);
+}
+
+/** Parses the JSON that `scripts/pr-meta.mjs` writes; raises on anything malformed. @param {string} json @returns {PrMeta} */
+export function parsePrMeta(json) {
+  /** @type {unknown} */
+  let raw;
+  try {
+    raw = JSON.parse(json);
+  } catch (error) {
+    throw new Error(`PR meta: not valid JSON (${error instanceof Error ? error.message : String(error)}).`, { cause: error });
+  }
+  const root = objectAt(raw, "root");
+  const author = stringField(root, "author", "root");
+  const headSha = stringField(root, "headSha", "root");
+  if (!Array.isArray(root.reviews)) throw new Error(`PR meta: root.reviews must be an array, got ${JSON.stringify(root.reviews)}.`);
+  const reviews = root.reviews.map((r, i) => {
+    const obj = objectAt(r, `reviews[${i}]`);
+    const where = `reviews[${i}]`;
+    return {
+      login: stringField(obj, "login", where),
+      state: stringField(obj, "state", where),
+      association: stringField(obj, "association", where),
+      commitId: stringField(obj, "commitId", where),
+    };
+  });
+  return { author, headSha, reviews };
+}
+
+/**
+ * The PR meta from `gh api` output: `{author, headSha}` as one JSON object, and one JSON review per line
+ * (`--jq '.[] | {…}'`).
+ * @param {string} prOut @param {string} reviewsOut @returns {PrMeta}
+ */
+export function prMetaFromGh(prOut, reviewsOut) {
+  const lines = reviewsOut.split("\n").map((l) => l.trim()).filter((l) => l !== "");
+  /** @type {unknown[]} */
+  const reviews = lines.map((l, i) => {
+    try {
+      return JSON.parse(l);
+    } catch (error) {
+      throw new Error(`PR meta: review line ${i + 1} from gh api is not JSON: ${l.slice(0, 200)}`, { cause: error });
+    }
+  });
+  /** @type {unknown} */
+  let pr;
+  try {
+    pr = JSON.parse(prOut);
+  } catch (error) {
+    throw new Error(`PR meta: the PR from gh api is not JSON: ${prOut.slice(0, 200)}`, { cause: error });
+  }
+  return parsePrMeta(JSON.stringify({ ...objectAt(pr, "pr"), reviews }));
+}
+
+/**
+ * Logins (lower case) that approve the PR now: a teammate other than the author whose latest review that is not a
+ * comment is APPROVED on the current head commit. A later "changes requested", a dismissal or a new push takes the
+ * approval back, so a plan or code changed after the approval needs a fresh one.
+ * @param {PrMeta} meta @returns {Set<string>}
+ */
+export function approvingReviewers(meta) {
+  /** @type {Map<string, Review>} */
+  const latest = new Map();
+  for (const r of meta.reviews) {
+    if (r.state !== "COMMENTED" && r.state !== "PENDING") latest.set(r.login.toLowerCase(), r);
+  }
+  const author = meta.author.toLowerCase();
+  return new Set([...latest].filter(([login, r]) => login !== author && r.state === "APPROVED" && r.commitId === meta.headSha && TEAM.has(r.association)).map(([login]) => login));
+}
+
+/** Handles (lower case, without `@`) named on the plan's `**Approved:**` lines. @param {string} text @returns {string[]} */
+export function approvalHandles(text) {
+  return normalized(text).split("\n").filter((l) => l.startsWith("**Approved:**"))
+    .flatMap((l) => [...l.matchAll(/@([A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)/g)].map((m) => m[1].toLowerCase()));
+}
+
+/**
+ * A plan is approved when its `**Approved:**` line names a teammate other than the author who approved the PR on
+ * GitHub, or names the owner on a PR the owner opened himself.
+ * @param {string} text @param {PrMeta} meta
+ */
+export function isApprovedPlan(text, meta) {
+  const approvers = approvingReviewers(meta);
+  const owner = OWNER.toLowerCase();
+  const ownerIsAuthor = meta.author.toLowerCase() === owner;
+  return approvalHandles(text).some((h) => approvers.has(h) || (h === owner && ownerIsAuthor));
+}
+
+/**
+ * The plan problem of an Enhanced+ PR, or null when one of its changed plans is approved.
+ * @param {Tier} tier @param {readonly string[]} files @param {Record<string, string>} plans @param {PrMeta} meta
+ */
+function planProblem(tier, files, plans, meta) {
+  const texts = changedPlans(files).map((p) => plans[p] ?? "");
+  if (texts.some((t) => isApprovedPlan(t, meta))) return null;
+  const named = [...new Set(texts.flatMap(approvalHandles))];
+  const who = `a teammate other than @${meta.author}`;
+  if (texts.some((t) => normalized(t).split("\n").some((l) => l.startsWith("**Approved:**"))) && named.length === 0) {
+    return `Plan: the **Approved:** line names no one; write the @handle of ${who} who approves this PR (or @${OWNER} on his own PR).`;
+  }
+  if (named.length === 0) {
+    return `Plan: this ${tier} PR needs its own plan in docs/plans/, added or changed in this PR, with an **Approved:** line naming ${who} (or @${OWNER} on his own PR).`;
+  }
+  return `Plan: the **Approved:** line names ${named.map((h) => `@${h}`).join(", ")}, but none of them has an approving review on this PR; ${who} must approve it on GitHub (approving reviewers now: ${[...approvingReviewers(meta)].map((h) => `@${h}`).join(", ") || "none"}).`;
 }
 
 /**
  * Every way the PR breaks the policy, as actionable messages; empty means it passes.
- * `plans` maps each plan file this PR changes to its text.
- * @param {Diff & { body: string; plans: Record<string, string> }} pr
+ * `plans` maps each plan file this PR changes to its text; `meta` is the PR's author and reviews.
+ * @param {Diff & { body: string; plans: Record<string, string>; meta: PrMeta }} pr
  * @returns {string[]}
  */
 export function policyProblems(pr) {
@@ -175,9 +304,8 @@ export function policyProblems(pr) {
   if (!section(pr.body, "Evidence").includes("check.mjs")) {
     problems.push("Evidence: show the `node scripts/check.mjs` result (AGENTS.md → Definition of done).");
   }
-  if (rank(tier) >= rank("Enhanced") && !changedPlans(pr.files).some((p) => isApprovedPlan(pr.plans[p] ?? ""))) {
-    problems.push(`Plan: this ${tier} PR needs its own plan in docs/plans/, added or changed in this PR, with an **Approved:** line naming ${APPROVER}.`);
-  }
+  const plan = rank(tier) >= rank("Enhanced") ? planProblem(tier, pr.files, pr.plans, pr.meta) : null;
+  if (plan !== null) problems.push(plan);
   const missing = missingSkills(requiredSkills(tier, pr.files), skillsListed(pr.body));
   if (missing.length > 0) problems.push(`Skills used: skills missing for ${tier}: ${missing.join(", ")} (the "skills:" line of ## Skills used).`);
   return problems;

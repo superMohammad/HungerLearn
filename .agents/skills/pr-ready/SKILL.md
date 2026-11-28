@@ -20,8 +20,11 @@ the change's tier (AGENTS.md → Workflow).
 5. Write the PR body by filling `.github/pull_request_template.md` completely: tier, linked issue,
    behaviour change, evidence, risks and rollback (Enhanced and High-risk). Paste the output of
    `node scripts/skills-used.mjs` as the `skills:` line, and say in the body if a skill was recorded by hand.
-   Save the body to a file outside the repo and run `node scripts/pr-policy.mjs <file>`: it must pass,
-   because the same check is required on the PR.
+   Save the body to a file outside the repo, write the PR meta next to it (before the PR exists:
+   `gh api user --jq '{author: .login, headSha: "none", reviews: []}' > <meta>`; after: `node scripts/pr-meta.mjs <pr> <meta>`)
+   and run `node scripts/pr-policy.mjs <body> <meta>`: it must pass, because the same check is required on the
+   PR. The one allowed failure before the PR exists is the plan approval of an Enhanced+ PR you did not open as
+   `@superMohammad`: a teammate other than you approves the PR on GitHub, and the check re-runs on that review.
 6. Check the diff is only the task: `git diff --stat origin/main...HEAD`. Split refactors from behaviour
    changes; aim for a diff a human can review in one sitting (under ~400 lines).
 7. Push the branch and open the PR only when the user asks (`gh pr create --body-file …`; the agent guard

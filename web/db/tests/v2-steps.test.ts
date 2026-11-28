@@ -14,15 +14,16 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
 import postgres from "postgres";
-import { readonlySql, sql } from "@/lib/db";
+import { sql } from "@/lib/db";
 import { recordQueued, runUploadPipeline } from "@/lib/pipeline";
 import type { ClauseStatus, ComparisonReport } from "@/lib/types";
-import { appEnv, REPO, runScript, startFakeLlm, testAdminUrl, withCredentials, withDatabase } from "./helpers";
+import { appEnv, REPO, runScript, startFakeLlm, testAdminUrl, withDatabase } from "./helpers";
 
 const adminUrl = testAdminUrl();
 const dbName = `hl_test_${randomBytes(6).toString("hex")}`;
 const testUrl = withDatabase(adminUrl, dbName);
-const readonlyUrl = withCredentials(testUrl, "hl_readonly", "hl_readonly");
+// The v2 update never opens the read-only (text-to-SQL) connection; the app's env only requires the setting.
+const readonlyUrl = testUrl;
 
 const admin = postgres(adminUrl, { max: 1, onnotice: () => undefined });
 let db: postgres.Sql | undefined;
@@ -184,7 +185,6 @@ before(async () => {
 after(async () => {
   const closing = await Promise.allSettled([
     appEnvSet ? sql().end() : Promise.resolve(),
-    appEnvSet ? readonlySql().end() : Promise.resolve(),
     db?.end() ?? Promise.resolve(),
     new Promise<void>((resolve) => (llm === undefined ? resolve() : llm.close(() => resolve()))),
     fakeDocprocDir === undefined ? Promise.resolve() : rm(fakeDocprocDir, { recursive: true, force: true }),

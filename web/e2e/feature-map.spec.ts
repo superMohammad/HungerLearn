@@ -94,10 +94,42 @@ test.describe("F02 sign-in, guards and sign-out", () => {
   });
 
   row("anonymous visitors are sent to sign-in", async (page) => {
-    for (const path of ["/admin", "/admin/review", "/admin/readiness", "/learn"]) {
+    for (const path of ["/admin", "/admin/review", "/admin/readiness", "/admin/scoreboard", "/learn"]) {
       await page.goto(path);
       await expect(page, path).toHaveURL(/\/signin$/);
     }
+  });
+});
+
+test.describe("F08 scoreboard page", () => {
+  for (const { lang, dir } of LANGS) {
+    row(`shows the six metric cards for the admin (${lang})`, async (page) => {
+      await useLanguage(page, lang);
+      await signIn(page, ADMIN_EMAIL);
+      await expect(page).toHaveURL(/\/admin$/);
+      const response = await page.goto("/admin/scoreboard");
+      expect(response?.status()).toBe(200);
+      await expect(page.locator("html")).toHaveAttribute("dir", dir);
+      // Each card shows its number ("ok") or, without its result file (as in CI), the command that produces it.
+      // "invalid" means a result file no longer matches what the page expects, so it fails the row.
+      await expect(page.locator("[data-metric]")).toHaveCount(6);
+      for (const id of ["extraction", "citation", "silent", "cost", "time", "saving"]) {
+        const card = page.locator(`[data-metric="${id}"]`);
+        await expect(card, id).toBeVisible();
+        const state = await card.getAttribute("data-state");
+        expect(["ok", "missing"], `${id} is ${state}`).toContain(state);
+        if (state === "missing") await expect(card.locator("code"), `${id} shows its command`).toBeVisible();
+        else await expect(card.locator(".num").first(), `${id} shows a number`).toBeVisible();
+      }
+    });
+  }
+
+  row("a learner cannot open the scoreboard", async (page) => {
+    await useLanguage(page, "en");
+    await signIn(page, LEARNER_EMAIL);
+    await expect(page).toHaveURL(/\/learn$/);
+    await page.goto("/admin/scoreboard");
+    await expect(page).toHaveURL(/\/signin$/);
   });
 });
 

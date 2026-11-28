@@ -9,6 +9,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/[lang]/adm
     { href: "/admin", label: t.admin.nav.documents },
     { href: "/admin/review", label: t.admin.nav.review },
     { href: "/admin/readiness", label: t.admin.nav.readiness },
+    { href: "/admin/scoreboard", label: t.admin.nav.scoreboard },
   ];
   return (
     <>

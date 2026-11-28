@@ -2,7 +2,7 @@
 
 **Tier:** Enhanced. The change is 12 lines, but `-/docproc/src/docproc/evaluation.py` is on pr-policy's Enhanced list (`scripts/lib/policy.mjs:43`). · **Owner:** Yasser (@altayariyasser) · **Branch:** `feat/docproc-eval-date` (from `main` at 302f803)
 
-**Approved:** @superMohammad, 2026-11-28 (on [#32](https://github.com/superMohammad/HungerLearn/issues/32): "eval date yes")
+**Approved:** @vGolden25 (PR review, under the peer-approval rule from #33); the plan itself was approved by @superMohammad on 2026-11-28 (on [#32](https://github.com/superMohammad/HungerLearn/issues/32): "eval date yes")
 
 ## Problem
 The scoreboard (A2d, #31) shows each number with its date. A2a's and A2c's result files carry their own date, but docproc's `out/eval_dev_*.json` has none. So the extraction card has to use the file's save time, which changes whenever the file is copied.

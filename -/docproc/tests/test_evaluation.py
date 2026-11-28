@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -79,7 +80,14 @@ def test_gold_models_parse_every_dev_label():
 
 
 def test_run_eval_offline_scores_dev_and_never_reads_held_out(make_app, tmp_path):
+    started = datetime.now(timezone.utc)
     report = run_eval(make_app(), DATASET_DIR, tmp_path / "pages")
+    # When the run finished, in UTC; the JSON keeps ISO 8601 with "Z", which the web scoreboard reads as the date.
+    assert report.generated_at.utcoffset() == timedelta(0)
+    assert started <= report.generated_at <= datetime.now(timezone.utc)
+    written = report.model_dump(mode="json")["generated_at"]
+    assert written.endswith("Z")
+    assert datetime.fromisoformat(written.removesuffix("Z") + "+00:00") == report.generated_at
     scored = {e.document_id for e in report.extraction} | {s.document_id for s in report.skipped}
     assert scored and all("held_out" not in d and not d.startswith(("courier-damaged", "employee-complaint",
                                                                       "partner-counter")) for d in scored)

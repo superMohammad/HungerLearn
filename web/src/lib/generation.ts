@@ -63,7 +63,21 @@ const CLAUSE_ID_IN_TEXT = /\bC\d+\b|\bP\d+\b/;
  * (procedures.ts, deterministic); the LLM only writes each procedure's short title and steps.
  */
 export async function groupProcedures(doc: HlDocument, versionId: string, clauses: Clause[]): Promise<ProcedureDraft[]> {
-  const groups = groupBySection(clauses);
+  return nameGroups(doc, versionId, groupBySection(clauses));
+}
+
+/**
+ * Names one procedure whose clauses are already known (a changed procedure on a new version), with the same
+ * prompt, checks and attempts as groupProcedures. The prompt still asks for a title; a caller that keeps the
+ * procedure's existing title (the v2 steps refresh) ignores it.
+ */
+export async function nameProcedure(doc: HlDocument, versionId: string, clauses: Clause[]): Promise<{ title: string; steps: string[] }> {
+  const [named] = await nameGroups(doc, versionId, [clauses]);
+  return { title: named.title, steps: named.steps };
+}
+
+/** The LLM writes a title and steps for each group of clauses; invalid answers are retried. */
+async function nameGroups(doc: HlDocument, versionId: string, groups: Clause[][]): Promise<ProcedureDraft[]> {
   const input = groups.map((g, i) => ({ procedure_id: `P${i + 1}`, clauses: g.map((c) => c.quote) }));
   let lastError: unknown = null;
   for (let attempt = 1; attempt <= NAMING_ATTEMPTS; attempt += 1) {

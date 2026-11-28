@@ -30,19 +30,27 @@ export function WhatChanged({ spec }: { spec: WhatChangedScreen }) {
           <li key={change.stableId} className="rounded-3xl border border-line bg-surface p-5" data-change={change.change}>
             {change.change === "review" ? (
               <div className="grid gap-3">
-                <Side label={change.after !== null && change.after !== change.before ? `${c.possibleChange} · ${c.before}` : c.possibleChange} quote={change.before} muted />
-                {change.after !== null && change.after !== change.before ? <Side label={`${c.possibleChange} · ${c.after}`} quote={change.after} /> : null}
+                {change.before === null ? (
+                  <Side label={c.possibleChange} quote={change.after} muted={false} />
+                ) : change.after !== null && change.after !== change.before ? (
+                  <>
+                    <Side label={c.possibleBefore} quote={change.before} muted />
+                    <Side label={c.possibleAfter} quote={change.after} muted={false} />
+                  </>
+                ) : (
+                  <Side label={c.possibleChange} quote={change.before} muted />
+                )}
               </div>
             ) : change.change === "changed" ? (
               <div className="grid gap-3">
                 <Side label={c.before} quote={change.before} muted />
-                <Side label={c.after} quote={change.after} />
+                <Side label={c.after} quote={change.after} muted={false} />
                 {change.reasons.length > 0 ? (
                   <p className="text-sm text-ink-soft" dir="auto">{change.reasons.map((r) => reasonLabel(r, t.reasons)).join(t.reasons.join)}</p>
                 ) : null}
               </div>
             ) : change.change === "added" ? (
-              <Side label={c.added} quote={change.after} />
+              <Side label={c.added} quote={change.after} muted={false} />
             ) : (
               <Side label={c.removed} quote={change.before} muted />
             )}
@@ -56,7 +64,7 @@ export function WhatChanged({ spec }: { spec: WhatChangedScreen }) {
   );
 }
 
-function Side({ label, quote, muted = false }: { label: string; quote: string | null; muted?: boolean }) {
+function Side({ label, quote, muted }: { label: string; quote: string | null; muted: boolean }) {
   return (
     <figure className={`rounded-2xl border p-4 ${muted ? "border-line bg-surface-2 text-ink-soft" : "border-brand"}`}>
       <figcaption className="text-xs font-semibold tracking-wide">{label}</figcaption>

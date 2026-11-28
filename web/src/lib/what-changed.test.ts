@@ -101,10 +101,11 @@ test("changes follow the procedure's clause order, not the report's", () => {
   assert.deepEqual(netChanges([shuffled], ["ED-01", "ED-02", "ED-04"]).map((c) => c.stableId), ["ED-02", "ED-04"]);
 });
 
-test("across uploads, the reasons come from the last upload that changed the clause", () => {
+test("across uploads, a clause changed more than once shows no per-upload reason; before and after carry the net change", () => {
+  // A v2→v3 reason ("10 -> 12") would contradict the v1 text the learner sees as "before" (15).
   const v2v3 = hop("v2", "v3", [{ stable_id: "CW-02", status: "changed", old: CW02_V2, new: CW02_V2.replace("10", "12"), reasons: ["numbers: 10 -> 12"] }]);
   assert.deepEqual(netChanges([COURIER, v2v3], ["CW-02"]), [
-    { stableId: "CW-02", change: "changed", before: CW02_V1, after: CW02_V2.replace("10", "12"), reasons: ["numbers: 10 -> 12"] },
+    { stableId: "CW-02", change: "changed", before: CW02_V1, after: CW02_V2.replace("10", "12"), reasons: [] },
   ]);
 });
 

@@ -204,3 +204,10 @@ Unit tests come first and must fail before the change (`web/src/lib/carry-over.t
   - Changed procedures keep their old steps after a new upload, which leads to a `contradiction` flag. This is #32, fixed separately.
   - docproc's change judge reported a false audience change (`courier → employee`), shown with raw role ids in the Arabic notice.
   - `carry-over.ts` cuts notice quotes at 160 characters with no ellipsis, so a sentence can stop mid-way. This code is on `main`.
+- **Independent review (2026-11-28):**
+  - **Must-fix, resolved:** across skipped uploads, a clause changed more than once showed one upload's reason next to the net before/after; it now shows no per-upload reason (test updated first).
+  - **Also fixed:** an undecided added clause no longer shows an empty "before" box, the " · " label joins moved into the dictionaries, and `Side` has no default parameter.
+  - **Out of scope, follow-ups:**
+    - an upload that removes every clause of a procedure creates no new procedure, so its learners are not flagged (existing `pipeline.ts` behaviour);
+    - between the upload and the admin publishing the regenerated package, a flagged learner sees the "nothing published yet" screen rather than What changed;
+    - a missing comparison makes the learner's procedure page error (no fallback, by design).

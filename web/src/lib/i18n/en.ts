@@ -228,6 +228,8 @@ export const en: Dict = {
       added: "New rule",
       removed: "No longer applies",
       possibleChange: "May have changed; check it with your supervisor",
+      possibleBefore: "May have changed (before); check it with your supervisor",
+      possibleAfter: "May have changed (after); check it with your supervisor",
       continueToLesson: "Continue to the lesson",
       review: "Review what changed",
       recheck: "Pass the new exam to complete this procedure again.",

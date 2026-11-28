@@ -95,7 +95,8 @@ export function netChanges(hops: readonly ComparisonReport[], stableIds: readonl
   for (const stableId of stableIds) {
     const t = tracks.get(stableId);
     if (t === undefined || t.touches === 0) continue;
-    const base = { stableId, before: t.before, after: t.after, reasons: t.reasons };
+    // One upload's reasons describe that upload only; for a clause changed in several, they would contradict "before".
+    const base = { stableId, before: t.before, after: t.after, reasons: t.touches === 1 ? t.reasons : [] };
     if (t.review) changes.push({ ...base, change: "review" });
     else if (t.before === null && t.after === null) continue;
     else if (t.before === null) changes.push({ ...base, change: "added", reasons: [] });

@@ -14,13 +14,19 @@ async function ProcedureScreen({ params, searchParams }: { params: PageProps<"/[
   const learnerId = await ensureLearner();
   const [learner, doc, t] = await Promise.all([getLearner(learnerId), getDocument(documentId), getDict()]);
   if (doc.role !== learner.role) throw new Error(`Procedure ${documentId}/${proc} is for role ${doc.role}, not ${learner.role}`);
-  const screen = await nextScreen(learner, doc, proc, query.lesson === "1" ? "lesson" : query.start === "1" ? "questions" : "auto");
-  const key = screen.kind === "screen" ? (screen.spec.kind === "lesson" ? "lesson" : `${screen.spec.itemId}`) : screen.kind;
+  const screen = await nextScreen(learner, doc, proc, query.changes === "1" ? "changes" : query.lesson === "1" ? "lesson" : query.start === "1" ? "questions" : "auto");
+  const key = screen.kind === "screen" ? (screen.spec.kind === "question" ? screen.spec.itemId : screen.spec.kind) : screen.kind;
   return (
     <>
       <PageHeader eyebrow={t.learn.flow} title={screen.title}>
         <Link href="/learn" className="text-sm underline underline-offset-4">{t.learn.backToProcedures}</Link>
       </PageHeader>
+      {screen.kind === "screen" && screen.changesAvailable && screen.spec.kind !== "what_changed" ? (
+        <p className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-brand bg-surface p-4 text-sm text-ink">
+          <span>{t.learn.changes.recheck}</span>
+          <Link href={`/learn/${documentId}/${proc}?changes=1`} className="font-bold underline underline-offset-4">{t.learn.changes.review}</Link>
+        </p>
+      ) : null}
       {screen.kind === "screen" ? <Screen key={key} spec={screen.spec} /> : null}
       {screen.kind === "mastered" ? (
         <div className="grid gap-3">

@@ -1,5 +1,6 @@
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
+import { B7Fixtures, COURIER, COURIER_SKIPPED, CW01, CW02_V1, CW02_V2, CW04, CW04_V3, ED01, ED02_V1, ED02_V2, ED04, EMPLOYEE, type Seeded } from "./b7-fixtures";
 import { DICTIONARIES } from "../src/lib/i18n";
 import type { Role } from "../src/lib/types";
 import { createFixtures, removeFixtures, type Fixtures } from "./f05-fixtures";
@@ -141,6 +142,130 @@ test.describe("F06 readiness page", () => {
       const response = await page.goto("/admin/readiness");
       expect(response?.status()).toBe(200);
       await expect(page.locator("main")).toBeVisible();
+    });
+  }
+});
+
+/**
+ * F05 after a new upload (B7): a learner whose badge is being re-checked sees "What changed" (old and new
+ * text of changed, added and removed clauses only) before the lesson and the new exam; needs_refresh stays
+ * until the new exam is passed. Seeds a disposable database only (see e2e/b7-fixtures.ts).
+ */
+test.describe("F05 what changed before the new exam (B7)", () => {
+  const UI = {
+    ar: { whatChanged: "ما الذي تغيّر؟", from: "الرفع رقم 1", to: "الرفع رقم 2", toSkipped: "الرفع رقم 3", continue: "تابع إلى الدرس", start: "ابدأ التدريب", sure: "متأكد", next: "التالي", refresh: "يحتاج إعادة تدريب", mastered: "اجتاز", back: "العودة لإجراءاتي", review: "راجع ما تغيّر" },
+    en: { whatChanged: "What changed?", from: "Upload 1", to: "Upload 2", toSkipped: "Upload 3", continue: "Continue to the lesson", start: "Start training", sure: "I'm sure", next: "Next", refresh: "Needs a refresher", mastered: "Passed", back: "Back to my procedures", review: "Review what changed" },
+  } as const;
+  const CASES = [
+    { doc: "Arabic courier document", spec: COURIER, shown: [CW02_V1, CW02_V2], hidden: [CW01, CW04], learners: { ar: "khalid@hungerlearn.test", en: "haya@hungerlearn.test" } },
+    { doc: "English employee document", spec: EMPLOYEE, shown: [ED02_V1, ED02_V2, ED04], hidden: [ED01], learners: { ar: "abdullah@hungerlearn.test", en: "munira@hungerlearn.test" } },
+  ] as const;
+  const RECHECK = [
+    { lang: "ar", spec: COURIER, email: "majed@hungerlearn.test", learnerId: "HL-106" },
+    { lang: "en", spec: EMPLOYEE, email: "lama@hungerlearn.test", learnerId: "HL-204" },
+  ] as const;
+
+  let fixtures: B7Fixtures | undefined;
+  const seeded = new Map<string, Seeded>();
+
+  test.beforeAll(async () => {
+    fixtures = new B7Fixtures();
+    seeded.set("courier", await fixtures.seed(COURIER, ["HL-104", "HL-105", "HL-106"]));
+    seeded.set("employee", await fixtures.seed(EMPLOYEE, ["HL-202", "HL-203", "HL-204"]));
+    seeded.set("courier-skip", await fixtures.seed(COURIER_SKIPPED, ["HL-107", "HL-102"]));
+  });
+  test.afterAll(async () => {
+    await fixtures?.cleanup();
+  });
+
+  function seededFor(spec: { suffix: string }): Seeded {
+    const s = seeded.get(spec.suffix);
+    if (s === undefined) throw new Error(`fixture ${spec.suffix} was not seeded`);
+    return s;
+  }
+
+  async function answer(page: Page, option: string, sure: string): Promise<void> {
+    // "Next" does router.replace + router.refresh, so the question can re-render after the choice is made
+    // and lose it (the confidence buttons stay disabled). Choose and submit together until it is accepted.
+    const radio = page.getByRole("radio", { name: option });
+    const submit = page.getByRole("button", { name: sure, exact: true });
+    await expect(async () => {
+      await radio.check({ timeout: 2000 });
+      await submit.click({ timeout: 2000 });
+    }).toPass();
+    await expect(page.locator('section[aria-live="polite"]')).toBeVisible();
+  }
+
+  for (const c of CASES) {
+    for (const { lang, dir } of LANGS) {
+      row(`${c.doc}: What changed shows only the changed clauses, before the lesson (${lang} UI)`, async (page) => {
+        const ui = UI[lang];
+        const s = seededFor(c.spec);
+        await useLanguage(page, lang);
+        await signIn(page, c.learners[lang]);
+        await expect(page).toHaveURL(/\/learn$/);
+        const card = page.locator(`li a[href*="${s.procedureKey}"]`);
+        await expect(card).toContainText(ui.refresh);
+        await card.click();
+        await expect(page.locator("html")).toHaveAttribute("dir", dir);
+        await expect(page.getByRole("heading", { name: ui.whatChanged })).toBeVisible();
+        const lesson = page.locator('article[aria-labelledby="what-changed-title"]');
+        await expect(lesson).toContainText(ui.from);
+        await expect(lesson).toContainText(ui.to);
+        const quotes = lesson.locator("blockquote.source-quote");
+        await expect(quotes).toHaveText([...c.shown]);
+        for (const q of await quotes.all()) await expect(q).toHaveAttribute("dir", "auto");
+        for (const hidden of c.hidden) await expect(page.locator("body")).not.toContainText(hidden);
+        await expect(page.getByRole("link", { name: ui.continue })).toBeVisible();
+      });
+    }
+  }
+
+  const SKIPPED = { ar: "rayan@hungerlearn.test", en: "sara@hungerlearn.test" } as const;
+  for (const { lang, dir } of LANGS) {
+    row(`skipped upload: a learner flagged at upload 2 who returns at upload 3 sees every change since upload 1 (${lang} UI)`, async (page) => {
+      const ui = UI[lang];
+      const s = seededFor(COURIER_SKIPPED);
+      await useLanguage(page, lang);
+      await signIn(page, SKIPPED[lang]);
+      await expect(page).toHaveURL(/\/learn$/);
+      await page.locator(`li a[href*="${s.procedureKey}"]`).click();
+      await expect(page.locator("html")).toHaveAttribute("dir", dir);
+      const lesson = page.locator('article[aria-labelledby="what-changed-title"]');
+      await expect(lesson).toContainText(ui.from);
+      await expect(lesson).toContainText(ui.toSkipped);
+      await expect(lesson.locator("blockquote.source-quote")).toHaveText([CW02_V1, CW02_V2, CW04, CW04_V3]);
+      await expect(page.locator("body")).not.toContainText(CW01);
+      await expect(page.getByRole("link", { name: ui.continue })).toBeVisible();
+    });
+  }
+
+  for (const r of RECHECK) {
+    row(`badge recheck: needs refresh survives a wrong exam answer and passing restores the badge (${r.lang} UI, ${r.spec.language} document)`, async (page) => {
+      test.slow(); // eleven page loads and four graded answers
+      const ui = UI[r.lang];
+      const s = seededFor(r.spec);
+      await useLanguage(page, r.lang);
+      await signIn(page, r.email);
+      await expect(page).toHaveURL(/\/learn$/);
+      await page.goto(s.path);
+      await page.getByRole("link", { name: ui.continue }).click();
+      await page.getByRole("link", { name: ui.start }).click();
+
+      await answer(page, r.spec.right, ui.sure); // practice
+      await page.getByRole("button", { name: ui.next, exact: true }).click();
+      await answer(page, r.spec.wrong, ui.sure); // exam, wrong
+      await page.goto("/learn");
+      await expect(page.locator(`li a[href*="${s.procedureKey}"]`)).toContainText(ui.refresh);
+
+      await page.goto(s.path); // first answer given: the flow continues, What changed stays one click away
+      await expect(page.getByRole("link", { name: ui.review })).toBeVisible();
+      await answer(page, r.spec.right, ui.sure); // practice again after the failed exam
+      await page.getByRole("button", { name: ui.next, exact: true }).click();
+      await answer(page, r.spec.right, ui.sure); // exam, right
+      await page.getByRole("link", { name: ui.back }).click();
+      await expect(page).toHaveURL(/\/learn$/);
+      await expect(page.locator(`li a[href*="${s.procedureKey}"]`)).toContainText(ui.mastered);
     });
   }
 });

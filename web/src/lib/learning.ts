@@ -1,7 +1,10 @@
 import "server-only";
-import { composeScreen, lessonScreen, nextStepForLayout, preferredLayout, skipsLessonInAuto, type AttemptLite, type LayoutVideo, type ScreenSpec } from "@/lib/compose";
+import { netChanges } from "@/lib/carry-over";
+import { composeScreen, lessonScreen, nextStepForLayout, preferredLayout, skipsLessonInAuto, whatChangedScreen, type AttemptLite, type LayoutVideo, type ScreenSpec, type WhatChangedScreen } from "@/lib/compose";
 import { sql } from "@/lib/db";
+import { getComparison, getComparisonChain } from "@/lib/docproc";
 import { gradeAgainstKey, type Answer } from "@/lib/question-rules";
+import { uploadNumber } from "@/lib/uploads";
 import { getItem, getLessonVideo, getProcedureByKey, listPublishedItems } from "@/lib/repo";
 import type { Confidence, HlDocument, Learner, LessonItem, MasteryState, QuestionItem, QuestionPayload } from "@/lib/types";
 
@@ -34,25 +37,68 @@ export async function listAttempts(learnerId: string, documentId: string, versio
   return rows.map((r) => ({ itemId: r.item_id, correct: r.correct, at: r.at }));
 }
 
-export type LearnScreen = { kind: "screen"; spec: ScreenSpec; title: string } | { kind: "mastered"; title: string } | { kind: "empty"; title: string };
+/** `changesAvailable`: the learner is being re-checked and has a "What changed" lesson (reachable with ?changes=1). */
+export type LearnScreen =
+  | { kind: "screen"; spec: ScreenSpec; title: string; changesAvailable: boolean }
+  | { kind: "mastered"; title: string }
+  | { kind: "empty"; title: string };
 
 /**
  * Composes the learner's next screen for one procedure. Mode "lesson" shows the lesson; "questions"
  * goes straight to practice/exam; "auto" starts with the lesson until the learner has answered once.
+ * Mode "changes" shows the "What changed" lesson while the learner's badge is being re-checked.
+ * For a learner in needs_refresh, "auto" starts with "What changed" until their first answer on the
+ * current version (B7): every in-app path to the new exam goes through it. Only once the upload that
+ * started the refresh is current: during the update (revised training not yet published) the old flow stays.
+ * With nothing to show, "changes" behaves like "auto".
  */
-export type ScreenMode = "auto" | "lesson" | "questions";
+export type ScreenMode = "auto" | "lesson" | "questions" | "changes";
+
+async function storedMastery(learnerId: string, documentId: string, procedureKey: string): Promise<{ state: MasteryState; versionId: string } | null> {
+  const rows = await sql()<{ state: MasteryState; version_id: string }[]>`
+    SELECT state, version_id FROM mastery WHERE learner_id = ${learnerId} AND document_id = ${documentId} AND procedure_key = ${procedureKey}`;
+  return rows.length === 0 ? null : { state: rows[0].state, versionId: rows[0].version_id };
+}
+
+/**
+ * The "What changed" lesson for a learner whose refresh started at `refreshVersionId` (the upload that
+ * changed the procedure; mastery.version_id keeps it until they pass). It covers every upload since the
+ * version they learned, so a learner who skipped an upload sees the net change. Null when nothing is left
+ * to re-learn (e.g. a later upload undid the change).
+ */
+async function whatChanged(doc: HlDocument, procedureKey: string, title: string, refreshVersionId: string, currentVersionId: string): Promise<WhatChangedScreen | null> {
+  const start = await getComparison(doc.documentId, refreshVersionId);
+  if (start === null) throw new Error(`docproc stored no comparison for ${doc.documentId} ${refreshVersionId}`);
+  if (start.old_version_id === null) throw new Error(`the comparison for ${doc.documentId} ${refreshVersionId} has no previous version`);
+  const learned = start.old_version_id;
+  const chain = await getComparisonChain(doc.documentId, learned, currentVersionId);
+  // The procedure's clauses in the version the learner learned and in the current one, current order first.
+  const rows = await sql()<{ version_id: string; stable_ids: string[] }[]>`
+    SELECT version_id, stable_ids FROM procedures
+    WHERE document_id = ${doc.documentId} AND procedure_key = ${procedureKey} AND version_id IN ${sql()([learned, currentVersionId])}`;
+  const ids = [currentVersionId, learned].flatMap((v) => rows.find((r) => r.version_id === v)?.stable_ids ?? []);
+  return whatChangedScreen(title, learned, currentVersionId, netChanges(chain, [...new Set(ids)]));
+}
 
 export async function nextScreen(learner: Learner, doc: HlDocument, procedureKey: string, mode: ScreenMode): Promise<LearnScreen> {
   if (doc.currentVersionId === null) throw new Error(`Document ${doc.documentId} has no current version`);
   const versionId = doc.currentVersionId;
-  const [procedure, items, attempts] = await Promise.all([
+  const [procedure, items, attempts, stored] = await Promise.all([
     getProcedureByKey(doc.documentId, versionId, procedureKey),
     listPublishedItems(doc.documentId, versionId, procedureKey),
     listAttempts(learner.learnerId, doc.documentId, versionId, procedureKey),
+    storedMastery(learner.learnerId, doc.documentId, procedureKey),
   ]);
   const lesson = items.find((i): i is LessonItem => i.kind === "lesson");
   const questions = items.filter((i): i is QuestionItem => i.kind !== "lesson");
   if (lesson === undefined && questions.length === 0) return { kind: "empty", title: procedure.title };
+  const refreshing = stored !== null && stored.state === "needs_refresh" && uploadNumber(versionId) >= uploadNumber(stored.versionId);
+  const changes = refreshing ? await whatChanged(doc, procedureKey, procedure.title, stored.versionId, versionId) : null;
+  const changesAvailable = changes !== null;
+  if (changes !== null && (mode === "changes" || (mode === "auto" && attempts.length === 0))) {
+    return { kind: "screen", spec: changes, title: procedure.title, changesAvailable };
+  }
+  if (mode === "changes") mode = "auto";
   const video = lesson === undefined ? null : await getLessonVideo(lesson.id);
   const portrait = doc.role === "courier";
   const ready: LayoutVideo | null = video !== null && video.status === "ready" ? { url: `/api/media/${video.itemId}`, orientation: portrait ? "portrait" : "landscape" } : null;
@@ -60,7 +106,7 @@ export async function nextScreen(learner: Learner, doc: HlDocument, procedureKey
   // Courier on a phone sees the lesson video on every question screen, so "auto" skips the separate lesson.
   const layout = preferredLayout(learner.role, learner.device);
   if (lessonSpec !== null && (mode === "lesson" || (mode === "auto" && attempts.length === 0 && !skipsLessonInAuto(layout, ready, questions.length)))) {
-    return { kind: "screen", spec: lessonSpec, title: procedure.title };
+    return { kind: "screen", spec: lessonSpec, title: procedure.title, changesAvailable };
   }
 
   // B5's different-format retry wins; the layout only orders the due items (see nextStepForLayout).
@@ -75,7 +121,7 @@ export async function nextScreen(learner: Learner, doc: HlDocument, procedureKey
   const q = questions.find((x) => x.id === step.itemId) as QuestionItem;
   const fallback = lessonSpec ?? { kind: "lesson" as const, title: procedure.title, keyPoints: procedure.steps.length > 0 ? procedure.steps : [procedure.title], videoUrl: null, orientation: "landscape" as const };
   const spec = composeScreen({ role: learner.role, device: learner.device, itemId: q.id, phase: step.kind, question: q.payload, video: ready, fallback });
-  return { kind: "screen", spec, title: procedure.title };
+  return { kind: "screen", spec, title: procedure.title, changesAvailable };
 }
 
 export type AnswerResult = { correct: boolean; feedback: string; quote: string; correctAnswer: string; state: MasteryState };
@@ -109,19 +155,30 @@ export async function masteryState(learnerId: string, documentId: string, versio
   return row.exams > 0 && row.passed === row.exams ? "mastered" : "in_progress";
 }
 
-/** Stores the attempt and updates mastery: mastered once every exam item's latest attempt is correct. */
+/**
+ * Stores the attempt and updates mastery: mastered once every exam item's latest attempt is correct.
+ * A badge being re-checked (needs_refresh) stays so, at the version where the refresh started, until the
+ * learner passes the exam of that upload or a later one (B7). Upload ids are v1, v2, … (repo.ts nextVersionId),
+ * so an answer on older training (still published while the update runs) can never clear it.
+ */
 async function record(learner: Learner, q: QuestionItem, answer: unknown, confidence: Confidence, correct: boolean): Promise<MasteryState> {
   await sql()`
     INSERT INTO attempts (learner_id, item_id, document_id, version_id, procedure_key, kind, format, answer, confidence, correct)
     VALUES (${learner.learnerId}, ${q.id}, ${q.documentId}, ${q.versionId}, ${q.procedureKey}, ${q.kind}, ${q.payload.format},
             ${sql().json(answer as never)}, ${confidence}, ${correct})`;
   const state = await masteryState(learner.learnerId, q.documentId, q.versionId, q.procedureKey);
-  await sql()`
+  const [stored] = await sql()<{ state: MasteryState }[]>`
     INSERT INTO mastery (learner_id, document_id, procedure_key, version_id, state)
     VALUES (${learner.learnerId}, ${q.documentId}, ${q.procedureKey}, ${q.versionId}, ${state})
     ON CONFLICT (learner_id, document_id, procedure_key) DO UPDATE
-      SET version_id = EXCLUDED.version_id, state = EXCLUDED.state, updated_at = now()`;
-  return state;
+      -- Keep needs_refresh unless this answer passed the upload that started the refresh or a later one.
+      SET version_id = CASE WHEN mastery.state = 'needs_refresh' AND (EXCLUDED.state <> 'mastered'
+                     OR substring(EXCLUDED.version_id FROM 2)::int < substring(mastery.version_id FROM 2)::int) THEN mastery.version_id ELSE EXCLUDED.version_id END,
+          state = CASE WHEN mastery.state = 'needs_refresh' AND (EXCLUDED.state <> 'mastered'
+                     OR substring(EXCLUDED.version_id FROM 2)::int < substring(mastery.version_id FROM 2)::int) THEN 'needs_refresh' ELSE EXCLUDED.state END,
+          updated_at = now()
+    RETURNING state`;
+  return stored.state;
 }
 
 /** Mastery check: graded against the approved answer key, never by an LLM. */
@@ -130,6 +187,32 @@ export async function gradeAnswer(learner: Learner, itemId: string, answer: Answ
   const correct = gradeAgainstKey(q.payload, answer);
   const state = await record(learner, q, answer, confidence, correct);
   return { correct, feedback: q.payload.feedback, quote: q.quote, correctAnswer: correctAnswerText(q.payload), state };
+}
+
+/**
+ * Stage 6, a procedure changed on `newVersionId`: learners who had started or mastered it must re-learn the
+ * change (needs_refresh, at this version) and are notified. Learners already in needs_refresh keep the
+ * version where their refresh started, so their "What changed" lesson covers every upload they missed,
+ * and are notified again. One statement in one transaction; re-running it for the same upload adds no
+ * notification. Returns the affected learner ids.
+ */
+export async function flagAffectedLearners(documentId: string, procedureKey: string, newVersionId: string, message: string): Promise<string[]> {
+  return sql().begin(async (tx) => {
+    const rows = await tx<{ learner_id: string }[]>`
+      UPDATE mastery
+      SET version_id = CASE WHEN state = 'needs_refresh' THEN version_id ELSE ${newVersionId} END,
+          state = 'needs_refresh', updated_at = now()
+      WHERE document_id = ${documentId} AND procedure_key = ${procedureKey} AND state IN ('mastered', 'in_progress', 'needs_refresh')
+      RETURNING learner_id`;
+    for (const { learner_id: learnerId } of rows) {
+      await tx`
+        INSERT INTO notifications (learner_id, document_id, version_id, message)
+        SELECT ${learnerId}, ${documentId}, ${newVersionId}, ${message}
+        WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE learner_id = ${learnerId} AND document_id = ${documentId}
+                            AND version_id = ${newVersionId} AND message = ${message})`;
+    }
+    return rows.map((r) => r.learner_id);
+  });
 }
 
 export type Notification = { id: number; documentId: string; versionId: string; message: string; createdAt: Date };

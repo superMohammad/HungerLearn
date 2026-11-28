@@ -82,6 +82,27 @@ export async function listVersions(documentId: string): Promise<VersionSummary[]
   return rows.map((r) => ({ versionId: r.version_id, seq: r.seq, sourceFile: r.source_file, createdAt: r.created_at }));
 }
 
+/**
+ * The comparisons from `fromVersionId` (exclusive) up to `toVersionId`, oldest first, followed back through
+ * each report's old_version_id. A missing link throws with the version it stopped at: a partial chain
+ * could hide a change from the learner.
+ */
+/** More uploads than this between two versions means a cycle in old_version_id, not a real history. */
+const MAX_CHAIN = 100;
+
+export async function getComparisonChain(documentId: string, fromVersionId: string, toVersionId: string): Promise<ComparisonReport[]> {
+  const chain: ComparisonReport[] = [];
+  let version: string | null = toVersionId;
+  while (version !== fromVersionId) {
+    if (version === null || chain.length > MAX_CHAIN) throw new Error(`no comparison chain from ${fromVersionId} to ${toVersionId} for ${documentId}`);
+    const report = await getComparison(documentId, version);
+    if (report === null) throw new Error(`docproc stored no comparison for ${documentId} ${version}`);
+    chain.unshift(report);
+    version = report.old_version_id;
+  }
+  return chain;
+}
+
 export async function getComparison(documentId: string, versionId: string): Promise<ComparisonReport | null> {
   const rows = await sql()<{ report: ComparisonReport }[]>`
     SELECT report FROM comparisons WHERE document_id = ${documentId} AND new_version_id = ${versionId}`;

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { ClauseChange } from "@/lib/carry-over";
 import { shuffledSteps } from "@/lib/question-rules";
 import { QUESTION_FORMATS, type Learner, type LessonPayload, type QuestionFormat, type QuestionPayload, type Role } from "@/lib/types";
 
@@ -36,9 +37,35 @@ export const ScreenSpecSchema = z.discriminatedUnion("kind", [
     layout: z.enum(LAYOUTS),
     video: VideoSchema.nullable(),
   }),
+  z.object({
+    kind: z.literal("what_changed"),
+    title: z.string().min(1),
+    /** App upload ids (v1, v2, …): the version the learner learned and the current one. */
+    fromVersionId: z.string().min(1),
+    toVersionId: z.string().min(1),
+    changes: z
+      .array(
+        z.object({
+          stableId: z.string().min(1),
+          change: z.enum(["changed", "added", "removed", "review"]),
+          before: z.string().min(1).nullable(),
+          after: z.string().min(1).nullable(),
+          /** docproc change-reason codes, labelled in the UI language by reasonLabel. */
+          reasons: z.array(z.string().min(1)),
+        }),
+      )
+      .min(1),
+  }),
 ]);
 export type ScreenSpec = z.infer<typeof ScreenSpecSchema>;
 export type QuestionScreen = Extract<ScreenSpec, { kind: "question" }>;
+export type WhatChangedScreen = Extract<ScreenSpec, { kind: "what_changed" }>;
+
+/** The "What changed" lesson (B7): only report quotes and reason codes. Null when nothing changed for the learner. */
+export function whatChangedScreen(title: string, fromVersionId: string, toVersionId: string, changes: readonly ClauseChange[]): WhatChangedScreen | null {
+  if (changes.length === 0) return null;
+  return ScreenSpecSchema.parse({ kind: "what_changed", title, fromVersionId, toVersionId, changes }) as WhatChangedScreen;
+}
 
 export function lessonScreen(lesson: LessonPayload, videoUrl: string | null, portrait: boolean): ScreenSpec {
   return { kind: "lesson", title: lesson.title, keyPoints: lesson.key_points.map((k) => k.text), videoUrl, orientation: portrait ? "portrait" : "landscape" };

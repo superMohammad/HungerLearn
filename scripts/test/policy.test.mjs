@@ -26,12 +26,13 @@ import { parseSkillLog, skillFromHookInput, skillLogName, skillsUsedLine } from 
 const APPROVED_PLAN = "# Plan\n\n**Approved:** Mohammad Almalke (@superMohammad), 2026-11-26\n";
 const PEER_PLAN = "# Plan\n\n**Approved:** @altayariyasser, 2026-11-28\n";
 
-/** @param {string} login @param {string} state @param {string} association */
+const HEAD = "a1b2c3";
+/** A review of the current head commit. @param {string} login @param {string} state @param {string} association */
 function review(login, state, association) {
-  return { login, state, association };
+  return { login, state, association, commitId: HEAD };
 }
 /** The owner opened the PR and nobody reviewed it yet. */
-const OWNER_PR = { author: "superMohammad", reviews: /** @type {ReturnType<typeof review>[]} */ ([]) };
+const OWNER_PR = { author: "superMohammad", headSha: HEAD, reviews: /** @type {ReturnType<typeof review>[]} */ ([]) };
 
 /** @param {readonly string[]} files @param {number} changedLines */
 function diff(files, changedLines) {
@@ -141,25 +142,32 @@ test("approval: the owner's own PR passes on his line alone; nobody else's text 
   assert.equal(isApprovedPlan(APPROVED_PLAN.replaceAll("\n", "\r\n"), OWNER_PR), true);
   assert.equal(isApprovedPlan("**Approved:** Mohammad Almalke, 2026-11-26", OWNER_PR), false);
   assert.equal(isApprovedPlan("**Status:** waiting for approval (@superMohammad)", OWNER_PR), false);
-  assert.equal(isApprovedPlan(APPROVED_PLAN, { author: "vGolden25", reviews: [] }), false);
+  assert.equal(isApprovedPlan(APPROVED_PLAN, { author: "vGolden25", headSha: HEAD, reviews: [] }), false);
 });
 
 test("approval: a teammate other than the author approves with a GitHub review", () => {
-  const meta = { author: "vGolden25", reviews: [review("altayariyasser", "APPROVED", "COLLABORATOR")] };
+  const meta = { author: "vGolden25", headSha: HEAD, reviews: [review("altayariyasser", "APPROVED", "COLLABORATOR")] };
   assert.equal(isApprovedPlan(PEER_PLAN, meta), true);
   assert.equal(isApprovedPlan(PEER_PLAN.replace("@altayariyasser", "@AltayariYasser"), meta), true);
-  assert.equal(isApprovedPlan(APPROVED_PLAN, { author: "vGolden25", reviews: [review("superMohammad", "APPROVED", "OWNER")] }), true);
-  assert.equal(isApprovedPlan(APPROVED_PLAN, { author: "vGolden25", reviews: [review("altayariyasser", "APPROVED", "COLLABORATOR")] }), false);
+  assert.equal(isApprovedPlan(APPROVED_PLAN, { author: "vGolden25", headSha: HEAD, reviews: [review("superMohammad", "APPROVED", "OWNER")] }), true);
+  assert.equal(isApprovedPlan(APPROVED_PLAN, { author: "vGolden25", headSha: HEAD, reviews: [review("altayariyasser", "APPROVED", "COLLABORATOR")] }), false);
 });
 
-test("approval: the author cannot approve their own plan", () => {
-  const meta = { author: "altayariyasser", reviews: [review("altayariyasser", "APPROVED", "COLLABORATOR")] };
+test("approval: the author cannot approve their own plan, in any letter case", () => {
+  const meta = { author: "altayariyasser", headSha: HEAD, reviews: [review("altayariyasser", "APPROVED", "COLLABORATOR")] };
   assert.equal(isApprovedPlan(PEER_PLAN, meta), false);
+  assert.equal(isApprovedPlan(PEER_PLAN, { ...meta, author: "AltayariYasser" }), false);
+});
+
+test("approval: an approval of an older commit does not count after a new push", () => {
+  const stale = { ...review("altayariyasser", "APPROVED", "COLLABORATOR"), commitId: "0ld5ha" };
+  assert.equal(isApprovedPlan(PEER_PLAN, { author: "vGolden25", headSha: HEAD, reviews: [stale] }), false);
+  assert.equal(isApprovedPlan(PEER_PLAN, { author: "vGolden25", headSha: HEAD, reviews: [stale, review("altayariyasser", "APPROVED", "COLLABORATOR")] }), true);
 });
 
 test("approval: only the latest non-comment review counts, and only from the team", () => {
   /** @param {ReturnType<typeof review>[]} reviews */
-  const peer = (reviews) => isApprovedPlan(PEER_PLAN, { author: "vGolden25", reviews });
+  const peer = (reviews) => isApprovedPlan(PEER_PLAN, { author: "vGolden25", headSha: HEAD, reviews });
   assert.equal(peer([review("altayariyasser", "APPROVED", "COLLABORATOR"), review("altayariyasser", "COMMENTED", "COLLABORATOR")]), true);
   assert.equal(peer([review("altayariyasser", "APPROVED", "COLLABORATOR"), review("altayariyasser", "CHANGES_REQUESTED", "COLLABORATOR")]), false);
   assert.equal(peer([review("altayariyasser", "DISMISSED", "COLLABORATOR")]), false);
@@ -169,23 +177,26 @@ test("approval: only the latest non-comment review counts, and only from the tea
   assert.equal(peer([review("someone-else", "APPROVED", "COLLABORATOR")]), false);
 });
 
-test("PR meta from gh api: author line plus one JSON review per line; a ghost reviewer raises", () => {
-  assert.deepEqual(prMetaFromGh("vGolden25\n", '{"login":"x","state":"APPROVED","association":"OWNER"}\n\n'),
-    { author: "vGolden25", reviews: [review("x", "APPROVED", "OWNER")] });
-  assert.deepEqual(prMetaFromGh("vGolden25\n", ""), { author: "vGolden25", reviews: [] });
-  assert.throws(() => prMetaFromGh("", ""), /author/);
-  assert.throws(() => prMetaFromGh("a", "{oops"), /review line 1/);
-  assert.throws(() => prMetaFromGh("a", '{"login":null,"state":"APPROVED","association":"NONE"}'), /login/);
+test("PR meta from gh api: the PR object plus one JSON review per line; malformed output raises", () => {
+  const pr = '{"author":"vGolden25","headSha":"a1b2c3"}\n';
+  assert.deepEqual(prMetaFromGh(pr, '{"login":"x","state":"APPROVED","association":"OWNER","commitId":"a1b2c3"}\n\n'),
+    { author: "vGolden25", headSha: HEAD, reviews: [review("x", "APPROVED", "OWNER")] });
+  assert.deepEqual(prMetaFromGh(pr, ""), { author: "vGolden25", headSha: HEAD, reviews: [] });
+  assert.throws(() => prMetaFromGh("vGolden25", ""), /not JSON/);
+  assert.throws(() => prMetaFromGh('{"author":"a"}', ""), /headSha/);
+  assert.throws(() => prMetaFromGh(pr, "{oops"), /review line 1/);
+  assert.throws(() => prMetaFromGh(pr, '{"login":null,"state":"APPROVED","association":"NONE","commitId":"a1b2c3"}'), /login/);
 });
 
 test("PR meta: parsed strictly; anything malformed raises and names the field", () => {
-  assert.deepEqual(parsePrMeta('{"author":"vGolden25","reviews":[{"login":"x","state":"APPROVED","association":"COLLABORATOR"}]}'),
-    { author: "vGolden25", reviews: [review("x", "APPROVED", "COLLABORATOR")] });
+  assert.deepEqual(parsePrMeta('{"author":"vGolden25","headSha":"a1b2c3","reviews":[{"login":"x","state":"APPROVED","association":"COLLABORATOR","commitId":"a1b2c3"}]}'),
+    { author: "vGolden25", headSha: HEAD, reviews: [review("x", "APPROVED", "COLLABORATOR")] });
   assert.throws(() => parsePrMeta("not json"), /PR meta/);
-  assert.throws(() => parsePrMeta('{"reviews":[]}'), /author/);
-  assert.throws(() => parsePrMeta('{"author":"a"}'), /reviews/);
-  assert.throws(() => parsePrMeta('{"author":"a","reviews":[{"login":"x","state":"APPROVED"}]}'), /association/);
-  assert.throws(() => parsePrMeta('{"author":"a","reviews":[{"login":null,"state":"APPROVED","association":"OWNER"}]}'), /login/);
+  assert.throws(() => parsePrMeta('{"headSha":"h","reviews":[]}'), /author/);
+  assert.throws(() => parsePrMeta('{"author":"a","reviews":[]}'), /headSha/);
+  assert.throws(() => parsePrMeta('{"author":"a","headSha":"h"}'), /reviews/);
+  assert.throws(() => parsePrMeta('{"author":"a","headSha":"h","reviews":[{"login":"x","state":"APPROVED","commitId":"h"}]}'), /association/);
+  assert.throws(() => parsePrMeta('{"author":"a","headSha":"h","reviews":[{"login":"x","state":"APPROVED","association":"OWNER"}]}'), /commitId/);
 });
 
 test("policy: a complete Standard PR passes, also when edited on github.com (CRLF)", () => {
@@ -224,11 +235,11 @@ test("policy: Enhanced passes with its own approved plan; an unapproved or uncha
 test("policy: a plan line without a matching review names who must approve", () => {
   const files = ["web/src/lib/pipeline.ts", "docs/plans/2026-11-28-x.md"];
   const input = { ...diff(files, 80), body: body("Enhanced", "plan-change, review-change, pr-ready"), plans: { "docs/plans/2026-11-28-x.md": PEER_PLAN } };
-  const text = policyProblems({ ...input, meta: { author: "vGolden25", reviews: [] } }).join("\n");
+  const text = policyProblems({ ...input, meta: { author: "vGolden25", headSha: HEAD, reviews: [] } }).join("\n");
   assert.match(text, /@altayariyasser/);
   assert.match(text, /approving review/);
   assert.match(text, /other than @vGolden25/);
-  assert.deepEqual(policyProblems({ ...input, meta: { author: "vGolden25", reviews: [review("altayariyasser", "APPROVED", "COLLABORATOR")] } }), []);
+  assert.deepEqual(policyProblems({ ...input, meta: { author: "vGolden25", headSha: HEAD, reviews: [review("altayariyasser", "APPROVED", "COLLABORATOR")] } }), []);
 });
 
 test("merge decision: only with all required checks green, never with --admin", () => {

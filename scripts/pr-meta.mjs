@@ -42,10 +42,11 @@ runMain(() => {
   if (pr === undefined || outFile === undefined || !/^\d+$/.test(pr)) {
     throw new CheckFailed(`Usage: node scripts/pr-meta.mjs <pr-number> <out-file> (got ${JSON.stringify(process.argv.slice(2))})`);
   }
-  const author = ghApi([`repos/{owner}/{repo}/pulls/${pr}`, "--jq", ".user.login"]);
+  const head = ghApi([`repos/{owner}/{repo}/pulls/${pr}`, "--jq", "{author: .user.login, headSha: .head.sha}"]);
+  // A review by a deleted account has no user; it can never be a team approval, so it is left out.
   const reviews = ghApi(["--paginate", `repos/{owner}/{repo}/pulls/${pr}/reviews`, "--jq",
-    ".[] | {login: .user.login, state: .state, association: .author_association}"]);
-  const meta = prMetaFromGh(author, reviews);
+    ".[] | select(.user != null) | {login: .user.login, state: .state, association: .author_association, commitId: .commit_id}"]);
+  const meta = prMetaFromGh(head, reviews);
   writeFileSync(outFile, `${JSON.stringify(meta, null, 2)}\n`);
-  console.log(`pr-meta: PR #${pr} by @${meta.author}, ${meta.reviews.length} review(s) → ${outFile}`);
+  console.log(`pr-meta: PR #${pr} by @${meta.author} at ${meta.headSha.slice(0, 12)}, ${meta.reviews.length} review(s) → ${outFile}`);
 });

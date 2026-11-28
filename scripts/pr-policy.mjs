@@ -6,7 +6,7 @@
  * CI runs it on every PR description edit, push and review (required check pr-policy).
  * Usage: node scripts/pr-policy.mjs <pr-body-file> <pr-meta-file>   # compares this checkout with the merge-base of origin/main
  * The meta file is the PR's author and reviews: `node scripts/pr-meta.mjs <pr-number> <file>`, or before the PR
- * exists `gh api user --jq '{author: .login, reviews: []}' > <file>`.
+ * exists `gh api user --jq '{author: .login, headSha: "none", reviews: []}' > <file>`.
  */
 import { readFileSync } from "node:fs";
 import path from "node:path";

@@ -21,7 +21,7 @@ the change's tier (AGENTS.md → Workflow).
    behaviour change, evidence, risks and rollback (Enhanced and High-risk). Paste the output of
    `node scripts/skills-used.mjs` as the `skills:` line, and say in the body if a skill was recorded by hand.
    Save the body to a file outside the repo, write the PR meta next to it (before the PR exists:
-   `gh api user --jq '{author: .login, reviews: []}' > <meta>`; after: `node scripts/pr-meta.mjs <pr> <meta>`)
+   `gh api user --jq '{author: .login, headSha: "none", reviews: []}' > <meta>`; after: `node scripts/pr-meta.mjs <pr> <meta>`)
    and run `node scripts/pr-policy.mjs <body> <meta>`: it must pass, because the same check is required on the
    PR. The one allowed failure before the PR exists is the plan approval of an Enhanced+ PR you did not open as
    `@superMohammad`: a teammate other than you approves the PR on GitHub, and the check re-runs on that review.

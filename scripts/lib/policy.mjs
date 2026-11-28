@@ -15,7 +15,10 @@ export const TIERS = ["Minimal", "Standard", "Enhanced", "High-risk"];
  * approve their own PR. Everyone else's plan needs an approving review by a teammate other than the author.
  */
 export const OWNER = "superMohammad";
-/** GitHub author associations of people on the team (collaborators with access, or the owner). */
+/**
+ * GitHub author associations of people on the team. The repo is user-owned, where every COLLABORATOR has write
+ * access; on an organisation repo COLLABORATOR also covers read-only access and this check would need the permission.
+ */
 const TEAM = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
 /** Enhanced starts above this many changed lines (AGENTS.md: "diff over ~400 lines"). */
 const MAX_STANDARD_LINES = 400;
@@ -153,11 +156,14 @@ export function changedPlans(files) {
 }
 
 /**
- * One GitHub review of the PR: who wrote it, its state (APPROVED, CHANGES_REQUESTED, COMMENTED, DISMISSED, PENDING)
- * and the reviewer's author association with the repo.
- * @typedef {{ login: string; state: string; association: string }} Review
+ * One GitHub review of the PR: who wrote it, its state (APPROVED, CHANGES_REQUESTED, COMMENTED, DISMISSED, PENDING),
+ * the reviewer's author association with the repo, and the commit it reviewed.
+ * @typedef {{ login: string; state: string; association: string; commitId: string }} Review
  */
-/** The PR's author and its reviews, oldest first, as `scripts/pr-meta.mjs` reads them from GitHub. @typedef {{ author: string; reviews: readonly Review[] }} PrMeta */
+/**
+ * The PR's author, head commit and reviews (oldest first), as `scripts/pr-meta.mjs` reads them from GitHub.
+ * @typedef {{ author: string; headSha: string; reviews: readonly Review[] }} PrMeta
+ */
 
 /** @param {Record<string, unknown>} obj @param {string} key @param {string} where @returns {string} */
 function stringField(obj, key, where) {
@@ -183,20 +189,27 @@ export function parsePrMeta(json) {
   }
   const root = objectAt(raw, "root");
   const author = stringField(root, "author", "root");
+  const headSha = stringField(root, "headSha", "root");
   if (!Array.isArray(root.reviews)) throw new Error(`PR meta: root.reviews must be an array, got ${JSON.stringify(root.reviews)}.`);
   const reviews = root.reviews.map((r, i) => {
     const obj = objectAt(r, `reviews[${i}]`);
     const where = `reviews[${i}]`;
-    return { login: stringField(obj, "login", where), state: stringField(obj, "state", where), association: stringField(obj, "association", where) };
+    return {
+      login: stringField(obj, "login", where),
+      state: stringField(obj, "state", where),
+      association: stringField(obj, "association", where),
+      commitId: stringField(obj, "commitId", where),
+    };
   });
-  return { author, reviews };
+  return { author, headSha, reviews };
 }
 
 /**
- * The PR meta from `gh api` output: the author's login on one line, and one JSON review per line (`--jq '.[] | {…}'`).
- * @param {string} authorOut @param {string} reviewsOut @returns {PrMeta}
+ * The PR meta from `gh api` output: `{author, headSha}` as one JSON object, and one JSON review per line
+ * (`--jq '.[] | {…}'`).
+ * @param {string} prOut @param {string} reviewsOut @returns {PrMeta}
  */
-export function prMetaFromGh(authorOut, reviewsOut) {
+export function prMetaFromGh(prOut, reviewsOut) {
   const lines = reviewsOut.split("\n").map((l) => l.trim()).filter((l) => l !== "");
   /** @type {unknown[]} */
   const reviews = lines.map((l, i) => {
@@ -206,12 +219,20 @@ export function prMetaFromGh(authorOut, reviewsOut) {
       throw new Error(`PR meta: review line ${i + 1} from gh api is not JSON: ${l.slice(0, 200)}`, { cause: error });
     }
   });
-  return parsePrMeta(JSON.stringify({ author: authorOut.trim(), reviews }));
+  /** @type {unknown} */
+  let pr;
+  try {
+    pr = JSON.parse(prOut);
+  } catch (error) {
+    throw new Error(`PR meta: the PR from gh api is not JSON: ${prOut.slice(0, 200)}`, { cause: error });
+  }
+  return parsePrMeta(JSON.stringify({ ...objectAt(pr, "pr"), reviews }));
 }
 
 /**
  * Logins (lower case) that approve the PR now: a teammate other than the author whose latest review that is not a
- * comment is APPROVED, so a later "changes requested" or a dismissal takes the approval back, as on GitHub.
+ * comment is APPROVED on the current head commit. A later "changes requested", a dismissal or a new push takes the
+ * approval back, so a plan or code changed after the approval needs a fresh one.
  * @param {PrMeta} meta @returns {Set<string>}
  */
 export function approvingReviewers(meta) {
@@ -221,7 +242,7 @@ export function approvingReviewers(meta) {
     if (r.state !== "COMMENTED" && r.state !== "PENDING") latest.set(r.login.toLowerCase(), r);
   }
   const author = meta.author.toLowerCase();
-  return new Set([...latest].filter(([login, r]) => login !== author && r.state === "APPROVED" && TEAM.has(r.association)).map(([login]) => login));
+  return new Set([...latest].filter(([login, r]) => login !== author && r.state === "APPROVED" && r.commitId === meta.headSha && TEAM.has(r.association)).map(([login]) => login));
 }
 
 /** Handles (lower case, without `@`) named on the plan's `**Approved:**` lines. @param {string} text @returns {string[]} */

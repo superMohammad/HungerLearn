@@ -52,7 +52,7 @@ function revertRepo(t) {
   const bodyFile = path.join(root, "body.md");
   writeFileSync(bodyFile, BODY);
   const metaFile = path.join(root, "meta.json");
-  writeFileSync(metaFile, JSON.stringify({ author: "superMohammad", reviews: [] }));
+  writeFileSync(metaFile, JSON.stringify({ author: "superMohammad", headSha: "h", reviews: [] }));
   const policy = () => spawnSync(process.execPath, [path.join(dir, "scripts", "pr-policy.mjs"), bodyFile, metaFile], { cwd: dir, encoding: "utf8", env: ENV });
   return { dir, policy, metaFile };
 }
@@ -92,11 +92,11 @@ test("pr-policy: a symlinked plan is not the PR's plan", (t) => {
 test("pr-policy: a teammate's plan passes only once another teammate approved the PR", (t) => {
   const { dir, policy, metaFile } = revertRepo(t);
   writeFileSync(path.join(dir, "docs", "plans", "new.md"), "# New plan\n\n**Approved:** @altayariyasser\n");
-  writeFileSync(metaFile, JSON.stringify({ author: "vGolden25", reviews: [] }));
+  writeFileSync(metaFile, JSON.stringify({ author: "vGolden25", headSha: "h", reviews: [] }));
   const before = policy();
   assert.equal(before.status, 1, `${before.stdout}\n${before.stderr}`);
   assert.match(before.stderr, /approving review/);
-  writeFileSync(metaFile, JSON.stringify({ author: "vGolden25", reviews: [{ login: "altayariyasser", state: "APPROVED", association: "COLLABORATOR" }] }));
+  writeFileSync(metaFile, JSON.stringify({ author: "vGolden25", headSha: "h", reviews: [{ login: "altayariyasser", state: "APPROVED", association: "COLLABORATOR", commitId: "h" }] }));
   const after = policy();
   assert.equal(after.status, 0, `${after.stdout}\n${after.stderr}`);
 });

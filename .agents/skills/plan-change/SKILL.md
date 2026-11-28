@@ -37,4 +37,5 @@ Open questions: …
 
 Standard: continue after showing the plan unless the user objects.
 Enhanced and High-risk: stop and wait for the engineer's approval; save the approved plan to
-`docs/plans/<yyyy-mm-dd>-<slug>.md` so the PR can link it.
+`docs/plans/<yyyy-mm-dd>-<slug>.md` so the PR can link it. Its `**Approved:**` line names the teammate, not the
+PR author, who approves the PR on GitHub (or `@superMohammad` on his own PR); `pr-policy` checks that review.

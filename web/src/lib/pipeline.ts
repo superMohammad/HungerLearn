@@ -4,7 +4,7 @@ import { sql } from "@/lib/db";
 import { carriesOver, changeLines, clauseStatuses } from "@/lib/carry-over";
 import { getComparison, listClauses, listVersionIssues, runDocproc } from "@/lib/docproc";
 import { zeroClausesError } from "@/lib/docproc-issues";
-import { buildPackage, groupProcedures } from "@/lib/generation";
+import { buildPackage, groupProcedures, nameProcedure } from "@/lib/generation";
 import { copyLessonVideo, queueLessonVideo } from "@/lib/media";
 import { initialItemState } from "@/lib/publication-rules";
 import { DICTIONARIES } from "@/lib/i18n";
@@ -17,6 +17,7 @@ import {
   listProcedures,
   listVersionItems,
   setCurrentVersion,
+  updateProcedureSteps,
 } from "@/lib/repo";
 import type { ComparisonReport, HlDocument, LessonPayload, Procedure, TrainingItem, TrainingPackage } from "@/lib/types";
 
@@ -137,6 +138,27 @@ async function carryProcedures(doc: HlDocument, oldVersionId: string, newVersion
   }
 }
 
+/**
+ * carryProcedures copied every old procedure's steps. A procedure that does not carry over gets fresh steps from
+ * its new clauses (its title stays, so learners and notices keep naming the same procedure). All of them are
+ * refreshed before any package is generated, so a naming failure stops the update before it writes training.
+ */
+async function refreshChangedSteps(doc: HlDocument, newVersionId: string, changed: readonly { old: Procedure; next: Procedure }[]): Promise<void> {
+  if (changed.length === 0) return;
+  const clauses = await listClauses(doc.documentId, newVersionId);
+  for (const { old, next } of changed) {
+    const own = new Set(next.stableIds);
+    try {
+      const { steps } = await nameProcedure(doc, newVersionId, clauses.filter((c) => own.has(c.stableId)));
+      await updateProcedureSteps(next.id, steps);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const cause = error instanceof Error && error.cause instanceof Error ? ` (${error.cause.message})` : "";
+      throw new Error(`Could not refresh the steps of procedure "${old.title}" (${old.procedureKey}) for ${newVersionId}: ${message}${cause}`, { cause: error });
+    }
+  }
+}
+
 async function applyNewVersion(doc: HlDocument, oldVersionId: string, newVersionId: string, report: ComparisonReport): Promise<void> {
   await carryProcedures(doc, oldVersionId, newVersionId);
   const status = clauseStatuses(report);
@@ -146,11 +168,20 @@ async function applyNewVersion(doc: HlDocument, oldVersionId: string, newVersion
     latestPackages(doc.documentId, oldVersionId),
   ]);
   const newByKey = new Map(newProcedures.map((p) => [p.procedureKey, p]));
+  // Decided once, so the steps refresh and the regeneration below always agree on which procedures changed.
+  const changed = new Set(oldProcedures.filter((old) => {
+    const next = newByKey.get(old.procedureKey);
+    return next !== undefined && !carriesOver(old, next, status);
+  }).map((old) => old.procedureKey));
+  await refreshChangedSteps(doc, newVersionId, oldProcedures.flatMap((old) => {
+    const next = newByKey.get(old.procedureKey);
+    return next !== undefined && changed.has(old.procedureKey) ? [{ old, next }] : [];
+  }));
   for (const old of oldProcedures) {
     const pkg = oldPackages.get(old.id);
     const next = newByKey.get(old.procedureKey);
     if (pkg === undefined || next === undefined) continue;
-    if (carriesOver(old, next, status)) {
+    if (!changed.has(old.procedureKey)) {
       await carryPackage(pkg, next);
       continue;
     }

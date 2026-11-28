@@ -12,6 +12,8 @@ import {
   mergeProblem,
   mergeTarget,
   missingSkills,
+  parsePrMeta,
+  prMetaFromGh,
   policyProblems,
   requiredSections,
   requiredSkills,
@@ -22,6 +24,14 @@ import {
 import { parseSkillLog, skillFromHookInput, skillLogName, skillsUsedLine } from "../lib/skill-log.mjs";
 
 const APPROVED_PLAN = "# Plan\n\n**Approved:** Mohammad Almalke (@superMohammad), 2026-11-26\n";
+const PEER_PLAN = "# Plan\n\n**Approved:** @altayariyasser, 2026-11-28\n";
+
+/** @param {string} login @param {string} state @param {string} association */
+function review(login, state, association) {
+  return { login, state, association };
+}
+/** The owner opened the PR and nobody reviewed it yet. */
+const OWNER_PR = { author: "superMohammad", reviews: /** @type {ReturnType<typeof review>[]} */ ([]) };
 
 /** @param {readonly string[]} files @param {number} changedLines */
 function diff(files, changedLines) {
@@ -122,16 +132,64 @@ test("required sections: rollback from Enhanced up", () => {
   assert.deepEqual(requiredSections("High-risk"), ["What changes for users", "Evidence", "Risks and rollback"]);
 });
 
-test("plans: only plan files this PR changes count; approval must name the owner", () => {
+test("plans: only plan files this PR changes count", () => {
   assert.deepEqual(changedPlans(["docs/plans/2026-11-26-b.md", "web/x.ts", "docs/plans/sub/x.md"]), ["docs/plans/2026-11-26-b.md"]);
-  assert.equal(isApprovedPlan(APPROVED_PLAN), true);
-  assert.equal(isApprovedPlan(APPROVED_PLAN.replaceAll("\n", "\r\n")), true);
-  assert.equal(isApprovedPlan("**Approved:** Mohammad Almalke, 2026-11-26"), false);
-  assert.equal(isApprovedPlan("**Status:** waiting for approval (@superMohammad)"), false);
+});
+
+test("approval: the owner's own PR passes on his line alone; nobody else's text line counts", () => {
+  assert.equal(isApprovedPlan(APPROVED_PLAN, OWNER_PR), true);
+  assert.equal(isApprovedPlan(APPROVED_PLAN.replaceAll("\n", "\r\n"), OWNER_PR), true);
+  assert.equal(isApprovedPlan("**Approved:** Mohammad Almalke, 2026-11-26", OWNER_PR), false);
+  assert.equal(isApprovedPlan("**Status:** waiting for approval (@superMohammad)", OWNER_PR), false);
+  assert.equal(isApprovedPlan(APPROVED_PLAN, { author: "vGolden25", reviews: [] }), false);
+});
+
+test("approval: a teammate other than the author approves with a GitHub review", () => {
+  const meta = { author: "vGolden25", reviews: [review("altayariyasser", "APPROVED", "COLLABORATOR")] };
+  assert.equal(isApprovedPlan(PEER_PLAN, meta), true);
+  assert.equal(isApprovedPlan(PEER_PLAN.replace("@altayariyasser", "@AltayariYasser"), meta), true);
+  assert.equal(isApprovedPlan(APPROVED_PLAN, { author: "vGolden25", reviews: [review("superMohammad", "APPROVED", "OWNER")] }), true);
+  assert.equal(isApprovedPlan(APPROVED_PLAN, { author: "vGolden25", reviews: [review("altayariyasser", "APPROVED", "COLLABORATOR")] }), false);
+});
+
+test("approval: the author cannot approve their own plan", () => {
+  const meta = { author: "altayariyasser", reviews: [review("altayariyasser", "APPROVED", "COLLABORATOR")] };
+  assert.equal(isApprovedPlan(PEER_PLAN, meta), false);
+});
+
+test("approval: only the latest non-comment review counts, and only from the team", () => {
+  /** @param {ReturnType<typeof review>[]} reviews */
+  const peer = (reviews) => isApprovedPlan(PEER_PLAN, { author: "vGolden25", reviews });
+  assert.equal(peer([review("altayariyasser", "APPROVED", "COLLABORATOR"), review("altayariyasser", "COMMENTED", "COLLABORATOR")]), true);
+  assert.equal(peer([review("altayariyasser", "APPROVED", "COLLABORATOR"), review("altayariyasser", "CHANGES_REQUESTED", "COLLABORATOR")]), false);
+  assert.equal(peer([review("altayariyasser", "DISMISSED", "COLLABORATOR")]), false);
+  assert.equal(peer([review("altayariyasser", "CHANGES_REQUESTED", "COLLABORATOR"), review("altayariyasser", "APPROVED", "COLLABORATOR")]), true);
+  assert.equal(peer([review("altayariyasser", "APPROVED", "NONE")]), false);
+  assert.equal(peer([review("altayariyasser", "APPROVED", "CONTRIBUTOR")]), false);
+  assert.equal(peer([review("someone-else", "APPROVED", "COLLABORATOR")]), false);
+});
+
+test("PR meta from gh api: author line plus one JSON review per line; a ghost reviewer raises", () => {
+  assert.deepEqual(prMetaFromGh("vGolden25\n", '{"login":"x","state":"APPROVED","association":"OWNER"}\n\n'),
+    { author: "vGolden25", reviews: [review("x", "APPROVED", "OWNER")] });
+  assert.deepEqual(prMetaFromGh("vGolden25\n", ""), { author: "vGolden25", reviews: [] });
+  assert.throws(() => prMetaFromGh("", ""), /author/);
+  assert.throws(() => prMetaFromGh("a", "{oops"), /review line 1/);
+  assert.throws(() => prMetaFromGh("a", '{"login":null,"state":"APPROVED","association":"NONE"}'), /login/);
+});
+
+test("PR meta: parsed strictly; anything malformed raises and names the field", () => {
+  assert.deepEqual(parsePrMeta('{"author":"vGolden25","reviews":[{"login":"x","state":"APPROVED","association":"COLLABORATOR"}]}'),
+    { author: "vGolden25", reviews: [review("x", "APPROVED", "COLLABORATOR")] });
+  assert.throws(() => parsePrMeta("not json"), /PR meta/);
+  assert.throws(() => parsePrMeta('{"reviews":[]}'), /author/);
+  assert.throws(() => parsePrMeta('{"author":"a"}'), /reviews/);
+  assert.throws(() => parsePrMeta('{"author":"a","reviews":[{"login":"x","state":"APPROVED"}]}'), /association/);
+  assert.throws(() => parsePrMeta('{"author":"a","reviews":[{"login":null,"state":"APPROVED","association":"OWNER"}]}'), /login/);
 });
 
 test("policy: a complete Standard PR passes, also when edited on github.com (CRLF)", () => {
-  const pr = { ...diff(["web/src/lib/text.ts"], 40), plans: {} };
+  const pr = { ...diff(["web/src/lib/text.ts"], 40), plans: {}, meta: OWNER_PR };
   assert.deepEqual(policyProblems({ ...pr, body: body("Standard", "plan-change, reviewer, pr-ready") }), []);
   const crlf = `${body("Standard", "plan-change, reviewer, pr-ready")}\n- [ ] Review done`.replaceAll("\n", "\r\n");
   assert.match(policyProblems({ ...pr, body: crlf }).join("\n"), /unchecked "Review done"/);
@@ -142,6 +200,7 @@ test("policy: each gap is named", () => {
     ...diff(["scripts/check.mjs"], 12),
     body: ["**Risk tier:** Standard", "## What changes for users", "## Evidence", "tests pass", "## Skills used", "skills: plan-change", "- [ ] Review done"].join("\n"),
     plans: {},
+    meta: OWNER_PR,
   });
   const text = problems.join("\n");
   assert.match(text, /declared Standard.*needs High-risk.*scripts\/check\.mjs/);
@@ -155,11 +214,21 @@ test("policy: each gap is named", () => {
 
 test("policy: Enhanced passes with its own approved plan; an unapproved or unchanged plan fails", () => {
   const files = ["web/src/lib/pipeline.ts", "docs/plans/2026-11-26-x.md"];
-  const input = { ...diff(files, 80), body: body("Enhanced", "plan-change, review-change, pr-ready") };
+  const input = { ...diff(files, 80), body: body("Enhanced", "plan-change, review-change, pr-ready"), meta: OWNER_PR };
   assert.deepEqual(policyProblems({ ...input, plans: { "docs/plans/2026-11-26-x.md": APPROVED_PLAN } }), []);
   assert.match(policyProblems({ ...input, plans: { "docs/plans/2026-11-26-x.md": "# Plan\n" } }).join("\n"), /its own plan/);
-  const linkedOnly = { ...diff(["web/src/lib/pipeline.ts"], 80), body: `${input.body}\nSee docs/plans/2026-11-26-x.md`, plans: {} };
+  const linkedOnly = { ...diff(["web/src/lib/pipeline.ts"], 80), body: `${input.body}\nSee docs/plans/2026-11-26-x.md`, plans: {}, meta: OWNER_PR };
   assert.match(policyProblems(linkedOnly).join("\n"), /its own plan/);
+});
+
+test("policy: a plan line without a matching review names who must approve", () => {
+  const files = ["web/src/lib/pipeline.ts", "docs/plans/2026-11-28-x.md"];
+  const input = { ...diff(files, 80), body: body("Enhanced", "plan-change, review-change, pr-ready"), plans: { "docs/plans/2026-11-28-x.md": PEER_PLAN } };
+  const text = policyProblems({ ...input, meta: { author: "vGolden25", reviews: [] } }).join("\n");
+  assert.match(text, /@altayariyasser/);
+  assert.match(text, /approving review/);
+  assert.match(text, /other than @vGolden25/);
+  assert.deepEqual(policyProblems({ ...input, meta: { author: "vGolden25", reviews: [review("altayariyasser", "APPROVED", "COLLABORATOR")] } }), []);
 });
 
 test("merge decision: only with all required checks green, never with --admin", () => {

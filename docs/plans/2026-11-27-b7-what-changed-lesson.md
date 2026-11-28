@@ -85,7 +85,7 @@ A learner who mastered v1, never opened v2, and comes back after v3:
    - A procedure that changed v1→v2 but was carried over at v3 still shows the v1→v2 changes, because the learner never retook it.
 4. **Only current-version attempts count.** Attempts on v2 items made before v3 do not count towards the v3 exam, the same as today.
 5. **A missing link in the chain stops the lesson with an error.** A missing comparison, or a comparison whose `old_version_id` does not continue the chain, fails the screen with a technical error naming the version, like every pipeline error. It never shows a partial diff, and there is no fallback (AGENTS.md).
-   - **Amended after review (awaiting Mohammad's confirmation):** an incomplete comparison (`complete = false`, pages failed) does not stop the lesson. docproc already turns the would-be removals into `needs_review`, and those clauses of the learner's procedure are shown as possible changes. Throwing would have locked every flagged learner out of the new exam for good, even when the failed pages did not touch their procedure.
+   - **Amended after review (confirmed by Mohammad, 2026-11-28):** an incomplete comparison (`complete = false`, pages failed) does not stop the lesson. docproc already turns the would-be removals into `needs_review`, and those clauses of the learner's procedure are shown as possible changes. Throwing would have locked every flagged learner out of the new exam for good, even when the failed pages did not touch their procedure.
 6. **During the update** (the new upload stored, the revised training not yet current) the old flow stays and no answer on the older training can clear `needs_refresh`: only passing the upload that started the refresh, or a later one, does.
 
 ## Acceptance criteria and their checks
@@ -148,8 +148,9 @@ Unit tests come first and must fail before the change (`web/src/lib/carry-over.t
 - **F07 Proof**, appended: "…learners who had started or mastered a changed procedure are set to needs refresh and notified, including learners already waiting on an earlier version."
 - **F05 Proof**, appended: "…after a new version, a learner who needs a refresh sees What changed (old and new text of changed, added and removed clauses only) before the lesson and exam; the state stays needs refresh until the new exam is passed, then the badge is back."
 - **Run** `node scripts/verify-app.mjs F05 F07` in Arabic and English. Screenshots go to `.verify/vgolden25-b7-what-changed/`.
-  - **Arabic document:** `courier-pickup-wait-v1-ar.docx` → `v2-ar.docx`. CW-02 is shown before/after, and CW-04 and CW-01 are absent.
-  - **English document:** `employee-delayed-order-v1-en.pdf` → `v2-en.txt`. ED-02 is shown before/after and ED-04 as removed.
+  - **Arabic document** (browser fixtures): `courier-pickup-wait-v1-ar.docx` → `v2-ar.docx`. CW-02 is shown before/after, and CW-04 and CW-01 are absent.
+  - **English document** (browser fixtures): `employee-delayed-order-v1-en.pdf` → `v2-en.txt`. ED-02 is shown before/after and ED-04 as removed.
+  - **Live F07** (Mohammad, 2026-11-28: original corpus files only, no edited copies): `courier-pickup-wait-v2-ar.docx` → `v3-ar.docx` and `employee-delayed-order-v2-en.txt` → `v3-en.txt`, each uploaded as upload 1 and upload 2 of one document.
   - **Both UI languages:** each document is viewed with the UI in `/ar` and in `/en`, to check RTL and LTR layout, that quotes keep their own direction, and that the logo stays top-right.
   - **Skipped version:** courier v1 → v2 → v3 with a learner who never opened v2. It shows the net v1→v3 changes.
   - **Fixtures:** they follow B6's disposable-database rule (`HL_DISPOSABLE_DB` or CI only, cleanup by id).
@@ -175,7 +176,7 @@ Unit tests come first and must fail before the change (`web/src/lib/carry-over.t
 
 ## Status (2026-11-27)
 
-- **Approval:** `**Approved:**` line above (option A, no migration). The incomplete-comparison amendment under "Skipped SOP versions" step 5 is awaiting Mohammad's confirmation.
+- **Approval:** `**Approved:**` line above (option A, no migration). Mohammad confirmed the incomplete-comparison amendment under "Skipped SOP versions" step 5 on 2026-11-28.
 - **Reviews:** the `reviewer` subagent and a second `review-change` pass; every must-fix resolved in `0eb1db0`.
 - **Checks:** `node scripts/check.mjs` passed (web, docproc, media, scripts); `pnpm test` 85/85; `pnpm test:db` 22/22.
 - **Browser verification (`node scripts/verify-app.mjs F01 F02 F05 F06`, disposable database):** 19/19 in Arabic and English, including the F05 skipped-upload case. Inspected screenshots in `.verify/vgolden25-b7-what-changed/shareable/`; traces and the HTML report stay local.
@@ -193,6 +194,13 @@ Unit tests come first and must fail before the change (`web/src/lib/carry-over.t
     - B7, 8 cases: What changed on the Arabic courier and English employee documents, the skipped upload 1→3, and the badge recheck.
     - B6, 6 cases: the courier `video_question`, employee `scenario` and partner `checklist` layouts.
 - **PR preparation:** the description is drafted locally from the template, updated with the post-merge results and checked with `node scripts/pr-policy.mjs`. Its only failure is the unticked live-F07 item. The PR is not opened.
-- **Pending:**
-  - The live F07 v2 upload and comparison in Arabic and English. It needs a working LLM endpoint.
-  - Mohammad's confirmation of the incomplete-comparison behaviour (the amendment under "Skipped SOP versions" step 5).
+- **Live F07 (2026-11-28, owner's machine, Ollama `gemma4:latest`, documents `b7-live-courier-ar` and `b7-live-delayed-en`):** screenshots in `.verify/vgolden25-b7-what-changed/live-F07-{ar,en}/`.
+  - **Header:** while upload 2 was processing the header showed upload 1; when done it read «الرفع رقم 2 من 2» / "Upload 2 of 2".
+  - **Carry-over:** the unchanged procedures (CW-01 arrival, ED-10 update case) kept their published training with no regeneration; only the changed ones were regenerated.
+  - **Learners:** a courier who had mastered CW-02 and an employee in progress on ED-02 were both set to needs refresh and notified.
+  - **What changed:** it was shown before the lesson and exam, with old and new text (10 → 8 minutes; duty lead → shift supervisor). Quotes kept their own direction in the other UI language.
+  - **Badge:** passing the revised exam set the courier back to mastered on upload 2.
+- **Found during the live run, not caused by B7 (follow-ups):**
+  - Changed procedures keep their old steps after a new upload, which leads to a `contradiction` flag. This is #32, fixed separately.
+  - docproc's change judge reported a false audience change (`courier → employee`), shown with raw role ids in the Arabic notice.
+  - `carry-over.ts` cuts notice quotes at 160 characters with no ellipsis, so a sentence can stop mid-way. This code is on `main`.
